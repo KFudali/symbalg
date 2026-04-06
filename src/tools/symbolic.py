@@ -68,18 +68,22 @@ SymbolicNode = Union[
     "Symbolic[TOperand]",
 ]
 
-class Symbolic(Generic[TOperand]):
-    def __init__(self, init_operand: SymbolicNode[TOperand]):
-        if isinstance(init_operand, Symbolic):
-            self._expr: Op[TOperand] = init_operand._expr
-        elif isinstance(init_operand, Op):
-            self._expr = init_operand
+class Symbolic(Op[TOperand], Generic[TOperand]):
+    def __init__(self, init_node: SymbolicNode[TOperand]):
+        if isinstance(init_node, Symbolic):
+            self._node: Op[TOperand] = init_node.node
+        elif isinstance(init_node, Op):
+            self._node = init_node
         else:
-            self._expr = Value(init_operand)
+            self._node = Value(init_node)
+
+    @property
+    def node(self) -> SymbolicNode:
+        return self._node
 
     def _wrap(self, other: SymbolicNode[TOperand]) -> Op[TOperand]:
         if isinstance(other, Symbolic):
-            return other._expr
+            return other.node
         if isinstance(other, Op):
             return other
         return Value(other)
@@ -87,25 +91,30 @@ class Symbolic(Generic[TOperand]):
     def _new(self, expr: Op[TOperand]) -> Symbolic[TOperand]:
         return Symbolic(expr)
 
+    def _make_binary(self, other: SymbolicNode, optype: BinaryOp.OpType) -> BinaryOp:
+        return BinaryOp(optype, self._node, self._wrap(other))
+
+    def _make_unary(self, optype: UnaryOp.OpType) -> BinaryOp:
+        return UnaryOp(optype, self._node)
+
     # ---- operations ----
 
     def neg(self) -> Symbolic[TOperand]:
-        return self._new(UnaryOp(UnaryOp.OpType.NEG, self._expr))
+        return self._new(self._make_unary(UnaryOp.OpType.NEG))
 
     def add(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
-        return self._new(BinaryOp(BinaryOp.OpType.ADD, self._expr, self._wrap(other)))
+        return self._new(self._make_binary(other, BinaryOp.OpType.ADD))
 
     def sub(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
-        return self._new(BinaryOp(BinaryOp.OpType.SUB, self._expr, self._wrap(other)))
+        return self._new(self._make_binary(other, BinaryOp.OpType.SUB))
 
     def mul(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
-        return self._new(BinaryOp(BinaryOp.OpType.MUL, self._expr, self._wrap(other)))
+        return self._new(self._make_binary(other, BinaryOp.OpType.MUL))
 
     def div(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
-        return self._new(BinaryOp(BinaryOp.OpType.DIV, self._expr, self._wrap(other)))
+        return self._new(self._make_binary(other, BinaryOp.OpType.DIV))
 
     # ---- operator overloads ----
-
     def __neg__(self) -> Symbolic[TOperand]:
         return self.neg()
 
@@ -138,7 +147,8 @@ class Symbolic(Generic[TOperand]):
     # ---- evaluation ----
 
     def fold(self) -> TOperand:
-        return self._expr.fold()
+        return self._node.fold()
 
     def __repr__(self) -> str:
-        return f"Symbolic({self._expr})"
+        return f"Symbolic({self._node})"
+
