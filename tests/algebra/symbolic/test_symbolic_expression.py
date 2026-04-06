@@ -1,6 +1,5 @@
 import numpy as np
-from algebra.expression import CallableExpression
-from algebra.symbolic import SymbolicExpression
+from algebra.expression import CallableExpression, SymbolicExpression
 
 def test_symbolic_expression():
     shape=(10,)

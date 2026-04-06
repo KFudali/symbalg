@@ -1,17 +1,16 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from typing import Self
 import numpy as np
-from algebra.exceptions import ShapeMismatchError
-from algebra.expression.expression import Expression
-from algebra.operator import SpaceOperator, Operator
+
+from algebra.operator import SpaceOperator
 from algebra.space import Space
 from algebra.space.domain import BoundaryId
 
 from tools import Stencil
 from ..domain import FDDomain
 
-
-class SpaceStencilOperator(SpaceOperator, ABC):
+class SpaceStencilOperator(SpaceOperator[FDDomain], ABC):
     def __init__(
         self,
         space: Space[FDDomain],
@@ -25,11 +24,17 @@ class SpaceStencilOperator(SpaceOperator, ABC):
         for boundary_id in space.domain.boundaries.keys():
             self._boundary_stencils[boundary_id] = stencil.copy()
 
-    @abstractmethod
     def _new(
         self, interior: Stencil, boundary_stencils: dict[BoundaryId, Stencil],
-    ) -> "SpaceStencilOperator":
-        pass
+    ) -> Self:
+        new = SpaceStencilOperator(
+            self.space, 
+            self.input_components, 
+            self.output_components, 
+            interior.copy()
+        )
+        for bid, stencil in boundary_stencils.items():
+            new.boundary_stencils[bid] = stencil.copy()
 
     @abstractmethod
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
@@ -56,63 +61,40 @@ class SpaceStencilOperator(SpaceOperator, ABC):
             bid: stencil.copy() for bid, stencil in self.boundary_stencils.items()
         }
         return self._new(self._interior_stencil.copy(), boundaries)
-
     
     def __neg__(self) -> "SpaceStencilOperator":
         return self._new(
             -self.interior_stencil,
             {bid: -st for bid, st in self.boundary_stencils.items()},
         )
-
-    def __add__(self, other: Operator | Expression | float) -> "SpaceStencilOperator":
-        if not isinstance(other, SpaceStencilOperator):
-            return NotImplemented
-        if (
-            self.input_shape != other.input_shape
-            or self.output_shape != other.output_shape
-        ):
-            raise ShapeMismatchError("Operator shape mismatch")
+    
+    def add(self, other: Self) -> Self:
         return self._new(
-            self.interior_stencil + other.interior_stencil,
+            (self.interior_stencil + other.interior_stencil),
             {
-                bid: self.boundary_stencils[bid]
-                + other.boundary_stencils[bid]
-                for bid in self.boundary_stencils
-            }
+                bid: (self.boundary_stencils[bid] + other.boundary_stencils[bid])
+                for bid, st in 
+                self.boundary_stencils.keys()
+            },
         )
 
-    def __sub__(self, other: Operator | Expression | float) -> "SpaceStencilOperator":
-        if not isinstance(other, SpaceStencilOperator):
-            return NotImplemented
-        if (
-            self.input_shape != other.input_shape
-            or self.output_shape != other.output_shape
-        ):
-            raise ShapeMismatchError("Operator shape mismatch")
+    def mul(self, other: Self) -> Self:
         return self._new(
-            self.interior_stencil - other.interior_stencil,
+            (self.interior_stencil * other.interior_stencil),
             {
-                bid: self.boundary_stencils[bid]
-                - other.boundary_stencils[bid]
-                for bid in self.boundary_stencils
-            }
+                bid: (self.boundary_stencils[bid] * other.boundary_stencils[bid])
+                for bid in self.boundary_stencils.keys()
+            },
         )
 
-    def __mul__(self, other: Operator | Expression | float) -> "SpaceStencilOperator":
-        if isinstance(other, float):
-            return self._new(
-                self.interior_stencil,
-                self.boundary_stencils,
-            )
-        return NotImplemented
+    def scale(self, other: float) -> Self:
+        return self._new(
+            (self.interior_stencil * other),
+            {
+                bid: (self.boundary_stencils[bid] * other)
+                for bid in self.boundary_stencils.keys()
+            },
+        )
 
-    def __rmul__(self, other: float) -> "SpaceStencilOperator":
-        return self.__mul__(other)
-
-    def __truediv__(self, other: float) -> "SpaceStencilOperator":
-        if isinstance(other, float):
-            return self._new(
-                self.interior_stencil,
-                self.boundary_stencils,
-            )
+    def scale_arr(self, other: np.ndarray) -> Self:
         return NotImplemented

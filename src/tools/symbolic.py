@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Union, Self
+from typing import Generic, TypeVar, Union, Self, Any
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -83,7 +83,7 @@ class Symbolic(Op[TOperand], Generic[TOperand]):
             return other
         return self._make_value(other)
 
-    def _assert_compatible(self, other: SymbolicNode):
+    def _assert_compatible(self, other: Any):
         pass
 
     def _new(self, expr: Op[TOperand]) -> Self:

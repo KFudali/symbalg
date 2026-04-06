@@ -1,8 +1,10 @@
 from __future__ import annotations
 import numpy as np
+from typing import Self
 from algebra.space import Space
 
 from tools import Stencil, region
+from algebra.space.domain import BoundaryId
 from .space_stencil_operator import SpaceStencilOperator
 from ..domain import FDDomain
 
@@ -17,12 +19,15 @@ class LapStencilOperator(SpaceStencilOperator):
         super().__init__(space, components, components, stencil)
 
     def _new(
-        self, interior: Stencil, boundary_stencils: dict,
-    ) -> "LapStencilOperator":
-        new = LapStencilOperator(self.space, self.input_components, interior)
+        self, interior: Stencil, boundary_stencils: dict[BoundaryId, Stencil],
+    ) -> Self:
+        new = LapStencilOperator(
+            self.space, 
+            self.input_components, 
+            interior.copy()
+        )
         for bid, stencil in boundary_stencils.items():
             new.boundary_stencils[bid] = stencil.copy()
-        return new
 
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
         for component in range(self.input_components):

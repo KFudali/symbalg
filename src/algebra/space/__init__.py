@@ -1,2 +1,2 @@
-from .space import Space
+from .space import Space, TDomain
 from .space_object import SpaceObject
