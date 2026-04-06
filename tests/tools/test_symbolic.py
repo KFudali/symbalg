@@ -1,5 +1,5 @@
 import pytest
-from tools import Symbolic
+from tools.symbolic import Symbolic
 import numpy
 
 def test_symbolic_fold_single_value():

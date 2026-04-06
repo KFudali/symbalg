@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar, Union, Self
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -11,14 +11,14 @@ class Op(ABC, Generic[TOperand]):
     def fold(self) -> TOperand:
         pass
 
-@dataclass
+@dataclass(frozen=True)
 class Value(Op[TOperand]):
     value: TOperand
 
     def fold(self) -> TOperand:
         return self.value
 
-@dataclass
+@dataclass(frozen=True)
 class UnaryOp(Op[TOperand]):
     class OpType(Enum):
         NEG = auto()
@@ -34,7 +34,7 @@ class UnaryOp(Op[TOperand]):
 
         raise ValueError(f"Unknown OpType: {self.optype}")
 
-@dataclass
+@dataclass(frozen=True)
 class BinaryOp(Op[TOperand]):
     class OpType(Enum):
         ADD = auto()
@@ -70,85 +70,95 @@ SymbolicNode = Union[
 
 class Symbolic(Op[TOperand], Generic[TOperand]):
     def __init__(self, init_node: SymbolicNode[TOperand]):
-        if isinstance(init_node, Symbolic):
-            self._node: Op[TOperand] = init_node.node
-        elif isinstance(init_node, Op):
-            self._node = init_node
-        else:
-            self._node = Value(init_node)
-
+        self._base_op = self._wrap(init_node)
+    
     @property
-    def node(self) -> SymbolicNode:
-        return self._node
+    def base_op(self) -> SymbolicNode:
+        return self._base_op
 
     def _wrap(self, other: SymbolicNode[TOperand]) -> Op[TOperand]:
         if isinstance(other, Symbolic):
-            return other.node
+            return other.base_op
         if isinstance(other, Op):
             return other
-        return Value(other)
+        return self._make_value(other)
 
-    def _new(self, expr: Op[TOperand]) -> Symbolic[TOperand]:
+    def _assert_compatible(self, other: SymbolicNode):
+        pass
+
+    def _new(self, expr: Op[TOperand]) -> Self:
         return Symbolic(expr)
+    
+    def _make_binary(
+        self, 
+        other: SymbolicNode,
+        optype: BinaryOp.OpType
+    ) -> BinaryOp[TOperand]:
+        return BinaryOp(optype, self._base_op, self._wrap(other))
 
-    def _make_binary(self, other: SymbolicNode, optype: BinaryOp.OpType) -> BinaryOp:
-        return BinaryOp(optype, self._node, self._wrap(other))
+    def _make_unary(self, optype: UnaryOp.OpType) -> UnaryOp[TOperand]:
+        return UnaryOp(optype, self._base_op)
 
-    def _make_unary(self, optype: UnaryOp.OpType) -> BinaryOp:
-        return UnaryOp(optype, self._node)
+    def _make_value(self, operand: TOperand) -> Value[TOperand]:
+        return Value(operand)
 
     # ---- operations ----
 
-    def neg(self) -> Symbolic[TOperand]:
+    def neg(self) -> Self:
         return self._new(self._make_unary(UnaryOp.OpType.NEG))
 
-    def add(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def add(self, other: SymbolicNode[TOperand]) -> Self:
         return self._new(self._make_binary(other, BinaryOp.OpType.ADD))
 
-    def sub(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def sub(self, other: SymbolicNode[TOperand]) -> Self:
         return self._new(self._make_binary(other, BinaryOp.OpType.SUB))
 
-    def mul(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def mul(self, other: SymbolicNode[TOperand]) -> Self:
         return self._new(self._make_binary(other, BinaryOp.OpType.MUL))
 
-    def div(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def div(self, other: SymbolicNode[TOperand]) -> Self:
         return self._new(self._make_binary(other, BinaryOp.OpType.DIV))
 
     # ---- operator overloads ----
-    def __neg__(self) -> Symbolic[TOperand]:
+    def __neg__(self) -> Self:
         return self.neg()
 
-    def __add__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __add__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return self.add(other)
 
-    def __sub__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __sub__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return self.sub(other)
 
-    def __mul__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __mul__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return self.mul(other)
 
-    def __truediv__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __truediv__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return self.div(other)
 
     # ---- reverse operators ----
 
-    def __radd__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __radd__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return Symbolic(other).add(self)
-
-    def __rsub__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    
+    def __rsub__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return Symbolic(other).sub(self)
 
-    def __rmul__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    def __rmul__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return Symbolic(other).mul(self)
-
-    def __rtruediv__(self, other: SymbolicNode[TOperand]) -> Symbolic[TOperand]:
+    
+    def __rtruediv__(self, other: SymbolicNode[TOperand]) -> Self:
+        self._assert_compatible(other)
         return Symbolic(other).div(self)
 
-    # ---- evaluation ----
-
     def fold(self) -> TOperand:
-        return self._node.fold()
+        return self._base_op.fold()
 
     def __repr__(self) -> str:
-        return f"Symbolic({self._node})"
-
+        return f"Symbolic({self._base_op})"
