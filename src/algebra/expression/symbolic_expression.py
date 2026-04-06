@@ -30,7 +30,7 @@ class ExpressionBinaryOp(BinaryOp[Expression]):
 ExprNode = SymbolicNode[Expression]
 
 
-class SymbolicExpression(Expression, Symbolic[Expression]):
+class SymbolicExpression(Symbolic[Expression], Expression):
     COMPATIBLE_TYPES = (
         Expression,
         ExpressionBinaryOp,

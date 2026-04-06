@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Self, TypeVar
 import numpy as np
 
 from algebra.exceptions import ShapeMismatchError
@@ -39,23 +39,18 @@ class Operator(ABC):
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
         pass
 
-    @abstractmethod
     def __neg__(self) -> Self:
-        pass
+        return NotImplemented
 
-    @abstractmethod
     def add(self, other: Self) -> Self:
         return NotImplemented
 
-    @abstractmethod
     def mul(self, other: Self) -> Self:
         return NotImplemented
 
-    @abstractmethod
     def scale(self, other: float) -> Self:
         return NotImplemented
 
-    @abstractmethod
     def scale_arr(self, other: np.ndarray) -> Self:
         return NotImplemented
 
@@ -112,3 +107,5 @@ class Operator(ABC):
 
     def __truediv__(self, other: float | np.ndarray) -> Self:
         return self * (1.0 / other)
+
+TOperator = TypeVar("TOperator", bound=Operator)

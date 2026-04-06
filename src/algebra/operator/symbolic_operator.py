@@ -1,11 +1,10 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
-from typing import Self, Any
-from .operator import Operator
+from typing import Self, Any, Generic
+from .operator import Operator, TOperator
 from tools.symbolic import Symbolic, SymbolicNode, Value, UnaryOp, BinaryOp, Op
 from algebra.exceptions import ShapeMismatchError
-
 
 @dataclass(frozen=True)
 class OperatorValue(Value[Operator]):
@@ -28,7 +27,7 @@ class OperatorBinaryOp(BinaryOp[Operator]):
 
 OperatorNode = SymbolicNode[Operator]
 
-class SymbolicOperator(Operator, Symbolic[Operator]):
+class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
     COMPATIBLE_TYPES = ( 
         Operator,
         OperatorBinaryOp, 
@@ -41,7 +40,11 @@ class SymbolicOperator(Operator, Symbolic[Operator]):
         Symbolic.__init__(self, operator)
         Operator.__init__(self, operator.input_shape, operator.output_shape)
 
-    def copy(self) -> Self: pass
+    def copy(self) -> Self:
+        return SymbolicOperator(self.base_op)
+
+    def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
+        self.fold().apply(input_field, output_field)
 
     def _new(self, op: Op[Operator]):
         return SymbolicOperator(op)
@@ -82,7 +85,8 @@ class SymbolicOperator(Operator, Symbolic[Operator]):
                     f"self.output_shape: {self.output_shape},",
                     f"other.output_shape: {other.output_shape}."
                 ))
+        else:
             raise ValueError((
                 "SymbolicOperator can only be combined with objects of type: ",
-                f"{compatible_types}."
+                f"{compatible_types}. \n. Got type {type(other)}"
             ))
