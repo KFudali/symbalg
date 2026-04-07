@@ -6,6 +6,7 @@ class ExpressionWrapper(Expression):
     def __init__(self, expression: Expression):
         super().__init__(expression.output_shape)
         self._expression = expression
+
     @property
     def expression(self) -> Expression:
         return self._expression
