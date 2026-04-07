@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Self, TypeVar
 import numpy as np
 
 
@@ -19,3 +19,5 @@ class Expression(ABC):
     @abstractmethod
     def eval(self) -> np.ndarray:
         pass
+
+TExpression = TypeVar("TExpression", bound = Expression)

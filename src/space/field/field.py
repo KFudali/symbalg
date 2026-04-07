@@ -13,7 +13,7 @@ class FieldView(AbstractField):
     ):
         super().__init__(space, components)
         if self.shape != value_buffer.shape:
-            raise algebra.exceptions.ShapeMismatchException(
+            raise algebra.exceptions.ShapeMismatchError(
                 "Passed value buffer does not match field shape"
             )
         self._value_buffer = value_buffer

@@ -1,16 +1,12 @@
 import numpy as np
 from .abstract_field import AbstractField
 from .fieldshaped import FieldShaped
-from algebra.expression import SimpleExpression
+from algebra.expression import SymbolicExpression, CallableExpression
 
-class FieldValue(FieldShaped, SimpleExpression):
+class FieldValue(SymbolicExpression, FieldShaped):
     def __init__(self, field: AbstractField):
         FieldShaped.__init__(self, field.space, field.components)
-        SimpleExpression.__init__(self, field.shape)
         self._field = field
-
-    def copy(self) -> "FieldValue":
-        return FieldValue(self._field)
-
-    def eval(self) -> np.ndarray:
-        return self._field.get_current()
+        expr_call = field.get_current
+        expr = CallableExpression(expr_call, self.shape)
+        SymbolicExpression.__init__(expr)

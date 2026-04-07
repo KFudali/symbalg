@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass
 import numpy as np
-from typing import Any
-from .expression import Expression
+from typing import Any, Generic
+from .expression import Expression, TExpression
 from tools.symbolic import Symbolic, SymbolicNode, Value, UnaryOp, BinaryOp, Op
 from algebra.exceptions import ShapeMismatchError
 
@@ -30,7 +30,7 @@ class ExpressionBinaryOp(BinaryOp[Expression]):
 ExprNode = SymbolicNode[Expression]
 
 
-class SymbolicExpression(Symbolic[Expression], Expression):
+class SymbolicExpression(Symbolic[Expression], Expression, Generic[TExpression]):
     COMPATIBLE_TYPES = (
         Expression,
         ExpressionBinaryOp,
@@ -48,8 +48,8 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def fold(self) -> np.ndarray:
         return super().fold()
 
-    def copy(self):
-        pass
+    def copy(self) -> SymbolicExpression[TExpression]:
+        return SymbolicExpression(self.base_op)
 
     def _new(self, expr: Op[Expression]):
         return SymbolicExpression(expr)

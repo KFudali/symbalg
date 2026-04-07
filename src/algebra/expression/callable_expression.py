@@ -26,3 +26,9 @@ class CallableExpression(Expression):
                 f"output_shape {self.output_shape}."
             ))
         return out
+
+class ZeroExpression(CallableExpression):
+    def __init__(self, output_shape: tuple[int, int]):
+        def zeros():
+            return np.zeros(shape=output_shape, dtype=float)
+        super().__init__(zeros, output_shape)

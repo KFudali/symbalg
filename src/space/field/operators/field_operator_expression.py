@@ -1,18 +1,25 @@
 import numpy as np
-from algebra.operator import OperatorExpression, CombinedOperator
-from ..core import FieldShaped, FieldValue
+from algebra.operator import SymbolicOperator, Operator
+from algebra.expression import SymbolicExpression, Expression, ZeroExpression
+from algebra.exceptions import ShapeMismatchError
+from space.field.core import AbstractField
 
-class FieldOperatorExpression(OperatorExpression[CombinedOperator], FieldShaped):
-    def __init__(self, input: FieldValue, operator: CombinedOperator):
-        OperatorExpression.__init__(self, input, operator)
-        FieldShaped.__init__(self, input.space, input.components)
-
-    def copy(self):
-        return FieldOperatorExpression(self.input.copy(), self.operator.copy())
+class FieldOperatorExpression(Operator, Expression):
+    def __init__(
+        self, 
+        field: AbstractField, 
+        operator: Operator, 
+        lifting: Expression | None = None
+    ):
+        if field.shape != operator.input_shape:
+            raise ShapeMismatchError("Field has to match operator.")
+        if not lifting:
+            lifting = ZeroExpression(operator.input_shape)
+        
+        self._operator_tree = SymbolicOperator(operator)
+        self._lifting_tree = SymbolicExpression(lifting)
+        self._field = field
 
     def eval(self) -> np.ndarray:
-        out = np.zeros(shape=(self.components, self.output_shape))
-        input = self._input.eval()
-        for comp in range(self.components):
-            self._operator.apply(input[comp][...], out[comp][...])
-        return out
+        return super().eval()
+    

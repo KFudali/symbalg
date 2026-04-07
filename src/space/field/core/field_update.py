@@ -1,19 +1,19 @@
 from .abstract_field import AbstractField
-from .fieldshaped import FieldShaped
 from algebra.expression import Expression
+from tools.action import LazyAction
 
-class FieldUpdate(SimpleExpression, FieldShaped):
+class FieldUpdate(LazyAction):
     def __init__(
         self, 
         field: AbstractField, 
         expr: Expression,
     ):
-        super().__init__(None)
         self._field = field
         self._expr = expr
+        def set_field():
+            self._field.set_current(self._expr.eval())
+        super().__init__(set_field, None)
 
     def copy(self) -> "FieldUpdate":
         return FieldUpdate(self._field, self._expr.copy())
 
-    def eval(self):
-        self._field.set_current(self._expr.eval())
