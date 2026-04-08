@@ -29,8 +29,7 @@ class ExpressionBinaryOp(BinaryOp[Expression]):
 
 ExprNode = SymbolicNode[Expression]
 
-
-class SymbolicExpression(Symbolic[Expression], Expression, Generic[TExpression]):
+class SymbolicExpression(Symbolic, Expression):
     COMPATIBLE_TYPES = (
         Expression,
         ExpressionBinaryOp,
@@ -48,7 +47,7 @@ class SymbolicExpression(Symbolic[Expression], Expression, Generic[TExpression])
     def fold(self) -> np.ndarray:
         return super().fold()
 
-    def copy(self) -> SymbolicExpression[TExpression]:
+    def copy(self) -> SymbolicExpression:
         return SymbolicExpression(self.base_op)
 
     def _new(self, expr: Op[Expression]):

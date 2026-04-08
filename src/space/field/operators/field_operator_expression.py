@@ -70,5 +70,3 @@ class FieldOperatorExpression(Operator, Expression):
             eval_self = CallableExpression(self.copy().eval, self.output_shape)
             eval_symbolic = SymbolicExpression(eval_self)
             return eval_symbolic + other
-
-        :

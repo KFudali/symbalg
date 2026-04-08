@@ -68,7 +68,7 @@ SymbolicNode = Union[
     "Symbolic[TOperand]",
 ]
 
-class Symbolic(Op[TOperand], Generic[TOperand]):
+class Symbolic(Op[TOperand]):
     def __init__(self, init_node: SymbolicNode[TOperand]):
         self._base_op = self._wrap(init_node)
     
@@ -88,9 +88,9 @@ class Symbolic(Op[TOperand], Generic[TOperand]):
 
     def _new(self, expr: Op[TOperand]) -> Self:
         return Symbolic(expr)
-    
+
     def _make_binary(
-        self, 
+        self,
         other: SymbolicNode,
         optype: BinaryOp.OpType
     ) -> BinaryOp[TOperand]:

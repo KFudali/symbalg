@@ -1,9 +1,8 @@
-from typing import Generic
 from algebra.space import Space, SpaceObject, TDomain
 from algebra.operator.operator import Operator
 
 
-class SpaceOperator(SpaceObject[TDomain], Operator, Generic[TDomain]):
+class SpaceOperator(SpaceObject[TDomain], Operator):
     def __init__(self, space: Space, input_components: int, output_components: int):
         SpaceObject.__init__(self, space)
         self._input_components = input_components
