@@ -1,12 +1,10 @@
-from abc import ABC, abstractmethod
 from typing import Generic
-from .space import Space, TDomain
+from .space import TSpace
 
-
-class SpaceObject(ABC, Generic[TDomain]):
-    def __init__(self, space: Space[TDomain]):
+class SpaceObject(Generic[TSpace]):
+    def __init__(self, space: TSpace):
         self._space = space
 
     @property
-    def space(self) -> Space[TDomain]:
+    def space(self) -> TSpace:
         return self._space

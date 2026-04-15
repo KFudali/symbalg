@@ -1,57 +1,14 @@
-SpaceObject():
-    shape()
+from algebra.space import SpaceObject
+from algebra.field import Field, FieldValueBuffer
+from discrete import DiscreteSpace
+from tools.buffer import DequeValueBuffer
 
-Field()
+class FieldSpace(SpaceObject[DiscreteSpace]):
+    def __init__(self, space: DiscreteSpace):
+        super().__init__(space)
 
-DiscreteSpace(Space)
-    domain -> Domain
-    time -> TimeSeries
-
-    operators ->
-        .dx -> FieldOperatorExpression
-        .dt -> FieldOperatorExpression
-
-    shape ->
-
-fieldspace
-    core/
-        field/
-            abstract_field..
-        space/
-        operators/
-    field.py
-    space.py
-
-space/core
-    
-
-core/
-
-import fieldspace
-from fieldspace.operators import Dx, Dt
-import domain
-
-grid = StructuredGrid(20,20)
-fd_domain = domain.fd.FDDomain(grid)
-space = fieldspace.FieldSpace(fd_domain)
-
-field = space.fields.scalar()
-Dx.laplace(field)
-Dt.expl.euler(field)
-
-fieldspace.field.scalar
-
-
-
-Space(Generic[Domain])
-    def __init__(domain: Domain) 
-    shape
-    time
-    operators
-
-
-
-
-
-Dx(field):
-    return field.space.discrete.operators.laplace(field)
+    def field(self, components: int) -> Field[DiscreteSpace]:
+        shape = (components, *self.space.shape)
+        buffer = DequeValueBuffer(shape)
+        field_buffer = FieldValueBuffer(self.space, components, buffer)
+        return Field(field_buffer)

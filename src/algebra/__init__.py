@@ -8,3 +8,4 @@ from . import operator
 from . import exceptions
 from . import space
 from . import symbolic
+from . import field

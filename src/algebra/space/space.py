@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Generic
+from typing import Generic, TypeVar
 from .domain import TDomain
-from .time import TimeSeries
+from .time_dim import TimeDim
 
 class Space(ABC, Generic[TDomain]):
-    def __init__(self, domain: TDomain, time: TimeSeries):
+    def __init__(self, domain: TDomain, time: TimeDim):
         self._domain = domain
         self._time = time
 
@@ -13,8 +13,7 @@ class Space(ABC, Generic[TDomain]):
         return self._domain
 
     @property
-    @abstractmethod
-    def time(self) -> TimeSeries:
+    def time(self) -> TimeDim:
         return self._time
 
     @property
@@ -25,3 +24,5 @@ class Space(ABC, Generic[TDomain]):
     @abstractmethod
     def shape(self) -> tuple[int, ...]:
         pass
+
+TSpace = TypeVar("TSpace", bound=Space)

@@ -1,13 +1,16 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Any
 import numpy as np
-from typing import Self, Any, Generic
-from .operator import Operator, TOperator
-from tools.symbolic import Symbolic, SymbolicNode, Value, UnaryOp, BinaryOp, Op
+
+from algebra.operator import Operator
 from algebra.exceptions import ShapeMismatchError
+from algebra.expression import ScalarExpression
+
+from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
 
 @dataclass(frozen=True)
-class OperatorValue(Value[Operator]):
+class OperatorValue(op.Value[Operator]):
     @property
     def input_shape(self) -> tuple[int, ...]:
         return self.value.input_shape
@@ -16,56 +19,72 @@ class OperatorValue(Value[Operator]):
         return self.value.output_shape
 
 @dataclass(frozen=True)
-class OperatorUnaryOp(UnaryOp[Operator]):
+class ScalarExpOperatorValue(op.Value[ScalarExpression]):
+    @property
+    def input_shape(self) -> tuple[int, ...]:
+        return ()
+    @property
+    def output_shape(self) -> tuple[int, ...]:
+        return ()
+
+    def fold(self) -> np.ndarray:
+        return self.value.eval()
+
+@dataclass(frozen=True)
+class OperatorUnaryOp(op.UnaryOp[Operator]):
     input_shape: tuple[int, ...]
     output_shape: tuple[int, ...]
 
 @dataclass(frozen=True)
-class OperatorBinaryOp(BinaryOp[Operator]):
+class OperatorBinaryOp(op.BinaryOp[Operator]):
     input_shape: tuple[int, ...]
     output_shape: tuple[int, ...]
 
 OperatorNode = SymbolicNode[Operator]
 
-class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
-    COMPATIBLE_TYPES = ( 
+class SymbolicOperator(Symbolic[Operator], Operator):
+    COMPATIBLE_TYPES = (
         Operator,
-        OperatorBinaryOp, 
-        OperatorUnaryOp, 
+        OperatorBinaryOp,
+        OperatorUnaryOp,
         OperatorValue,
+        ScalarExpression,
         float, np.ndarray
     )
-   
+
     def __init__(self, operator: OperatorNode):
         Symbolic.__init__(self, operator)
         Operator.__init__(self, operator.input_shape, operator.output_shape)
 
-    def copy(self) -> Self:
+    def copy(self) -> SymbolicOperator:
         return SymbolicOperator(self.base_op)
 
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
         self.fold().apply(input_field, output_field)
 
-    def _new(self, op: Op[Operator]):
-        return SymbolicOperator(op)
+    def _new(self, expr: op.Op[Operator]):
+        return SymbolicOperator(expr)
 
-    def _make_value(self, operator: Operator):
-        return OperatorValue(operator)
+    def _make_value(self, operand: Operator | ScalarExpression):
+        if isinstance(operand, ScalarExpression):
+            return ScalarExpOperatorValue(operand)
+        return OperatorValue(operand)
 
-    def _make_unary(self, optype: UnaryOp.OpType) -> OperatorUnaryOp:
+    def _make_unary(self, optype: UnaryOpType) -> OperatorUnaryOp:
         return OperatorUnaryOp(
             optype, self.base_op, self.input_shape, self.output_shape
         )
-    
-    def _make_binary(self, other: OperatorNode, optype: BinaryOp.OpType):
+
+    def _make_binary(self, other: OperatorNode, optype: BinaryOpType):
         return OperatorBinaryOp(
-            optype, self.base_op, self._wrap(other), 
+            optype, self.base_op, self._wrap(other),
             self.input_shape, self.output_shape
         )
 
     def _assert_compatible(self, other: Any):
         compatible_types = (SymbolicOperator, * SymbolicOperator.COMPATIBLE_TYPES)
-        if isinstance(other, float): return
+        if isinstance(other, (float, ScalarExpression)):
+            return
         if isinstance(other, np.ndarray):
             if other.shape != self.output_shape:
                 raise ShapeMismatchError((

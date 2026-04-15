@@ -27,6 +27,3 @@ class ValueBuffer(ABC):
 
     @abstractmethod
     def _advance(self, value: np.ndarray) -> None: pass
-
-
-

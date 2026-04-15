@@ -1,14 +1,16 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import Any
 import numpy as np
-from typing import Any, Generic
-from .expression import Expression, TExpression
-from tools.symbolic import Symbolic, SymbolicNode, Value, UnaryOp, BinaryOp, Op
+
+from algebra.expression import Expression
 from algebra.exceptions import ShapeMismatchError
+
+from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
 
 
 @dataclass(frozen=True)
-class ExpressionValue(Value[Expression]):
+class ExpressionValue(op.Value[Expression]):
     def fold(self) -> np.ndarray:
         return self.value.eval()
 
@@ -18,18 +20,18 @@ class ExpressionValue(Value[Expression]):
 
 
 @dataclass(frozen=True)
-class ExpressionUnaryOp(UnaryOp[Expression]):
+class ExpressionUnaryOp(op.UnaryOp[Expression]):
     output_shape: tuple[int, ...]
 
 
 @dataclass(frozen=True)
-class ExpressionBinaryOp(BinaryOp[Expression]):
+class ExpressionBinaryOp(op.BinaryOp[Expression]):
     output_shape: tuple[int, ...]
 
 
 ExprNode = SymbolicNode[Expression]
 
-class SymbolicExpression(Symbolic, Expression):
+class SymbolicExpression(Symbolic[Expression], Expression):
     COMPATIBLE_TYPES = (
         Expression,
         ExpressionBinaryOp,
@@ -50,16 +52,16 @@ class SymbolicExpression(Symbolic, Expression):
     def copy(self) -> SymbolicExpression:
         return SymbolicExpression(self.base_op)
 
-    def _new(self, expr: Op[Expression]):
+    def _new(self, expr: op.Op[Expression]):
         return SymbolicExpression(expr)
 
     def _make_value(self, operand: Expression):
         return ExpressionValue(operand)
 
-    def _make_unary(self, optype: UnaryOp.OpType) -> ExpressionUnaryOp:
+    def _make_unary(self, optype: UnaryOpType) -> ExpressionUnaryOp:
         return ExpressionUnaryOp(optype, self.base_op, self.output_shape)
 
-    def _make_binary(self, other: ExprNode, optype: BinaryOp.OpType):
+    def _make_binary(self, other: ExprNode, optype: BinaryOpType):
         return ExpressionBinaryOp(
             optype, self.base_op, self._wrap(other), self.output_shape
         )
@@ -67,6 +69,8 @@ class SymbolicExpression(Symbolic, Expression):
     def _assert_compatible(self, other: Any):
         compatible_types = (SymbolicExpression, *SymbolicExpression.COMPATIBLE_TYPES)
         if isinstance(other, compatible_types):
+            if self.output_shape == () or other.output_shape == ():
+                return
             if self.output_shape != other.output_shape:
                 raise ShapeMismatchError(
                     (
