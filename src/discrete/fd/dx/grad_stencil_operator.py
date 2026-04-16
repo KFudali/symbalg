@@ -1,6 +1,6 @@
 from __future__ import annotations
 import numpy as np
-from algebra.space import Space
+from algebra.core.space import Space
 
 from tools import Stencil, region
 from ..space_stencil_operator import SpaceStencilOperator

@@ -1,5 +1,5 @@
 from discrete.core import DiscreteSpace
-from algebra.space import TimeDim
+from algebra.core.space import TimeDim
 from .domain import FDDomain
 
 from .dt_operators import FDDtOperators

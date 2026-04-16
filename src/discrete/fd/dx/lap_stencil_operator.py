@@ -1,10 +1,10 @@
 from __future__ import annotations
 import numpy as np
 from typing import Self
-from algebra.space import Space
+from algebra.core.space import Space
 
 from tools import Stencil, region
-from algebra.space.domain import BoundaryId
+from algebra.core.space.domain import BoundaryId
 from ..space_stencil_operator import SpaceStencilOperator
 from ..domain import FDDomain
 

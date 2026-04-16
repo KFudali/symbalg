@@ -1,6 +1,6 @@
 from discrete.core.dx import DxOperators
 from discrete.fd.domain import FDDomain
-from algebra.space import Space
+from algebra.core.space import Space
 from . import dx
 
 class FDDxOperators(DxOperators):

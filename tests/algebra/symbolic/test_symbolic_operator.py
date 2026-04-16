@@ -1,14 +1,15 @@
-import numpy as np
 from typing import Self
+import numpy as np
 
-from algebra.operator import SymbolicOperator, Operator
+from algebra.symbolic import SymbolicOperator
+from algebra import Operator
 
 class MockOperator(Operator):
     def __init__(self, name: str):
         super().__init__((10,10), (10,10))
         self.name = name
     def copy(self) -> Self: pass
-    
+
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray): 
         pass
 
@@ -28,9 +29,9 @@ class MockOperator(Operator):
         return MockOperator(f"[{self.name} * {other} ]")
 
 def test_symbolic_operator():
-    op_A = MockOperator("A")
-    op_B = MockOperator("B")
-    op_C = MockOperator("C")
-    symbolic = SymbolicOperator[MockOperator](op_A)
-    result = ((symbolic + op_B) * op_C).fold()
+    op_a = MockOperator("A")
+    op_b = MockOperator("B")
+    op_c = MockOperator("C")
+    symbolic = SymbolicOperator[MockOperator](op_a)
+    result = ((symbolic + op_b) * op_c).fold()
     assert result.name == "[[A + B] * C]"

@@ -4,8 +4,8 @@ from typing import Self
 import numpy as np
 
 from algebra.core.operator import SpaceOperator
-from algebra.space import Space
-from algebra.space.domain import BoundaryId
+from algebra.core.space import Space
+from algebra.core.space.domain import BoundaryId
 
 from tools import Stencil
 from .domain import FDDomain

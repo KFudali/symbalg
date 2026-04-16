@@ -1,5 +1,5 @@
 from tools import Stencil
-from algebra.space import Space
+from algebra.core.space import Space
 from discrete.fd.domain import FDDomain
 from .lap_stencil_operator import LapStencilOperator
 from .div_stencil_operator import DivStencilOperator
