@@ -1,7 +1,8 @@
-from algebra.expression import Expression, CallableExpression
+from algebra.core.expression import Expression, CallableExpression
+from algebra.core.space import FieldShaped, TSpace
+
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression
-from algebra.space import FieldShaped, TSpace
 
 from tools.buffer import ValueBuffer, ShiftProxyValueBuffer
 from tools.action import LazyAction

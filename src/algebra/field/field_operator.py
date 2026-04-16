@@ -1,11 +1,12 @@
 from typing import Self, Any, Callable, Generic
 import numpy as np
 
-from algebra.operator import Operator
-from algebra.expression import Expression, CallableExpression
+from algebra.core.operator import Operator
+from algebra.core.expression import Expression, CallableExpression
+from algebra.core.space import TSpace
+
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression, AffineOperator
-from algebra.space import TSpace
 
 from .field import Field
 

@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Self
 import numpy as np
 
-from algebra.operator import SpaceOperator
+from algebra.core.operator import SpaceOperator
 from algebra.space import Space
 from algebra.space.domain import BoundaryId
 

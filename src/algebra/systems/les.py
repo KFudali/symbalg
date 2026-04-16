@@ -1,19 +1,30 @@
 import numpy as np
 from scipy.sparse.linalg import LinearOperator, cg
 
-from algebra.expression import Expression, CallableExpression
-from algebra.symbolic import SymbolicExpression, SymbolicOperator, AffineOperator
+from algebra.exceptions import ShapeMismatchError
+from algebra.core.expression import Expression, CallableExpression
+from algebra.core.operator import SpaceOperator
 
 from .bcs import BoundaryCondition, BCTool
-
 
 class LES():
     def __init__(
         self,
-        lhs: AffineOperator,
+        lhs: SpaceOperator,
         rhs: Expression,
         bc_tool: BCTool
     ):
+        if lhs.input_shape != lhs.output_shape:
+            raise ShapeMismatchError((
+                "LES can only be created using Operator of the same input and ",
+                f"output shapes. Got input_shape: {lhs.input_shape} , ",
+                f"output_shape: {lhs.output_shape}."
+            ))
+        if lhs.output_shape != rhs.output_shape:
+            raise ShapeMismatchError((
+                f"rhs shape: f{rhs.output_shape} has to match lhs shape ",
+                f"{lhs.output_shape}."
+            ))
         self._lhs = lhs
         self._rhs = rhs
         self._bc_tool = bc_tool
@@ -22,28 +33,25 @@ class LES():
     def solve(self) -> Expression:
         linop, rhs = self._assemble()
         def solve() -> np.ndarray:
-            x, _ = cg(linop, rhs, maxiter=1000, rtol=1e-9)
-            x = x.rjeshape(self._lhs.output_shape)
+            result, _ = cg(linop, rhs, maxiter=1000, rtol=1e-9)
+            result = result.reshape(self._lhs.output_shape)
             for bc in self._bcs:
-                self._bc_tool.post_solve(bc, x)
-            return SymbolicExpression(CallableExpression(solve, rhs.shape))
+                for comp in self._lhs.output_components:
+                    self._bc_tool.post_solve(bc, result[comp])
+            return CallableExpression(solve, rhs.shape)
 
     def _assemble(self) -> tuple[LinearOperator, np.ndarray]:
-        lhs = self._lhs.operator.copy()
+        rhs = self._rhs.copy()
+        lhs = self._lhs.copy()
         for bc in self._bcs:
-            self._bc_tool.apply(bc, lhs)
-        rhs = self._rhs.eval() - lhs.expression.eval()
+            self._bc_tool.apply(bc, lhs, rhs)
         n = rhs.flatten().shape
-        if isinstance(lhs, SymbolicOperator):
-            lhs = lhs.fold()
         def matvec(x: np.ndarray):
             out = np.zeros_like(x)
             lhs.apply(x.reshape(lhs.input_shape), out.reshape(lhs.output_shape))
             return out
-
         linop = LinearOperator(dtype=float, shape=(*n, *n), matvec = matvec)
-        return linop, rhs
-
+        return linop, rhs.flatten()
 
     def add_bcs(self, bcs: list[BoundaryCondition]):
         for bc in bcs:

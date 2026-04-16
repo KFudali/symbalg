@@ -1,20 +1,14 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 from .domain import TDomain
-from .time_dim import TimeDim
 
 class Space(ABC, Generic[TDomain]):
-    def __init__(self, domain: TDomain, time: TimeDim):
+    def __init__(self, domain: TDomain):
         self._domain = domain
-        self._time = time
 
     @property
     def domain(self) -> TDomain:
         return self._domain
-
-    @property
-    def time(self) -> TimeDim:
-        return self._time
 
     @property
     def ndim(self) -> int:

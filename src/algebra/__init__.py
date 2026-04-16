@@ -1,11 +1,8 @@
 from .exceptions import ShapeMismatchError
-from .expression import Expression
-from .operator import Operator
 
+from .core.expression import Expression
+from .core.operator import Operator
 
-from . import expression
-from . import operator
-from . import exceptions
-from . import space
-from . import symbolic
-from . import field
+from . import core
+
+from . import (field, systems, symbolic)

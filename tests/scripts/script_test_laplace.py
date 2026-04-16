@@ -1,5 +1,5 @@
 from discrete import fd
-from fieldspace import FieldSpace, dx
+from fieldspace import FieldSpace, dx, systems, monitors
 from tools.geometry import StructuredGridND
 from tools.time.series import ConstDtTimeSeries
 
@@ -15,14 +15,16 @@ F = fieldspace.field(components = 1)
 rhs = fieldspace.field(components = 1)
 lhs = dx.laplace(F)
 
-equation = systems.LES(lhs, rhs)
+equation = systems.les(lhs, rhs)
 
-top_bc = systems.bcs.BC(top, systems.bcs.BCType.DIRICHLET, value = 10)
-bot_bc = systems.bcs.BC(bottom, systems.bcs.BCType.DIRICHLET, value = 0)
-left_bc = systems.bcs.BC(left, systems.bcs.BCType.NEUMANN, value = 20)
-right_bc = systems.bcs.BC(right, systems.bcs.BCType.NEUMANN, value = -20)
+top_bc = systems.bcs.dirichlet(top, 10)
+bot_bc = systems.bcs.dirichlet(bottom, 0)
+left_bc = systems.bcs.neumann(left, -20)
+right_bc = systems.bcs.neumann(right, 20)
 bcs = [top_bc, bot_bc, left_bc, right_bc]
-equation.apply_bcs(bcs)
+
+equation.add_bcs(bcs)
 
 F.set_value(equation.solve()).perform()
-monitors.plotter.plot_field(F)
+
+monitors.plot_field(F)

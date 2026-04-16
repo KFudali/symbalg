@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from dataclasses import dataclass
-from algebra.space.domain import BoundaryId
+from algebra.core.space.domain import BoundaryId
 
 class BCType(Enum):
     DIRICHLET = auto()

@@ -1,5 +1,5 @@
 from tools.buffer import ValueBuffer
-from algebra.space import FieldShaped, TSpace
+from algebra.core.space import FieldShaped, TSpace
 from algebra.exceptions import ShapeMismatchError
 
 class FieldValueBuffer(FieldShaped[TSpace]):

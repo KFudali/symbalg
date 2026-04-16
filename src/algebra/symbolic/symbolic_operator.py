@@ -1,11 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Generic
 import numpy as np
 
-from algebra.operator import Operator
+from algebra.core.operator import Operator, TOperator
 from algebra.exceptions import ShapeMismatchError
-from algebra.expression import ScalarExpression
+from algebra.core.expression import ScalarExpression
 
 from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
 
@@ -42,7 +42,7 @@ class OperatorBinaryOp(op.BinaryOp[Operator]):
 
 OperatorNode = SymbolicNode[Operator]
 
-class SymbolicOperator(Symbolic[Operator], Operator):
+class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
     COMPATIBLE_TYPES = (
         Operator,
         OperatorBinaryOp,

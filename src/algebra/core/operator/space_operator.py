@@ -1,5 +1,5 @@
-from algebra.space import Space, SpaceObject, TDomain
-from algebra.operator.operator import Operator
+from algebra.core.space import Space, SpaceObject, TDomain
+from algebra.core.operator.operator import Operator
 
 
 class SpaceOperator(SpaceObject[TDomain], Operator):

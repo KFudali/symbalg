@@ -17,6 +17,9 @@ class Symbolic(Op[TOperand]):
     def base_op(self) -> SymbolicNode:
         return self._base_op
 
+    def fold(self) -> TOperand:
+        return self._base_op.fold()
+
     def _wrap(self, other: SymbolicNode[TOperand]) -> Op[TOperand]:
         if isinstance(other, Symbolic):
             return other.base_op
@@ -97,9 +100,6 @@ class Symbolic(Op[TOperand]):
     def __rtruediv__(self, other: SymbolicNode[TOperand]) -> Self:
         self._assert_compatible(other)
         return Symbolic(other).div(self)
-
-    def fold(self) -> TOperand:
-        return self._base_op.fold()
 
     def __repr__(self) -> str:
         return f"Symbolic({self._base_op})"

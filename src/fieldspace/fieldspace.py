@@ -1,5 +1,6 @@
-from algebra.space import SpaceObject
+from algebra.core.space import SpaceObject
 from algebra.field import Field, FieldValueBuffer
+
 from discrete import DiscreteSpace
 from tools.buffer import DequeValueBuffer
 

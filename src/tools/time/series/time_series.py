@@ -1,6 +1,14 @@
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 import numpy as np
-from algebra.space import TimeDim
+
+class TimeDim(ABC):
+    @abstractmethod
+    def dt(self) -> float:
+        pass
+
+    @abstractmethod
+    def now(self) -> float:
+        pass
 
 class TimeSeries(TimeDim):
     @abstractmethod

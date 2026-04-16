@@ -5,9 +5,13 @@ from algebra.field import Field
 from . import dt
 
 
-class FDDtOperators(DtOperators):
-    def explicit_euler(self, field: Field, order: int = 1) -> AffineOperator:
-        return dt.explicit.euler(field, order)
 
-    def implicit_euler(self, field: Field, order: int = 1) -> AffineOperator:
-        pass
+class FDDtOperators(DtOperators):
+    def explicit_euler(
+        self, field: Field, time_dim: TimeDim, order: int
+    ) -> AffineOperator:
+        return dt.explicit.euler(field, time_dim, order)
+
+    def implicit_euler(
+        self, field: Field, time_dim: TimeDim, order: int
+    ) -> AffineOperator:

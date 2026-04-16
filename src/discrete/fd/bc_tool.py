@@ -1,12 +1,80 @@
-from discrete.core import BCTool
-from algebra.space import Space, SpaceObject
-from algebra.systems.bcs import BoundaryCondition
-from .domain import FDDomain
+from dataclasses import dataclass
+import numpy as np
+from algebra.systems.bcs import BoundaryCondition, BCType, BCTool
+
+from .domain import FDDomain, FDBoundary
 from .space_stencil_operator import SpaceStencilOperator
 
-class FDBCTool(BCTool, SpaceObject[FDDomain]):
-    def __init__(self, space: Space[FDDomain]):
-        super().__init__(space)
+@dataclass(frozen=True)
+class FDBCondition():
+    boundary: FDBoundary
+    value: float
 
-    def apply(self, bc: BoundaryCondition, operator: SpaceStencilOperator):
-        pass
+def apply_dirichlet(
+    bc: FDBCondition,
+    lhs: SpaceStencilOperator,
+    rhs: np.ndarray
+):
+    lhs.resolve_factor()
+    stencil = lhs.boundary_stencils[bc.boundary.id]
+    for ax in stencil.contribs.keys():
+        if ax != bc.boundary.axis:
+            stencil.contribs[ax] = {0: 0}
+
+    field = np.zeros(lhs.input_shape)
+    field[bc.boundary.region] = bc.value
+    dirichlet_contrib = np.zeros(lhs.output_shape)
+    ax_range = stencil.ax_range(bc.boundary.axis, bc.boundary.inward_dir)
+    offsets = [0 for ax in range(bc.boundary.grid.ndim)]
+    ranges = [ax_range for i in range(bc.boundary.grid.ndim)]
+    offsets[bc.boundary.axis] = tuple(ranges)
+    boundary_interior = lhs.interior_region(tuple(offsets))
+
+    stencil.apply_to_region_on_ax(
+        field,
+        dirichlet_contrib,
+        boundary_interior,
+        bc.boundary.axis
+    )
+    stencil.contribs[bc.boundary.axis] = {0: 1}
+    rhs[bc.boundary.region] = 0.0
+    rhs -= dirichlet_contrib
+
+def apply_neumann(
+    bc: FDBCondition,
+    lhs: SpaceStencilOperator,
+    rhs: np.ndarray
+):
+    lhs.resolve_factor()
+    stencil = lhs.boundary_stencils[bc.boundary.id]
+    contribs = stencil.contribs[bc.boundary.axis]
+    h = lhs.domain.grid.ax_spacing(bc.boundary.axis)
+    for offset, value in contribs.copy().items():
+        if offset * bc.boundary.inward_dir < 0:
+            contrib = value
+            contribs[-offset] = contribs.get(-offset, 0.0) + contrib
+            contribs.pop(offset)
+            rhs[bc.boundary.region] -= contrib * 2 * h * bc.value
+
+class FDBCTool(BCTool):
+    def __init__(self, domain: FDDomain):
+        self._domain = domain
+
+    def apply(
+        self,
+        bcs: list[BoundaryCondition],
+        lhs: SpaceStencilOperator,
+        rhs: np.ndarray
+    ):
+        for bc in bcs:
+            boundary = self._domain.boundary(bc.boundary)
+            fd_bc = FDBCondition(boundary, bc.value)
+            if bc.bctype == BCType.DIRICHLET:
+                apply_dirichlet(fd_bc, lhs, rhs)
+            elif bc.bctype == BCType.NEUMANN:
+                apply_neumann(fd_bc, lhs, rhs)
+
+    def post_solve(self, bc: BoundaryCondition, field: np.ndarray):
+        if bc.bctype == BCType.DIRICHLET:
+            boundary = self._domain.boundary(bc.boundary)
+            field[boundary.region] = bc.value

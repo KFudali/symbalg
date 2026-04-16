@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
+from typing import Self
 from algebra.systems.bcs import BoundaryCondition
-from algebra.operator import Operator
+from algebra.symbolic.affine_operator import AffineOperator
 
 class BCTool(ABC):
     @abstractmethod
-    def apply(self, bc: BoundaryCondition, operator: Operator):
+    def apply(
+        self,
+        bcs: list[BoundaryCondition],
+        operator: AffineOperator
+    ) -> AffineOperator:
         pass

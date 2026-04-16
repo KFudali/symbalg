@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from algebra.operator import Operator
+from algebra.core.operator import Operator
 
 class DxOperators(ABC):
     @abstractmethod

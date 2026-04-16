@@ -1,17 +1,17 @@
 from __future__ import annotations
-from typing import Callable, Any, Self
+from typing import Callable, Any, Self, Generic
 import numpy as np
 
-from algebra.operator import Operator
-from algebra.expression import Expression
+from algebra.core.operator import Operator, TOperator
+from algebra.core.expression import Expression, TExpression
 from .symbolic_expression import SymbolicExpression
 from .symbolic_operator import SymbolicOperator
 
-class AffineOperator(Operator):
+class AffineOperator(Operator, Generic[TOperator, TExpression]):
     def __init__(
         self,
-        operator: Operator,
-        expression: Expression,
+        operator: TOperator,
+        expression: TExpression,
     ):
         self._operator = SymbolicOperator(operator)
         self._expression = SymbolicExpression(expression)
@@ -28,7 +28,7 @@ class AffineOperator(Operator):
         pass
 
     @property
-    def operator(self) -> SymbolicOperator:
+    def operator(self) -> SymbolicOperator[TOperator]:
         return self._operator
 
     @property

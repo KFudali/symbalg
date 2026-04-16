@@ -1,5 +1,5 @@
-from algebra.space import Space, SpaceObject
-from algebra.expression.expression import Expression
+from algebra.core.space import Space, SpaceObject
+from algebra.core.expression.expression import Expression
 
 
 class SpaceExpression(SpaceObject, Expression):

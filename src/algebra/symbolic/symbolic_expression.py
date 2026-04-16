@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 import numpy as np
 
-from algebra.expression import Expression
+from algebra.core.expression import Expression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op

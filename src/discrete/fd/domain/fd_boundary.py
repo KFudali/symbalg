@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from algebra.space.domain import Boundary
+from algebra.core.space.domain import Boundary
 from tools import Region
 from tools.geometry import StructuredGridND
 

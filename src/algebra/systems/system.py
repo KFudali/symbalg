@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from algebra.expression import Expression
+from algebra.core.expression import Expression
 
 class System(ABC):
     @abstractmethod
