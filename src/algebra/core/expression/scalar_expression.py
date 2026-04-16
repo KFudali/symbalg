@@ -14,6 +14,6 @@ class ScalarExpression(Expression):
         return ScalarExpression(self._value)
 
     def eval(self) -> np.ndarray:
-        if isinstance(self._value, float):
+        if isinstance(self._value, (float, int, np.floating, np.ndarray)):
             return np.array(self._value)
         return np.array(self._value())

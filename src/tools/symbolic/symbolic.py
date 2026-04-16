@@ -27,7 +27,7 @@ class Symbolic(Op[TOperand]):
             return other
         return self._make_value(other)
 
-    def _assert_compatible(self, other: Any):
+    def _assert_compatible(self, other: Any, optype: BinaryOpType):
         pass
 
     def _new(self, expr: Op[TOperand]) -> Self:
@@ -68,37 +68,37 @@ class Symbolic(Op[TOperand]):
         return self.neg()
 
     def __add__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.ADD)
         return self.add(other)
 
     def __sub__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.SUB)
         return self.sub(other)
 
     def __mul__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.MUL)
         return self.mul(other)
 
     def __truediv__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.DIV)
         return self.div(other)
 
     # ---- reverse operators ----
 
     def __radd__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.DIV)
         return Symbolic(other).add(self)
 
     def __rsub__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.SUB)
         return Symbolic(other).sub(self)
 
     def __rmul__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.MUL)
         return Symbolic(other).mul(self)
 
     def __rtruediv__(self, other: SymbolicNode[TOperand]) -> Self:
-        self._assert_compatible(other)
+        self._assert_compatible(other, BinaryOpType.DIV)
         return Symbolic(other).div(self)
 
     def __repr__(self) -> str:

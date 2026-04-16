@@ -3,11 +3,12 @@ from typing import Self, Any, Callable, Generic
 import numpy as np
 
 from algebra.core.operator import Operator
-from algebra.core.expression import Expression, CallableExpression
+from algebra.core.expression import Expression, CallableExpression, ScalarExpression
 from algebra.core.space import TSpace
 
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression, AffineOperator
+from tools.symbolic import BinaryOpType, BINARY_OPS
 
 from .field import Field
 
@@ -33,8 +34,9 @@ class FieldOperator(AffineOperator, Generic[TSpace]):
     def _combine(
         self,
         other: Any,
-        binary_op: Callable[[Any, Any], Any]
+        optype: BinaryOpType
     ) -> Self | SymbolicExpression:
+        binary_op = BINARY_OPS[optype]
         if isinstance(other, type(self)):
             if other.field == self.field:
                 return self._combine_affine(other, binary_op)
@@ -47,10 +49,14 @@ class FieldOperator(AffineOperator, Generic[TSpace]):
             # The only way to modify interior operator is to combine self with other
             # object of FieldOperator type
             return NotImplemented
-        if isinstance(other, Expression):
+        if isinstance(other, (ScalarExpression, float, np.ndarray)):
+            if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                return self._combine_constlike(other, binary_op)
             return self._combine_expression(other, binary_op)
-        if isinstance(other, (float, np.ndarray)):
-            return self._combine_constlike(other,binary_op)
+        if isinstance(other, Expression):
+            if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                return self._combine_constlike(other, binary_op)
+            return self._combine_expression(other, binary_op)
         return NotImplemented
 
     def eval(self) -> np.ndarray:
@@ -65,44 +71,47 @@ class FieldOperator(AffineOperator, Generic[TSpace]):
             self._field, self.operator.copy(), self.expression.copy()
         )
 
+    def __neg__(self) -> Self:
+        return self._new(-self.operator.copy(), -self.expression.copy())
+
     def __add__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a + b)
+        return self._combine(other, BinaryOpType.ADD)
 
     def __radd__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a + b)
+        return self._combine(other, BinaryOpType.ADD)
 
     def __sub__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a - b)
+        return self._combine(other, BinaryOpType.SUB)
 
     def __rsub__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: (-a) + b)
+        return (-self) + other
 
     def __mul__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a * b)
+        return self._combine(other, BinaryOpType.MUL)
 
     def __rmul__(
         self,
         other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a * b)
+        return self._combine(other, BinaryOpType.MUL)
 
     def __truediv__(
         self, other:
         "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
-        return self._combine(other, lambda a, b: a / b)
+        return self._combine(other, BinaryOpType.DIV)

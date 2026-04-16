@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any
 import numpy as np
 
-from algebra.core.expression import Expression
+from algebra.core.expression import Expression, ScalarExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
@@ -55,6 +55,11 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _new(self, expr: op.Op[Expression]):
         return SymbolicExpression(expr)
 
+    def _wrap(self, other: SymbolicNode):
+        if isinstance(other, (float, np.ndarray)):
+            return super()._wrap(ScalarExpression(other))
+        return super()._wrap(other)
+
     def _make_value(self, operand: Expression):
         return ExpressionValue(operand)
 
@@ -66,8 +71,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
             optype, self.base_op, self._wrap(other), self.output_shape
         )
 
-    def _assert_compatible(self, other: Any):
+    def _assert_compatible(self, other: Any, optype: BinaryOpType):
         compatible_types = (SymbolicExpression, *SymbolicExpression.COMPATIBLE_TYPES)
+        if isinstance(other, (float, np.ndarray)):
+            return
         if isinstance(other, compatible_types):
             if self.output_shape == () or other.output_shape == ():
                 return

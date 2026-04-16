@@ -48,6 +48,9 @@ class Operator(ABC):
     def mul(self, other: Self) -> Self:
         return NotImplemented
 
+    def div(self, other: Self) -> Self:
+        return NotImplemented
+
     def scale(self, other: float) -> Self:
         return NotImplemented
 
@@ -86,12 +89,15 @@ class Operator(ABC):
                 raise ShapeMismatchError((
                     "Can only mul operators of equal output_shape.",
                     f"self.output_shape: {self.output_shape},",
+
                     f"other.output_shape: {other.output_shape}."
                 ))
             return self.mul(other)
         if isinstance(other, float):
             return self.scale(other)
         if isinstance(other, np.ndarray):
+            if other.shape == ():
+                return self.scale(float(other))
             if self.output_shape != other.shape:
                 raise ShapeMismatchError((
                     "Can only scale operator elementwise by array that matches ",
@@ -106,6 +112,9 @@ class Operator(ABC):
         return self.__mul__(other)
 
     def __truediv__(self, other: float | np.ndarray) -> Self:
-        return self * (1.0 / other)
+        if isinstance(other, (float | np.ndarray)):
+            return self * (1.0 / other)
+        if isinstance(other, type(self)):
+            return self.div(other)
 
 TOperator = TypeVar("TOperator", bound=Operator)

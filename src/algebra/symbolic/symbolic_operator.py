@@ -5,7 +5,7 @@ import numpy as np
 
 from algebra.core.operator import Operator, TOperator
 from algebra.exceptions import ShapeMismatchError
-from algebra.core.expression import ScalarExpression
+from algebra.core.expression import Expression
 
 from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
 
@@ -19,14 +19,13 @@ class OperatorValue(op.Value[Operator]):
         return self.value.output_shape
 
 @dataclass(frozen=True)
-class ScalarExpOperatorValue(op.Value[ScalarExpression]):
+class ExpressionValue(op.Value[Expression]):
     @property
     def input_shape(self) -> tuple[int, ...]:
-        return ()
+        return self.value.output_shape
     @property
     def output_shape(self) -> tuple[int, ...]:
-        return ()
-
+        return self.value.output_shape
     def fold(self) -> np.ndarray:
         return self.value.eval()
 
@@ -48,8 +47,6 @@ class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
         OperatorBinaryOp,
         OperatorUnaryOp,
         OperatorValue,
-        ScalarExpression,
-        float, np.ndarray
     )
 
     def __init__(self, operator: OperatorNode):
@@ -65,9 +62,9 @@ class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
     def _new(self, expr: op.Op[Operator]):
         return SymbolicOperator(expr)
 
-    def _make_value(self, operand: Operator | ScalarExpression):
-        if isinstance(operand, ScalarExpression):
-            return ScalarExpOperatorValue(operand)
+    def _make_value(self, operand: Operator | Expression):
+        if isinstance(operand, Expression):
+            return ExpressionValue(operand)
         return OperatorValue(operand)
 
     def _make_unary(self, optype: UnaryOpType) -> OperatorUnaryOp:
@@ -81,17 +78,49 @@ class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
             self.input_shape, self.output_shape
         )
 
-    def _assert_compatible(self, other: Any):
-        compatible_types = (SymbolicOperator, * SymbolicOperator.COMPATIBLE_TYPES)
-        if isinstance(other, (float, ScalarExpression)):
-            return
+    def _assert_compatible(self, other: Any, optype: BinaryOpType):
+        if isinstance(other, float):
+            if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                return
+            raise ValueError((
+                f"Operator can only by scaled (MUL, DIV) by constant. Got {optype}."
+            ))
         if isinstance(other, np.ndarray):
+            if other.shape == ():
+                if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                    return
+                raise ValueError((
+                    f"Operator can only by scaled (MUL, DIV) by constant. Got {optype}."
+                ))
             if other.shape != self.output_shape:
                 raise ShapeMismatchError((
                     "Can only combine operator with array that matches its output_shape. ",
                     f"self.output_shape: {self.output_shape}, array.shape: {other.shape}."
                 ))
-        if isinstance(other, compatible_types):
+            if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                return
+            raise ValueError((
+                f"Operator can only by scaled (MUL, DIV) by constant. Got {optype}."
+            ))
+        if isinstance(other, Expression):
+            if other.output_shape == ():
+                if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                    return
+                raise ValueError((
+                    f"Operator can only by scaled (MUL, DIV) by Expression. Got {optype}."
+                ))
+            if other.output_shape != self.output_shape:
+                raise ShapeMismatchError((
+                    "Can only combine operator with Expression that matches its ",
+                    f"output_shape. self.output_shape: {self.output_shape}, ",
+                    f"other.output_shape: {other.output_shape}."
+                ))
+            if optype in [BinaryOpType.MUL, BinaryOpType.DIV]:
+                return
+            raise ValueError((
+                f"Operator can only by scaled (MUL, DIV) by constant. Got {optype}."
+            ))
+        if isinstance(other, SymbolicOperator.COMPATIBLE_TYPES):
             if self.input_shape != other.input_shape:
                 raise ShapeMismatchError((
                     "Can only combine OperatorNodes of equal input_shape.",
@@ -105,7 +134,10 @@ class SymbolicOperator(Symbolic[TOperator], Operator, Generic[TOperator]):
                     f"other.output_shape: {other.output_shape}."
                 ))
         else:
+            compatible = (
+                float, np.ndarray, Expression, *SymbolicOperator.COMPATIBLE_TYPES
+            )
             raise ValueError((
                 "SymbolicOperator can only be combined with objects of type: ",
-                f"{compatible_types}. \n. Got type {type(other)}"
+                f"{compatible}. \n. Got type {type(other)}"
             ))
