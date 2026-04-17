@@ -25,16 +25,16 @@ class Field(FieldShaped[TSpace]):
         return Field(field_buffer)
 
     def value(self) -> SymbolicExpression:
-        getter = CallableExpression(self._buffer.get(), self._buffer.shape)
+        getter = CallableExpression(self._buffer.values.get, self._buffer.shape)
         return SymbolicExpression(getter)
 
     def advance(self):
         self.buffer.advance()
 
     def set_value(self, value: Expression) -> LazyAction:
-        if value.shape != self.shape:
+        if value.output_shape != self.shape:
             raise ShapeMismatchError((
-                f"Cannot set_value, passed value shape: {value.shape} does not ",
+                f"Cannot set_value, passed value shape: {value.output_shape} does not ",
                 f"match field shape: {self.shape}"
             ))
         def set_buffer():

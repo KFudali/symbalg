@@ -48,7 +48,7 @@ class AffineOperator(Operator, Generic[TOperator, TExpression]):
         self, other: Operator, binary_op: Callable[[Any, Any], Any]
     ) -> Self:
         return self._new(
-            binary_op(self.operator.copy(), other.operator.copy()),
+            binary_op(self.operator.copy(), other.copy()),
             self.expression.copy()
         )
 

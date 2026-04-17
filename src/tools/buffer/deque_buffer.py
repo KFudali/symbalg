@@ -24,7 +24,7 @@ class DequeValueBuffer(ValueBuffer):
     def saved_steps(self) -> int:
         return self._saved_steps
 
-    def get(self, index: int) -> np.ndarray:
+    def get(self, index: int = 0) -> np.ndarray:
         if index < 0 or index >= self._saved_steps:
             raise IndexError(
                 f"Requested step {index}, "

@@ -8,7 +8,7 @@ from algebra.core.space import Space
 from algebra.core.space.domain import BoundaryId
 
 from tools import Stencil
-from .domain import FDDomain
+from ..domain import FDDomain
 
 class SpaceStencilOperator(SpaceOperator[FDDomain], ABC):
     def __init__(
@@ -35,6 +35,7 @@ class SpaceStencilOperator(SpaceOperator[FDDomain], ABC):
         )
         for bid, stencil in boundary_stencils.items():
             new.boundary_stencils[bid] = stencil.copy()
+        return new
 
     @abstractmethod
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):

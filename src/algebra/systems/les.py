@@ -36,15 +36,15 @@ class LES():
             result, _ = cg(linop, rhs, maxiter=1000, rtol=1e-9)
             result = result.reshape(self._lhs.output_shape)
             for bc in self._bcs:
-                for comp in self._lhs.output_components:
+                for comp in range(self._lhs.output_components):
                     self._bc_tool.post_solve(bc, result[comp])
-            return CallableExpression(solve, rhs.shape)
+            return result
+        return CallableExpression(solve, self._lhs.output_shape)
 
     def _assemble(self) -> tuple[LinearOperator, np.ndarray]:
-        rhs = self._rhs.copy()
+        rhs = self._rhs.eval()
         lhs = self._lhs.copy()
-        for bc in self._bcs:
-            self._bc_tool.apply(bc, lhs, rhs)
+        self._bc_tool.apply(list(self._bcs), lhs, rhs)
         n = rhs.flatten().shape
         def matvec(x: np.ndarray):
             out = np.zeros_like(x)

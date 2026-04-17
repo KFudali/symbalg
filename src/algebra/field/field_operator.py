@@ -3,7 +3,7 @@ from typing import Self, Any, Callable, Generic
 import numpy as np
 
 from algebra.core.operator import Operator
-from algebra.core.expression import Expression, CallableExpression, ScalarExpression
+from algebra.core.expression import Expression, CallableExpression, ScalarExpression, ZeroExpression
 from algebra.core.space import TSpace
 
 from algebra.exceptions import ShapeMismatchError
@@ -22,6 +22,8 @@ class FieldOperator(AffineOperator, Generic[TSpace]):
         if field.shape != operator.input_shape:
             raise ShapeMismatchError("Field has to match operator.")
         self._field = field
+        if expression == None:
+            expression = ZeroExpression(operator.output_shape)
         super().__init__(operator, expression)
 
     @property

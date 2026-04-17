@@ -5,7 +5,7 @@ from algebra.core.space import Space
 
 from tools import Stencil, region
 from algebra.core.space.domain import BoundaryId
-from ..space_stencil_operator import SpaceStencilOperator
+from .space_stencil_operator import SpaceStencilOperator
 from ..domain import FDDomain
 
 
@@ -28,6 +28,7 @@ class LapStencilOperator(SpaceStencilOperator):
         )
         for bid, stencil in boundary_stencils.items():
             new.boundary_stencils[bid] = stencil.copy()
+        return new
 
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
         for component in range(self.input_components):

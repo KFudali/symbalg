@@ -2,8 +2,9 @@ from dataclasses import dataclass
 import numpy as np
 from algebra.systems.bcs import BoundaryCondition, BCType, BCTool
 
+from tools import region
 from .domain import FDDomain, FDBoundary
-from .space_stencil_operator import SpaceStencilOperator
+from .dx.space_stencil_operator import SpaceStencilOperator
 
 @dataclass(frozen=True)
 class FDBCondition():
@@ -15,28 +16,27 @@ def apply_dirichlet(
     lhs: SpaceStencilOperator,
     rhs: np.ndarray
 ):
-    lhs.resolve_factor()
     stencil = lhs.boundary_stencils[bc.boundary.id]
     for ax in stencil.contribs.keys():
-        if ax != bc.boundary.axis:
+        if ax != bc.boundary.ax:
             stencil.contribs[ax] = {0: 0}
 
     field = np.zeros(lhs.input_shape)
     field[bc.boundary.region] = bc.value
     dirichlet_contrib = np.zeros(lhs.output_shape)
-    ax_range = stencil.ax_range(bc.boundary.axis, bc.boundary.inward_dir)
+    ax_range = stencil.ax_range(bc.boundary.ax, bc.boundary.inward_dir)
     offsets = [0 for ax in range(bc.boundary.grid.ndim)]
     ranges = [ax_range for i in range(bc.boundary.grid.ndim)]
-    offsets[bc.boundary.axis] = tuple(ranges)
-    boundary_interior = lhs.interior_region(tuple(offsets))
+    offsets[bc.boundary.ax] = tuple(ranges)
+    boundary_interior = region.interior(bc.boundary.grid.shape, tuple(offsets))
 
     stencil.apply_to_region_on_ax(
         field,
         dirichlet_contrib,
         boundary_interior,
-        bc.boundary.axis
+        bc.boundary.ax
     )
-    stencil.contribs[bc.boundary.axis] = {0: 1}
+    stencil.contribs[bc.boundary.ax] = {0: 1}
     rhs[bc.boundary.region] = 0.0
     rhs -= dirichlet_contrib
 
@@ -45,10 +45,9 @@ def apply_neumann(
     lhs: SpaceStencilOperator,
     rhs: np.ndarray
 ):
-    lhs.resolve_factor()
     stencil = lhs.boundary_stencils[bc.boundary.id]
-    contribs = stencil.contribs[bc.boundary.axis]
-    h = lhs.domain.grid.ax_spacing(bc.boundary.axis)
+    contribs = stencil.contribs[bc.boundary.ax]
+    h = lhs.domain.grid.ax_spacing(bc.boundary.ax)
     for offset, value in contribs.copy().items():
         if offset * bc.boundary.inward_dir < 0:
             contrib = value

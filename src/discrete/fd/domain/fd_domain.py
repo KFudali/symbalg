@@ -7,12 +7,12 @@ class FDDomain(Domain):
         super().__init__()
         self._grid = grid
         self._boundaries = dict[BoundaryId, FDBoundary]()
-        self._boundaries_by_ax = dict[int, tuple[BoundaryId, BoundaryId]]
+        self._boundaries_by_ax = dict[int, tuple[BoundaryId, BoundaryId]]()
         self._mark_boundaries()
 
     @property
     def grid(self) -> StructuredGridND:
-        return self.grid
+        return self._grid
 
     @property
     def boundaries(self) -> dict[BoundaryId, FDBoundary]:
@@ -26,11 +26,11 @@ class FDDomain(Domain):
 
     def _mark_boundaries(self):
         next_id = 0
-        for ax in self.grid.ndim:
+        for ax in range(self.grid.ndim):
             left_id = BoundaryId(next_id)
             right_id = BoundaryId(next_id + 1)
             left = FDBoundary(left_id, self._grid, ax, -1)
             right = FDBoundary(right_id, self.grid, ax, 1)
             self._boundaries[left_id] = left
             self._boundaries[right_id] = right
-            self._boundaries_by_ax[ax] = (left, right)
+            self._boundaries_by_ax[ax] = (left_id, right_id)

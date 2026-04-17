@@ -16,3 +16,7 @@ class FDBoundary(Boundary):
     @property
     def inward_spacing(self) -> float:
         return self.grid.ax_spacing(self.ax)
+
+    @property
+    def inward_dir(self):
+        return -self.side

@@ -3,7 +3,7 @@ import numpy as np
 from algebra.core.space import Space
 
 from tools import Stencil, region
-from ..space_stencil_operator import SpaceStencilOperator
+from .space_stencil_operator import SpaceStencilOperator
 from ..domain import FDDomain
 
 

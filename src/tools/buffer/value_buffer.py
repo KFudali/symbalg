@@ -12,7 +12,7 @@ class ValueBuffer(ABC):
     def saved_steps(self) -> int: pass
 
     @abstractmethod
-    def get(self, index: int) -> np.ndarray: pass
+    def get(self, index: int = 0) -> np.ndarray: pass
     
     @abstractmethod
     def set(self, value: np.ndarray): pass

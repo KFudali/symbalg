@@ -1,10 +1,9 @@
 from discrete.core.dt import DtOperators
+from tools.time import TimeDim
 from algebra.symbolic import AffineOperator
 from algebra.field import Field
 
 from . import dt
-
-
 
 class FDDtOperators(DtOperators):
     def explicit_euler(
@@ -15,3 +14,4 @@ class FDDtOperators(DtOperators):
     def implicit_euler(
         self, field: Field, time_dim: TimeDim, order: int
     ) -> AffineOperator:
+        pass
