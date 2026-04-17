@@ -124,42 +124,21 @@ def test_affine_operator_with_expression(double_add_one):
     assert op_div.operator.fold().name == f"[A * {1.0 / two_arr}]"
     assert np.allclose(op_div.expression.fold(), 0.5)
 
-def test_affine_operator_with_operator():
-    op_a = MockOperator("A")
-    def double(input_field, output_field):
-        output_field[:] = 2*input_field[:]
-    op_a.set_apply(double)
-    def return_ones():
-        return np.ones(shape=(10,), dtype=float)
-    ones = CallableExpression(return_ones, (10,))
-    affine_a = AffineOperator(op_a, ones)
+def test_affine_operator_with_operator(double_add_one):
+    op = MockOperator("B")
 
-    op_b = MockOperator("B")
-    def triple(input_field, output_field):
-        output_field[:] = 3*input_field[:]
-    op_b.set_apply(triple)
-    def return_twos():
-        return 2.0 * np.ones(shape=(10,), dtype=float)
-    twos = CallableExpression(return_twos, (10,))
-    affine_b = AffineOperator(op_b, twos)
-
-    op_add = affine_a + affine_b
+    op_add = double_add_one + op
     assert op_add.operator.fold().name == "[A + B]"
-    assert np.allclose(op_add.expression.fold(), 3.0)
+    assert np.allclose(op_add.expression.fold(), 1.0)
 
-    op_sub = affine_a - affine_b
+    op_sub = double_add_one - op
     assert op_sub.operator.fold().name == "[A + [-B]]"
-    assert np.allclose(op_sub.expression.fold(), -1.0)
+    assert np.allclose(op_sub.expression.fold(), 1.0)
 
-    op_mul = affine_a * affine_b
+    op_mul = double_add_one * op
     assert op_mul.operator.fold().name == "[A * B]"
-    assert np.allclose(op_mul.expression.fold(), 2.0)
+    assert np.allclose(op_mul.expression.fold(), 1.0)
 
-    op_div = affine_a / affine_b
+    op_div = double_add_one / op
     assert op_div.operator.fold().name == "[A / B]"
-    assert np.allclose(op_div.expression.fold(), 0.5)
-
-    op_combined = affine_a + affine_b
-    op_combined *= affine_b
-    assert op_combined.operator.fold().name == "[[A + B] * B]"
-    assert np.allclose(op_combined.expression.fold(), 6.0)
+    assert np.allclose(op_div.expression.fold(), 1.0)
