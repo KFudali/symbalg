@@ -22,23 +22,23 @@ def apply_dirichlet(
             stencil.contribs[ax] = {0: 0}
 
     field = np.zeros(lhs.input_shape)
-    field[bc.boundary.region] = bc.value
-    dirichlet_contrib = np.zeros(lhs.output_shape)
-    ax_range = stencil.ax_range(bc.boundary.ax, bc.boundary.inward_dir)
-    offsets = [0 for ax in range(bc.boundary.grid.ndim)]
-    ranges = [ax_range for i in range(bc.boundary.grid.ndim)]
-    offsets[bc.boundary.ax] = tuple(ranges)
-    boundary_interior = region.interior(bc.boundary.grid.shape, tuple(offsets))
-
-    stencil.apply_to_region_on_ax(
-        field,
-        dirichlet_contrib,
-        boundary_interior,
-        bc.boundary.ax
-    )
+    for comp in range(lhs.input_components):
+        field[comp][bc.boundary.region] = bc.value
+        dirichlet_contrib = np.zeros(lhs.space.shape)
+        ax_range = stencil.ax_range(bc.boundary.ax, bc.boundary.inward_dir)
+        offsets = [0 for ax in range(bc.boundary.grid.ndim)]
+        ranges = [ax_range for i in range(bc.boundary.grid.ndim)]
+        offsets[bc.boundary.ax] = tuple(ranges)
+        boundary_interior = region.interior(bc.boundary.grid.shape, tuple(offsets))
+        stencil.apply_to_region_on_ax(
+            field[comp],
+            dirichlet_contrib,
+            boundary_interior,
+            bc.boundary.ax
+        )
+        rhs[comp][bc.boundary.region] = 0.0
+        rhs[comp] -= dirichlet_contrib
     stencil.contribs[bc.boundary.ax] = {0: 1}
-    rhs[bc.boundary.region] = 0.0
-    rhs -= dirichlet_contrib
 
 def apply_neumann(
     bc: FDBCondition,
@@ -53,7 +53,8 @@ def apply_neumann(
             contrib = value
             contribs[-offset] = contribs.get(-offset, 0.0) + contrib
             contribs.pop(offset)
-            rhs[bc.boundary.region] -= contrib * 2 * h * bc.value
+            for comp in range(lhs.output_components):
+                rhs[comp][bc.boundary.region] -= contrib * 2 * h * bc.value
 
 class FDBCTool(BCTool):
     def __init__(self, domain: FDDomain):

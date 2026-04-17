@@ -34,3 +34,4 @@ class FDDomain(Domain):
             self._boundaries[left_id] = left
             self._boundaries[right_id] = right
             self._boundaries_by_ax[ax] = (left_id, right_id)
+            next_id +=2

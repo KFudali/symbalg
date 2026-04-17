@@ -28,4 +28,23 @@ equation.add_bcs(bcs)
 solution = equation.solve()
 sol = solution.eval()
 
-print("a")
+
+import matplotlib.pyplot as plt
+import numpy as np
+u = sol
+nx, ny = grid.shape
+dx, dy = grid.spacing
+x = np.linspace(0, (nx-1)*dx, nx)
+y = np.linspace(0, (ny-1)*dy, ny)
+X, Y = np.meshgrid(x, y)
+U = u.reshape(X.shape)
+fig = plt.figure(figsize=(14,6))
+ax1 = fig.add_subplot(1, 1, 1, projection='3d')
+surf1 = ax1.plot_surface(X, Y, U, cmap='viridis', edgecolor='k', linewidth=0.5)
+ax1.set_title("Conjugate Gradient")
+ax1.set_xlabel("x")
+ax1.set_ylabel("y")
+ax1.set_zlabel("u")
+fig.colorbar(surf1, ax=ax1, shrink=0.6, aspect=10, label='u')
+plt.tight_layout()
+plt.show()
