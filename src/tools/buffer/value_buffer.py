@@ -13,7 +13,7 @@ class ValueBuffer(ABC):
 
     @abstractmethod
     def get(self, index: int = 0) -> np.ndarray: pass
-    
+
     @abstractmethod
     def set(self, value: np.ndarray): pass
 
@@ -24,6 +24,10 @@ class ValueBuffer(ABC):
         if value is None:
             value = np.zeros(self.shape)
         self._advance(value)
+
+    @abstractmethod
+    def reset(self):
+        pass
 
     @abstractmethod
     def _advance(self, value: np.ndarray) -> None: pass

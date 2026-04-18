@@ -24,7 +24,7 @@ class ShiftProxyValueBuffer(ValueBuffer):
     def saved_steps(self) -> int:
         return self._base.saved_steps - self._shift
 
-    def get(self, index: int) -> np.ndarray:
+    def get(self, index: int = 0) -> np.ndarray:
         if index < 0:
             raise IndexError("index must be >= 0")
         base_index = index + self._shift
@@ -33,7 +33,7 @@ class ShiftProxyValueBuffer(ValueBuffer):
                 f"Requested index {index} exceeds available past history"
             )
         return self._base.get(base_index)
-    
+
     def set(self, value: np.ndarray):
         raise RuntimeError(
             "Cannot set value on a PastProxyValueBuffer (read-only view)"
@@ -48,3 +48,6 @@ class ShiftProxyValueBuffer(ValueBuffer):
         raise RuntimeError(
             "Cannot advance a PastProxyValueBuffer"
         )
+
+    def reset(self):
+        pass

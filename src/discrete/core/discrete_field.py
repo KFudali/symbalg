@@ -7,6 +7,7 @@ class DiscreteFieldValueBuffer(FieldValueBuffer[DiscreteSpace]):
 class DiscreteField(Field[DiscreteSpace]):
     def __init__(self, value_buffer: DiscreteFieldValueBuffer):
         super().__init__(value_buffer)
+        self.space.time.advanceables.register(self)
 
 class DiscreteFieldOperator(FieldOperator[DiscreteSpace]):
     pass

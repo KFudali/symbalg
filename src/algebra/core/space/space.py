@@ -3,10 +3,16 @@ from typing import Generic, TypeVar
 import numpy as np
 
 from .domain import TDomain
+from .time_dim import TimeDim
 
 class Space(ABC, Generic[TDomain]):
-    def __init__(self, domain: TDomain):
+    def __init__(self, domain: TDomain, time: TimeDim):
         self._domain = domain
+        self._time = time
+
+    @property
+    def time(self) -> TimeDim:
+        return self._time
 
     @property
     def domain(self) -> TDomain:
@@ -26,3 +32,5 @@ class Space(ABC, Generic[TDomain]):
         pass
 
 TSpace = TypeVar("TSpace", bound=Space)
+
+

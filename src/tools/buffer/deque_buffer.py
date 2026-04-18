@@ -64,5 +64,10 @@ class DequeValueBuffer(ValueBuffer):
             raise ValueError(
                 f"Shape mismatch: expected {self._shape}, got {value.shape}"
             )
-
         self._buffer.appendleft(value.copy())
+
+    def reset(self):
+        self._buffer = deque(
+            (np.zeros(shape=self.shape) for _ in \
+            range(self.saved_steps)), maxlen=self.saved_steps
+        )

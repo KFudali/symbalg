@@ -31,6 +31,9 @@ class Field(FieldShaped[TSpace]):
     def advance(self):
         self.buffer.advance()
 
+    def reset(self):
+        self.buffer.reset()
+
     def set_value(self, value: Expression) -> LazyAction:
         if value.output_shape != self.shape:
             raise ShapeMismatchError((

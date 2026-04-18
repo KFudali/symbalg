@@ -1,7 +1,6 @@
 from discrete import fd
-from fieldspace import FieldSpace, dx, dt, systems, monitors, time
+from fieldspace import FieldSpace, dx, dt, systems, monitors
 from tools.geometry import StructuredGridND
-from tools.time.series import ConstDtTimeSeries
 
 grid = StructuredGridND((10, 10), (0.1, 0.1))
 space = fd.FdDiscreteSpace(grid)
@@ -30,9 +29,8 @@ bcs = [top_bc, bot_bc, left_bc, right_bc]
 equation.add_bcs(bcs)
 
 f_history = monitors.FieldMonitor(F)
-loop = ConstDtStepper(time = space.time, start = 0.0, end = 1.0, dt = 0.01)
-with loop.iterate():
+for step in fieldspace.time.run(duration = 1.0, init_dt = 0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
-
+    fieldspace.time.adapt_dt(0.01)
 f_history.playback()

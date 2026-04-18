@@ -10,9 +10,9 @@ from .dx_operators import FDDxOperators
 from .bc_tool import FDBCTool
 
 class FdDiscreteSpace(DiscreteSpace[FDDomain]):
-    def __init__(self, grid: StructuredGridND, time: TimeDim):
+    def __init__(self, grid: StructuredGridND):
         domain = FDDomain(grid)
-        super().__init__(domain, time)
+        super().__init__(domain)
         self._dt = FDDtOperators()
         self._dx = FDDxOperators(space = self)
         self._bcs = FDBCTool(domain)
@@ -32,13 +32,12 @@ class FdDiscreteSpace(DiscreteSpace[FDDomain]):
     @property
     def dx(self) -> FDDxOperators:
         return self._dx
-    
+
     def points(self) -> np.ndarray:
         grid = self.domain.grid
-        nx, ny = grid.shape
-        dx, dy = grid.spacing
         spaces = []
         for nx, dx in zip(grid.shape, grid.spacing):
             linspace = np.linspace(0, (nx-1) * dx, nx)
             spaces.append(linspace)
         return np.meshgrid(*tuple(spaces))
+

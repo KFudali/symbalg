@@ -1,11 +1,11 @@
 from algebra.field import Field
 from algebra.symbolic import SymbolicExpression, SymbolicOperator, AffineOperator
 from algebra.core.expression import ScalarExpression
-from tools.time import TimeDim
+from discrete.core import DiscreteTime
 from ..dx import eye
 
 
-def euler(field: Field, time: TimeDim, order: int = 1) -> AffineOperator:
+def euler(field: Field, time: DiscreteTime, order: int = 1) -> AffineOperator:
     if order == 1:
         dt = SymbolicExpression(ScalarExpression(time.dt))
         mass = SymbolicOperator(eye(field.space, field.components)) / dt
