@@ -11,11 +11,11 @@ fieldspace = FieldSpace(space)
 
 F = fieldspace.field(components = 1)
 
-DIFF = 1.0
+lam = 1.0
 f_dx = dx.laplace(F)
 f_dt = dt.euler(F)
 
-lhs = f_dt - DIFF * f_dx
+lhs = f_dt - lam * f_dx
 rhs = fieldspace.field(components = 1, init_value=0.0)
 
 equation = systems.les(lhs, rhs.value())
@@ -28,9 +28,9 @@ bcs = [top_bc, bot_bc, left_bc, right_bc]
 
 equation.add_bcs(bcs)
 
-f_history = monitors.FieldMonitor(F)
+f_history = monitors.FieldMonitor2D(F)
 for step in fieldspace.time.run(duration = 1.0, init_dt = 0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
     fieldspace.time.adapt_dt(0.01)
-f_history.playback()
+f_history.animate()

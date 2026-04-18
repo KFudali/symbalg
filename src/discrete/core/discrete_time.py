@@ -18,8 +18,9 @@ class DiscreteTime(TimeDim):
     def advance(self):
         self._advanceables.advance()
         dt = self.dt()
-        self._discrete_steps.append(self._current)
+        self._current += dt
         self._dts.append(dt)
+        self._discrete_steps.append(self._current)
 
     def reset(self):
         self._discrete_steps = [0.0]
@@ -27,7 +28,7 @@ class DiscreteTime(TimeDim):
 
     @property
     def discrete_steps(self) -> list[float]:
-        return self._discrete_steps.copy
+        return self._discrete_steps
 
     @property
     def advanceables(self) -> AdvanceableSeries:

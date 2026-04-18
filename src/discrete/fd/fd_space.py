@@ -1,6 +1,5 @@
 import numpy as np
 from tools.geometry import StructuredGridND
-from tools.time import TimeDim
 
 from discrete.core import DiscreteSpace
 

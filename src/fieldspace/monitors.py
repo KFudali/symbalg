@@ -47,7 +47,7 @@ class FieldMonitor2D():
         self._values.clear()
 
     def animate(self):
-        time = self._field.space.time.discrete_steps
+        time = self._field.space.time.discrete_steps[:-1]
         if len(time) != len(self._values):
             raise ValueError("Time step does not match monitor length")
         comps = self._field.components

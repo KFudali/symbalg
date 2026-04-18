@@ -19,7 +19,7 @@ class Field(FieldShaped[TSpace]):
         return self._buffer.values
 
     def past(self, step: int = 1) -> "Field":
-        self.buffer.set_saved_steps(step)
+        self.buffer.set_saved_steps(step + 1)
         buffer = ShiftProxyValueBuffer(self.buffer, step)
         field_buffer = FieldValueBuffer(self.space, self.components, buffer)
         return Field(field_buffer)
