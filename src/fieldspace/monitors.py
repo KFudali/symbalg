@@ -52,25 +52,39 @@ class FieldMonitor2D():
             raise ValueError("Time step does not match monitor length")
         comps = self._field.components
         X, Y = self._field.space.points()
-        fig = plt.figure(figsize=(comps * 5, 5))
-        axes = []
+        
+        fig, axes = plt.subplots(1, comps, figsize=(4 * comps, 5))
+        if comps == 1:
+            axes = [axes]
+        
+        data = np.array(self._values)
+        vmin = data.min()
+        vmax = data.max()
+        
+        contours = []
         for comp in range(comps):
-            ax = fig.add_subplot(comps, 1, comp + 1, projection="3d")
-            axes.append(ax)
+            contour = axes[comp].contourf(
+                X, Y, data[0, comp], levels=50, vmin=vmin, vmax=vmax, cmap="viridis"
+            )
+            contours.append(contour)
+            axes[comp].set_title(f"Component {comp}")
+            axes[comp].set_xlabel("x")
+            axes[comp].set_ylabel("y")
+        
+        fig.colorbar(contours[0], ax=axes, shrink=0.6)
         plt.tight_layout()
 
         def update(step: int):
             for comp in range(comps):
                 axes[comp].clear()
                 axes[comp].contourf(
-                    X, Y, self._values[step][comp],
-                    cmap="viridis", levels = 50
+                    X, Y, data[step, comp],
+                    levels=50, vmin=vmin, vmax=vmax, cmap="viridis"
                 )
-                axes[comp].set_title(f"Field component: {comp} at time: {time[step]}")
+                axes[comp].set_title(f"Component {comp} at t = {time[step]:.3f}")
                 axes[comp].set_xlabel("x")
                 axes[comp].set_ylabel("y")
-                axes[comp].set_zlabel("u")
 
-        anim = animation.FuncAnimation(fig, update, frames=len(time), interval=200)
+        anim = animation.FuncAnimation(fig, update, frames=len(time), interval=50)
         plt.show()
 
