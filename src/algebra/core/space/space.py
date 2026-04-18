@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
+import numpy as np
+
 from .domain import TDomain
 
 class Space(ABC, Generic[TDomain]):
@@ -17,6 +19,10 @@ class Space(ABC, Generic[TDomain]):
     @property
     @abstractmethod
     def shape(self) -> tuple[int, ...]:
+        pass
+
+    @abstractmethod
+    def points(self) -> np.ndarray:
         pass
 
 TSpace = TypeVar("TSpace", bound=Space)

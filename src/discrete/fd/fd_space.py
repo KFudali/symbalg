@@ -1,3 +1,4 @@
+import numpy as np
 from tools.geometry import StructuredGridND
 from tools.time import TimeDim
 
@@ -31,3 +32,13 @@ class FdDiscreteSpace(DiscreteSpace[FDDomain]):
     @property
     def dx(self) -> FDDxOperators:
         return self._dx
+    
+    def points(self) -> np.ndarray:
+        grid = self.domain.grid
+        nx, ny = grid.shape
+        dx, dy = grid.spacing
+        spaces = []
+        for nx, dx in zip(grid.shape, grid.spacing):
+            linspace = np.linspace(0, (nx-1) * dx, nx)
+            spaces.append(linspace)
+        return np.meshgrid(*tuple(spaces))

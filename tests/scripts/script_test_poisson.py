@@ -12,15 +12,15 @@ left, right = space.domain.ax_boundaries(ax = 1)
 fieldspace = FieldSpace(space)
 F = fieldspace.field(components = 1)
 
-rhs = fieldspace.field(components = 1)
+rhs = fieldspace.field(components = 1, init_value=100.0)
 lhs = dx.laplace(F)
 
 equation = systems.les(lhs, rhs.value())
 
-top_bc = systems.bcs.dirichlet(top, 10)
+top_bc = systems.bcs.dirichlet(top, 0)
 bot_bc = systems.bcs.dirichlet(bottom, 0)
-left_bc = systems.bcs.neumann(left, -20)
-right_bc = systems.bcs.neumann(right, 20)
+left_bc = systems.bcs.dirichlet(left, 0)
+right_bc = systems.bcs.dirichlet(right, 0)
 bcs = [top_bc, bot_bc, left_bc, right_bc]
 
 equation.add_bcs(bcs)
