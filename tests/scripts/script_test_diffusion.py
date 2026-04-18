@@ -32,6 +32,4 @@ f_history = monitors.FieldMonitor2D(F)
 for step in fieldspace.time.run(duration = 1.0, init_dt = 0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
-
-# f_history.animate()
-monitors.plot_field_2d(F.past())
+f_history.animate()

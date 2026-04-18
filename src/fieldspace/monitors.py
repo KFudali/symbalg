@@ -60,11 +60,7 @@ class FieldMonitor2D:
         comps = self._field.components
         X, Y = self._field.space.points()
 
-        domain_extent_x = X.max() - X.min()
-        domain_extent_y = Y.max() - Y.min()
-        size = max(domain_extent_x, domain_extent_y)
-
-        fig = plt.figure(figsize=(size * comps + 1, size))
+        fig = plt.figure(figsize=(5 * comps, 5))
         gs = GridSpec(1, comps, figure=fig, wspace=0.3)
 
         data = np.array(self._values)
