@@ -9,6 +9,6 @@ def euler(field: Field, time: DiscreteTime, order: int = 1) -> AffineOperator:
     if order == 1:
         dt = SymbolicExpression(ScalarExpression(time.dt))
         mass = SymbolicOperator(eye(field.space, field.components)) / dt
-        const = field.past(1).value() / dt
+        const = -field.past(1).value() / dt
         return AffineOperator(mass, const)
     return None

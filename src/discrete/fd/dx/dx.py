@@ -8,9 +8,12 @@ from .grad_stencil_operator import GradStencilOperator
 def eye(space: Space[FDDomain], components: int) -> LapStencilOperator:
     contribs = {}
     grid = space.domain.grid
-    for ax in range(len(space.shape)):
-        central_stencil = {0: 1}
-        contribs[ax] = central_stencil
+    # TODO: verify what should we really do in such situation
+    # for ax in range(len(space.shape)):
+    #     central_stencil = {0: 1}
+    #     contribs[ax] = central_stencil
+    central_stencil = {0: 1}
+    contribs[0] = central_stencil
     stencil = Stencil(contribs)
     return LapStencilOperator(space, components, stencil)
 

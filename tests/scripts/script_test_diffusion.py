@@ -1,8 +1,8 @@
 from discrete import fd
 from fieldspace import FieldSpace, dx, dt, systems, monitors
 from tools.geometry import StructuredGridND
-
-grid = StructuredGridND((10, 10), (0.1, 0.1))
+n = 20
+grid = StructuredGridND((n, n), (0.1, 0.1))
 space = fd.FdDiscreteSpace(grid)
 top, bottom = space.domain.ax_boundaries(ax = 0)
 left, right = space.domain.ax_boundaries(ax = 1)
@@ -32,5 +32,6 @@ f_history = monitors.FieldMonitor2D(F)
 for step in fieldspace.time.run(duration = 1.0, init_dt = 0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
-    fieldspace.time.adapt_dt(0.01)
-f_history.animate()
+
+# f_history.animate()
+monitors.plot_field_2d(F.past())

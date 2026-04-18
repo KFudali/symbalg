@@ -62,15 +62,15 @@ class FieldMonitor2D():
         def update(step: int):
             for comp in range(comps):
                 axes[comp].clear()
-                axes[comp].plot_surface(
+                axes[comp].contourf(
                     X, Y, self._values[step][comp],
-                    cmap="viridis", edgecolor="k", linewidth=0.5
+                    cmap="viridis", levels = 50
                 )
                 axes[comp].set_title(f"Field component: {comp} at time: {time[step]}")
                 axes[comp].set_xlabel("x")
                 axes[comp].set_ylabel("y")
                 axes[comp].set_zlabel("u")
 
-        animation.FuncAnimation(fig, update, frames=len(time), interval=200)
+        anim = animation.FuncAnimation(fig, update, frames=len(time), interval=200)
         plt.show()
 
