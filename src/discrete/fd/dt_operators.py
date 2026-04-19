@@ -6,12 +6,10 @@ from algebra.field import Field
 from . import dt
 
 class FDDtOperators(DtOperators):
-    def explicit_euler(
-        self, field: Field, time: DiscreteTime, order: int
-    ) -> AffineOperator:
-        return dt.explicit.euler(field, time, order)
+    def euler(self, field: Field, time: DiscreteTime) -> AffineOperator:
+        return dt.explicit.euler(field, time)
 
-    def implicit_euler(
+    def bfd(
         self, field: Field, time: DiscreteTime, order: int
     ) -> AffineOperator:
         pass

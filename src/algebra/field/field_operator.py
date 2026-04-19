@@ -12,7 +12,7 @@ from tools.symbolic import BinaryOpType, BINARY_OPS
 
 from .field import Field
 
-class FieldOperator(AffineOperator, Generic[TSpace]):
+class FieldOperator(AffineOperator, Expression, Generic[TSpace]):
     def __init__(
         self,
         field: Field[TSpace],
@@ -22,9 +22,11 @@ class FieldOperator(AffineOperator, Generic[TSpace]):
         if field.shape != operator.input_shape:
             raise ShapeMismatchError("Field has to match operator.")
         self._field = field
-        if expression == None:
+        if expression is None:
             expression = ZeroExpression(operator.output_shape)
-        super().__init__(operator, expression)
+        AffineOperator.__init__(self, operator, expression)
+        Expression.__init__(self, operator.output_shape)
+
 
     @property
     def field(self) -> Field[TSpace]:

@@ -1,8 +1,9 @@
 from discrete import fd
 from fieldspace import FieldSpace, dx, dt, systems, monitors
 from tools.geometry import StructuredGridND
-n = 20
-grid = StructuredGridND((n, n), (0.1, 0.1))
+
+N = 20
+grid = StructuredGridND((N, N), (0.1, 0.1))
 space = fd.FdDiscreteSpace(grid)
 top, bottom = space.domain.ax_boundaries(ax = 0)
 left, right = space.domain.ax_boundaries(ax = 1)
@@ -11,11 +12,11 @@ fieldspace = FieldSpace(space)
 
 F = fieldspace.field(components = 1)
 
-lam = 1.0
+L = 1.0
 f_dx = dx.laplace(F)
 f_dt = dt.euler(F)
 
-lhs = f_dt - lam * f_dx
+lhs = f_dt - L * f_dx
 rhs = fieldspace.field(components = 1, init_value=0.0)
 
 equation = systems.les(lhs, rhs.value())

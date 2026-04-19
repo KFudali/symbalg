@@ -1,11 +1,9 @@
 from discrete import fd
 from fieldspace import FieldSpace, dx, systems, monitors
 from tools.geometry import StructuredGridND
-from tools.time.series import ConstDtTimeSeries
 
 grid = StructuredGridND((10, 10), (0.1, 0.1))
-time = ConstDtTimeSeries(dt = 0.01)
-space = fd.FdDiscreteSpace(grid, time)
+space = fd.FdDiscreteSpace(grid)
 top, bottom = space.domain.ax_boundaries(ax = 0)
 left, right = space.domain.ax_boundaries(ax = 1)
 

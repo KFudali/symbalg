@@ -1,4 +1,6 @@
 from discrete import DiscreteTime
+from algebra.symbolic import SymbolicExpression
+from algebra.core.expression import ScalarExpression
 
 class TimeSeries():
     def __init__(self, time: DiscreteTime):
@@ -17,3 +19,6 @@ class TimeSeries():
 
     def reset(self):
         self._discrete_time.reset()
+
+    def dt(self) -> SymbolicExpression:
+        return SymbolicExpression(ScalarExpression(self._discrete_time.dt))
