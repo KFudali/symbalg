@@ -1,7 +1,6 @@
 from discrete import fd
 from fieldspace import FieldSpace, dx, dt, systems, monitors
 from tools.geometry import StructuredGridND
-from tools.time.series import ConstDtTimeSeries
 
 grid = StructuredGridND((10, 10), (0.1, 0.1))
 space = fd.FdDiscreteSpace(grid)
@@ -38,7 +37,7 @@ step_1.add_bcs(u_bcs)
 #Step 2
 step_2 = systems.les(
     lhs = dx.laplace(fi),
-    rhs = (3/2 * dt_val) * dx.div(u)
+    rhs = (3.0/2.0 * dt_val) * dx.div(u)
 )
 step_2.add_bcs(fi_bcs)
 #Step 3

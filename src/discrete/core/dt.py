@@ -9,5 +9,5 @@ class DtOperators(ABC):
         pass
 
     @abstractmethod
-    def bfd(self, field: Field, time: DiscreteTime) -> AffineOperator:
+    def bfd(self, field: Field, time: DiscreteTime, order: int = 1) -> AffineOperator:
         pass

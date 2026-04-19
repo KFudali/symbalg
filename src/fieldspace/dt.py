@@ -6,5 +6,5 @@ def euler(field: DiscreteField) -> FieldOperator[DiscreteSpace]:
     return FieldOperator(field, dt.operator, dt.expression)
 
 def bfd(field: DiscreteField, order: int = 1) -> FieldOperator[DiscreteSpace]:
-    dt = field.space.dt.bfd(field, order)
+    dt = field.space.dt.bfd(field, field.space.time, order)
     return FieldOperator(field, dt.operator, dt.expression)

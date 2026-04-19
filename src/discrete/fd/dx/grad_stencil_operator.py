@@ -33,15 +33,15 @@ class GradStencilOperator(SpaceStencilOperator):
 
     def _apply_to_component(
         self,
-        input: np.ndarray,
-        output: np.ndarray,
+        input_field: np.ndarray,
+        output_field: np.ndarray,
         output_component: int,
     ):
-        input_idx = output_component // len(self.space.shape)
-        spatial_dim = output_component % len(self.space.shape)
+        input_idx = output_component // self.space.ndim
+        spatial_dim = output_component % self.space.ndim
 
-        input_arr = input[input_idx]
-        output_arr = output[output_component]
+        input_arr = input_field[input_idx]
+        output_arr = output_field[output_component]
 
         interior = region.interior(
             input_arr.shape,

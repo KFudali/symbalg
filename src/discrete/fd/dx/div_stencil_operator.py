@@ -33,12 +33,12 @@ class DivStencilOperator(SpaceStencilOperator):
 
     def _apply_to_component(
         self,
-        input: np.ndarray,
-        output: np.ndarray,
+        input_field: np.ndarray,
+        output_field: np.ndarray,
         output_component: int,
     ):
-        ndim = len(self.space.shape)
-        output_arr = output[output_component]
+        ndim = self.space.ndim
+        output_arr = output_field[output_component]
 
         interior = region.interior(
             input[0].shape,
@@ -47,7 +47,7 @@ class DivStencilOperator(SpaceStencilOperator):
 
         for spatial_dim in range(ndim):
             input_idx = output_component * ndim + spatial_dim
-            input_arr = input[input_idx]
+            input_arr = input_field[input_idx]
             self.interior_stencil.apply_to_region_on_ax(
                 input_arr, output_arr, interior, spatial_dim
             )

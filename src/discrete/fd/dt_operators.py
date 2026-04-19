@@ -12,4 +12,4 @@ class FDDtOperators(DtOperators):
     def bfd(
         self, field: Field, time: DiscreteTime, order: int
     ) -> AffineOperator:
-        pass
+        return dt.explicit.bfd(field, time, order)
