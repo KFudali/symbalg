@@ -1,3 +1,4 @@
+import numpy as np
 from tools import Stencil
 from algebra.core.space import Space
 from discrete.fd.domain import FDDomain
@@ -43,7 +44,7 @@ def grad(space: Space[FDDomain], components: int) -> GradStencilOperator:
     for bid, boundary in space.domain.boundaries.items():
         dh = grid.ax_spacing(boundary.ax)
         inward_dir = boundary.inward_dir
-        coeffs = boundary.side * ([3, -4, 1] / (2 * dh))
+        coeffs = boundary.side * (np.array([3, -4, 1]) / (2 * dh))
         boundary_stencil = {
             0: coeffs[0],
             inward_dir: coeffs[1],

@@ -19,5 +19,7 @@ def bfd(field: Field, time: DiscreteTime, order: int = 1) -> AffineOperator:
         mass = SymbolicOperator(eye(field.space, field.components))
         prev_1 = field.past(1).value()
         prev_2 = field.past(2).value()
-        return (3.0 * mass - 4.0 * prev_1 + prev_2) / (2.0 * dt)
+        op =  mass * (3.0/2.0 * dt)
+        exp = (-4.0 * prev_1 + prev_2) / (2.0 * dt)
+        return AffineOperator(op, exp)
     return NotImplemented

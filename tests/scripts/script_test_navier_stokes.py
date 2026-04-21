@@ -31,7 +31,7 @@ NU = 0.01
 dudt = dt.bfd(u, order=2)
 step_1 = systems.les(
     lhs = dudt - NU * dx.laplace(u),
-    rhs = -dx.grad(p) + f
+    rhs = -dx.grad(p) + f.value()
 )
 step_1.add_bcs(u_bcs)
 #Step 2
@@ -52,4 +52,4 @@ for time in fieldspace.time.run(duration = 1.0, init_dt= 0.01):
     u.set_value(step_1.solve()).perform()
     fi.set_value(step_2.solve()).perform()
     p_update.perform()
-
+p_history.animate()

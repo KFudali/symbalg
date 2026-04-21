@@ -87,19 +87,19 @@ class Symbolic(Op[TOperand]):
 
     def __radd__(self, other: SymbolicNode[TOperand]) -> Self:
         self._assert_compatible(other, BinaryOpType.DIV)
-        return Symbolic(other).add(self)
+        return self._new(self.add(other))
 
     def __rsub__(self, other: SymbolicNode[TOperand]) -> Self:
         self._assert_compatible(other, BinaryOpType.SUB)
-        return Symbolic(other).sub(self)
+        return self._new((-self) + other)
 
     def __rmul__(self, other: SymbolicNode[TOperand]) -> Self:
         self._assert_compatible(other, BinaryOpType.MUL)
-        return Symbolic(other).mul(self)
+        return self._new(self.mul(other))
 
     def __rtruediv__(self, other: SymbolicNode[TOperand]) -> Self:
         self._assert_compatible(other, BinaryOpType.DIV)
-        return Symbolic(other).div(self)
+        return self._new(other.div(self))
 
     def __repr__(self) -> str:
         return f"Symbolic({self._base_op})"
