@@ -5,91 +5,117 @@ import numpy as np
 
 from algebra.core.expression import Expression, ScalarExpression
 from algebra.exceptions import ShapeMismatchError
+from algebra.fieldshape import FieldShape
 
-from tools.symbolic import Symbolic, SymbolicNode, BinaryOpType, UnaryOpType, op
+from tools.symbolic import (
+    Symbolic,
+    SymbolicNode,
+    BinaryOpType,
+    UnaryOpType,
+)
+from tools.symbolic.symbolic_node import ValueNode, UnaryNode, BinaryNode
+
+# ---- Expression-flavoured nodes ------------------------------------------------
 
 
 @dataclass(frozen=True)
-class ExpressionValue(op.Value[Expression]):
-    def fold(self) -> np.ndarray:
+class ExpressionNode(SymbolicNode[Expression]):
+    shape: FieldShape
+
+
+@dataclass(frozen=True)
+class ExpressionValueNode(ValueNode[Expression], ExpressionNode):
+    """`resolve()` evaluates the wrapped Expression to a numpy array so the rest
+    of the tree composes via numpy arithmetic."""
+
+    def __init__(self, value: Expression):
+        ValueNode.__init__(self, value)
+        ExpressionNode.__init__(self, value.shape)
+
+    def resolve(self) -> np.ndarray:
         return self.value.eval()
 
-    @property
-    def output_shape(self) -> tuple[int, ...]:
-        return self.value.output_shape
+
+@dataclass(frozen=True)
+class ExpressionUnaryNode(UnaryNode[Expression], ExpressionNode):
+    def __init__(self, optype: UnaryOpType, operand: ExpressionNode):
+        UnaryNode.__init__(self, optype, operand)
+        ExpressionNode.__init__(self, operand.shape)
 
 
 @dataclass(frozen=True)
-class ExpressionUnaryOp(op.UnaryOp[Expression]):
-    output_shape: tuple[int, ...]
+class ExpressionBinaryNode(BinaryNode[Expression], ExpressionNode):
+    def __init__(
+        self, optype: BinaryOpType, left: ExpressionNode, right: ExpressionNode
+    ):
+        BinaryNode.__init__(self, optype, left, right)
+        shape = left.shape if left.shape != () else right.shape
+        ExpressionNode.__init__(self, shape)
 
 
-@dataclass(frozen=True)
-class ExpressionBinaryOp(op.BinaryOp[Expression]):
-    output_shape: tuple[int, ...]
+# ---- SymbolicExpression --------------------------------------------------------
 
-
-ExprNode = SymbolicNode[Expression]
 
 class SymbolicExpression(Symbolic[Expression], Expression):
-    COMPATIBLE_TYPES = (
-        Expression,
-        ExpressionBinaryOp,
-        ExpressionUnaryOp,
-        ExpressionValue,
+    COMPATIBLE_NODE_TYPES = (
+        ExpressionValueNode,
+        ExpressionUnaryNode,
+        ExpressionBinaryNode,
     )
 
-    def __init__(self, expression: ExprNode):
+    def __init__(self, expression: ExpressionNode | Expression):
         Symbolic.__init__(self, expression)
-        Expression.__init__(self, expression.output_shape)
+        self._node: ExpressionNode
+        Expression.__init__(self, self._node.shape)
 
     def eval(self) -> np.ndarray:
-        return self.fold()
+        return np.asarray(self.resolve())
 
-    def fold(self) -> np.ndarray:
-        return super().fold()
+    def copy(self) -> "SymbolicExpression":
+        return SymbolicExpression(self._node)
 
-    def copy(self) -> SymbolicExpression:
-        return SymbolicExpression(self.base_op)
+    # ---- factory hooks ----
 
-    def _new(self, expr: op.Op[Expression]):
-        return SymbolicExpression(expr)
-
-    def _wrap(self, other: SymbolicNode):
-        if isinstance(other, (float, np.ndarray)):
-            return super()._wrap(ScalarExpression(other))
-        return super()._wrap(other)
-
-    def _make_value(self, operand: Expression):
-        return ExpressionValue(operand)
-
-    def _make_unary(self, optype: UnaryOpType) -> ExpressionUnaryOp:
-        return ExpressionUnaryOp(optype, self.base_op, self.output_shape)
-
-    def _make_binary(self, other: ExprNode, optype: BinaryOpType):
-        return ExpressionBinaryOp(
-            optype, self.base_op, self._wrap(other), self.output_shape
+    def _make_value(self, operand: Any) -> ExpressionValueNode:
+        if isinstance(operand, (float, int, np.ndarray)):
+            return ExpressionValueNode(ScalarExpression(operand))
+        if isinstance(operand, Expression):
+            return ExpressionValueNode(operand)
+        raise TypeError(
+            f"Cannot wrap {type(operand).__name__} as an ExpressionNode value."
         )
 
+    def _make_unary(self, optype: UnaryOpType) -> ExpressionUnaryNode:
+        return ExpressionUnaryNode(optype, self._node)
+
+    def _make_binary(self, other: Any, optype: BinaryOpType) -> ExpressionBinaryNode:
+        return ExpressionBinaryNode(
+            optype, self._node, self._ensure_node(other)
+        )
+
+    # ---- compatibility checks ----
+
     def _assert_compatible(self, other: Any, optype: BinaryOpType):
-        compatible_types = (SymbolicExpression, *SymbolicExpression.COMPATIBLE_TYPES)
-        if isinstance(other, (float, np.ndarray)):
+        if isinstance(other, (float, int, np.ndarray)):
             return
-        if isinstance(other, compatible_types):
-            if self.output_shape == () or other.output_shape == ():
+
+        node = other.node if isinstance(other, SymbolicExpression) else other
+        if isinstance(other, Expression) or isinstance(
+            node, SymbolicExpression.COMPATIBLE_NODE_TYPES
+        ):
+            other_shape = other.shape if isinstance(other, Expression) else node.shape
+            if self.shape == () or other_shape == ():
                 return
-            if self.output_shape != other.output_shape:
+            if self.shape != other_shape:
                 raise ShapeMismatchError(
-                    (
-                        "SymbolicExpression can only be comined with node of equal shape",
-                        f"self.output_shape: {self.output_shape}, ",
-                        f"other type: {type(other)}, other.output_shape: {other.output_shape}.",
-                    )
+                    "SymbolicExpression can only be combined with node of equal shape. "
+                    f"self.shape: {self.shape}, "
+                    f"other type: {type(other)}, other.shape: {other_shape}."
                 )
-        else:
-            raise ValueError(
-                (
-                    "SymbolicExpression can only be combined with objects of type: ",
-                    f"{compatible_types}.",
-                )
-            )
+            return
+
+        compatible = (float, int, np.ndarray, Expression, SymbolicExpression)
+        raise ValueError(
+            "SymbolicExpression can only be combined with objects of type: "
+            f"{compatible}. Got {type(other)}."
+        )

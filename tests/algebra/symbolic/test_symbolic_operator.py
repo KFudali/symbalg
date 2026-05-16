@@ -2,24 +2,27 @@ import pytest
 import numpy as np
 from algebra.exceptions import ShapeMismatchError
 from algebra.core.expression import ScalarExpression, CallableExpression
+from algebra.fieldshape import FieldShape
 from algebra.symbolic import SymbolicOperator
 from conftest import MockOperator
+
 
 def test_symbolic_operator_with_operator():
     op_a = MockOperator("A")
     op_b = MockOperator("B")
     op_c = MockOperator("C")
     symbolic = SymbolicOperator[MockOperator](op_a)
-    result = ((symbolic + op_b) * op_c).fold()
+    result = ((symbolic + op_b) * op_c).resolve()
     assert result.name == "[[A + B] * C]"
+
 
 def test_symbolic_operator_with_floats():
     op_a = MockOperator("A")
     symbolic = SymbolicOperator[MockOperator](op_a)
-    result = (symbolic * 10.0).fold()
+    result = (symbolic * 10.0).resolve()
     assert result.name == "[A * 10.0]"
 
-    result = (symbolic / 10.0).fold()
+    result = (symbolic / 10.0).resolve()
     assert result.name == "[A * 0.1]"
 
     with pytest.raises(ValueError):
@@ -28,14 +31,15 @@ def test_symbolic_operator_with_floats():
     with pytest.raises(ValueError):
         result = symbolic - 10.0
 
+
 def test_symbolic_operator_with_array():
     op_a = MockOperator("A", input_shape=(2,), output_shape=(2,))
     symbolic = SymbolicOperator[MockOperator](op_a)
     arr = np.array([2.0, 2.0])
-    result = (symbolic * arr).fold()
+    result = (symbolic * arr).resolve()
     assert result.name == f"[A * {arr}]"
 
-    result = (symbolic / arr).fold()
+    result = (symbolic / arr).resolve()
     assert result.name == f"[A * {1.0 / arr}]"
 
     with pytest.raises(ValueError):
@@ -48,44 +52,47 @@ def test_symbolic_operator_with_array():
     with pytest.raises(ShapeMismatchError):
         result = symbolic * arr
 
+
 def test_symbolic_operator_with_scalar_expression():
     op_a = MockOperator("A")
     symbolic = SymbolicOperator[MockOperator](op_a)
     exp = ScalarExpression(10.0)
 
-    result = (symbolic * exp).fold()
+    result = (symbolic * exp).resolve()
     assert result.name == "[A * 10.0]"
 
-    result = (symbolic / exp).fold()
+    result = (symbolic / exp).resolve()
     assert result.name == "[A * 0.1]"
 
     with pytest.raises(ValueError):
-        result = symbolic + exp
+        symbolic + exp
 
     with pytest.raises(ValueError):
-        result = symbolic - exp
+        symbolic - exp
+
 
 def test_symbolic_operator_with_expression():
     op_a = MockOperator("A", input_shape=(2,), output_shape=(2,))
     symbolic = SymbolicOperator[MockOperator](op_a)
-    twos = 2.0*np.ones(shape=(2,), dtype=float)
+    twos = 2.0 * np.ones(shape=(2,), dtype=float)
+
     def return_twos():
         return twos
-    exp = CallableExpression(return_twos, (2,))
 
-    result = (symbolic * exp).fold()
+    exp = CallableExpression(return_twos, FieldShape((2,), 1))
+
+    result = (symbolic * exp).resolve()
     assert result.name == f"[A * {twos}]"
 
-    result = (symbolic / exp).fold()
+    result = (symbolic / exp).resolve()
     assert result.name == f"[A * {1.0 / twos}]"
 
     with pytest.raises(ValueError):
-        result = symbolic + exp
+        symbolic + exp
 
     with pytest.raises(ValueError):
-        result = symbolic - exp
+        symbolic - exp
 
-    exp = CallableExpression(return_twos, (10,10))
+    exp = CallableExpression(return_twos, FieldShape((10, 10), 2))
     with pytest.raises(ShapeMismatchError):
         result = symbolic * exp
-

@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import Callable
 import numpy as np
 
-from algebra.core.space import FieldShape
+from algebra.fieldshape import FieldShape
 from .expression import Expression
 
 

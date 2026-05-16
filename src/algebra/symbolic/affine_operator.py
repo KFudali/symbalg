@@ -4,9 +4,11 @@ import numpy as np
 
 from algebra.core.operator import Operator, TOperator
 from algebra.core.expression import Expression, TExpression, ScalarExpression
+from tools.symbolic import BinaryOpType, BINARY_OPS
+
 from .symbolic_expression import SymbolicExpression
 from .symbolic_operator import SymbolicOperator
-from tools.symbolic import BinaryOpType, BINARY_OPS
+
 
 class AffineOperator(Operator, Generic[TOperator, TExpression]):
     def __init__(
@@ -37,7 +39,7 @@ class AffineOperator(Operator, Generic[TOperator, TExpression]):
         return self._expression
 
     def _combine_affine(
-            self, other: "AffineOperator", binary_op: Callable[[Any, Any], Any]
+        self, other: "AffineOperator", binary_op: Callable[[Any, Any], Any]
     ) -> Self:
         return self._new(
             binary_op(self.operator.copy(), other.operator.copy()),
@@ -48,26 +50,22 @@ class AffineOperator(Operator, Generic[TOperator, TExpression]):
         self, other: Operator, binary_op: Callable[[Any, Any], Any]
     ) -> Self:
         return self._new(
-            binary_op(self.operator.copy(), other.copy()),
-            self.expression.copy()
+            binary_op(self.operator.copy(), other.copy()), self.expression.copy()
         )
 
     def _combine_expression(
-        self, other: Expression,
-        binary_op: Callable[[Any, Any], Any]
+        self, other: Expression, binary_op: Callable[[Any, Any], Any]
     ) -> Self:
-        return self._new(
-            self.operator.copy(),
-            binary_op(self.expression.copy(), other)
-        )
+        return self._new(self.operator.copy(), binary_op(self.expression.copy(), other))
 
     def _combine_constlike(
-        self, other: ScalarExpression | float | np.ndarray,
-        binary_op: Callable[[Any, Any], Any]
+        self,
+        other: ScalarExpression | float | np.ndarray,
+        binary_op: Callable[[Any, Any], Any],
     ):
         return self._new(
             binary_op(self.operator.copy(), other),
-            binary_op(self.expression.copy(), other)
+            binary_op(self.expression.copy(), other),
         )
 
     def _combine(self, other: Any, optype: BinaryOpType) -> Self:

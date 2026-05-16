@@ -1,6 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from typing import TypeVar
+from typing import Self, TypeVar
 import numpy as np
 
 from algebra.exceptions import ShapeMismatchError
@@ -38,32 +38,32 @@ class Operator(ABC):
         self._apply(input_field, output_field)
 
     @abstractmethod
-    def copy(self) -> "Operator":
+    def copy(self) -> Self:
         pass
 
     @abstractmethod
     def _apply(self, input_field: np.ndarray, output_field: np.ndarray):
         pass
 
-    def __neg__(self) -> "Operator":
+    def __neg__(self) -> Self:
         return NotImplemented
 
-    def add(self, other: "Operator") -> "Operator":
+    def add(self, other: Self) -> Self:
         return NotImplemented
 
-    def mul(self, other: "Operator") -> "Operator":
+    def mul(self, other: Self) -> Self:
         return NotImplemented
 
-    def div(self, other: "Operator") -> "Operator":
+    def div(self, other: Self) -> Self:
         return NotImplemented
 
-    def scale(self, other: float) -> "Operator":
+    def scale(self, other: float) -> Self:
         return NotImplemented
 
-    def scale_arr(self, other: np.ndarray) -> "Operator":
+    def scale_arr(self, other: np.ndarray) -> Self:
         return NotImplemented
 
-    def __add__(self, other: "Operator") -> "Operator":
+    def __add__(self, other: Self) -> Self:
         if isinstance(other, type(self)):
             if self.input_shape != other.input_shape:
                 raise ShapeMismatchError(
@@ -84,10 +84,10 @@ class Operator(ABC):
             return self.add(other)
         return NotImplemented
 
-    def __sub__(self, other: "Operator") -> "Operator":
+    def __sub__(self, other: Self) -> Self:
         return self + (-other)
 
-    def __mul__(self, other: "Operator" | float | np.ndarray) -> "Operator":
+    def __mul__(self, other: Self | float | np.ndarray) -> Self:
         if isinstance(other, type(self)):
             if self.input_shape != other.input_shape:
                 raise ShapeMismatchError(
@@ -123,10 +123,10 @@ class Operator(ABC):
             return self.scale_arr(other)
         return NotImplemented
 
-    def __rmul__(self, other: float | np.ndarray) -> "Operator":
+    def __rmul__(self, other: float | np.ndarray) -> Self:
         return self.__mul__(other)
 
-    def __truediv__(self, other: "Operator" | float | np.ndarray) -> "Operator":
+    def __truediv__(self, other: Self | float | np.ndarray) -> Self:
         if isinstance(other, (float | np.ndarray)):
             return self * (1.0 / other)
         if isinstance(other, type(self)):

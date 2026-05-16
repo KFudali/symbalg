@@ -6,6 +6,7 @@ from .optype import UnaryOpType, BinaryOpType
 TSymbolic = TypeVar("TSymbolic")
 
 
+@dataclass(frozen=True)
 class SymbolicNode(ABC, Generic[TSymbolic]):
     @abstractmethod
     def resolve(self) -> TSymbolic:

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Callable, Self
+from typing import Callable
 import copy
 import numpy as np
 

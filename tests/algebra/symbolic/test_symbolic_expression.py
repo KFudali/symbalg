@@ -2,31 +2,38 @@ import pytest
 import numpy as np
 from algebra.core.expression import CallableExpression, Expression
 from algebra.symbolic import SymbolicExpression
+from algebra.fieldshape import FieldShape
 
+SHAPE = FieldShape((10,), 1)
 
-
-SHAPE=(10,)
 
 @pytest.fixture
 def scalar():
     from algebra.core.expression import ScalarExpression
+
     return ScalarExpression(2.0)
+
 
 @pytest.fixture
 def ones():
     def return_ones():
         return np.ones(shape=SHAPE, dtype=float)
+
     return CallableExpression(return_ones, SHAPE)
+
 
 @pytest.fixture
 def fives():
     def return_fives():
         return 5 * np.ones(shape=SHAPE, dtype=float)
+
     return CallableExpression(return_fives, SHAPE)
+
 
 def assert_eval(expression: Expression, value: float):
     result = expression.eval()
     assert np.array_equal(result, value * np.ones_like(result))
+
 
 def test_symbolic_expression_with_floats(ones):
     sym_ones = SymbolicExpression(ones)
@@ -42,7 +49,7 @@ def test_symbolic_expression_with_floats(ones):
     assert_eval(sub, 0.0)
     sub -= 5.0
     assert_eval(sub, -5.0)
-    sub -= (-10.0)
+    sub -= -10.0
     assert_eval(sub, 5.0)
 
     mul = sym_ones * 3.0
@@ -52,7 +59,7 @@ def test_symbolic_expression_with_floats(ones):
     mul *= 5.0
     assert_eval(mul, 45.0)
 
-    eq = ((((sym_ones * 3.0) + 7.0) / 5.0) - 5.0)
+    eq = (((sym_ones * 3.0) + 7.0) / 5.0) - 5.0
     assert_eval(eq, -3.0)
 
 
@@ -81,6 +88,7 @@ def test_symbolic_expression_with_scalar_expression(ones, fives):
     sym_ones = SymbolicExpression(ones)
     sym_fives = SymbolicExpression(fives)
     from algebra.core.expression import ScalarExpression
+
     scalar = ScalarExpression(2.0)
 
     add = sym_ones + scalar
@@ -119,6 +127,7 @@ def test_symbolic_expression_with_expression(ones, fives):
 
     combined = (sym_ones + sym_fives) * sym_fives - sym_ones
     assert_eval(combined, 29.0)
+
 
 def test_symbolic_expression_is_immutable_on_combinations(ones, fives):
     sym_ones = SymbolicExpression(ones)
