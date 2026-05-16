@@ -3,41 +3,44 @@ from dataclasses import dataclass
 from typing import Generic, TypeVar
 from .optype import UnaryOpType, BinaryOpType
 
-TOperand = TypeVar("TOperand")
-class Op(ABC, Generic[TOperand]):
+TSymbolic = TypeVar("TSymbolic")
+
+
+class SymbolicNode(ABC, Generic[TSymbolic]):
     @abstractmethod
-    def fold(self) -> TOperand:
+    def resolve(self) -> TSymbolic:
         pass
 
-@dataclass(frozen=True)
-class Value(Op[TOperand]):
-    value: TOperand
 
-    def fold(self) -> TOperand:
+@dataclass(frozen=True)
+class ValueNode(SymbolicNode[TSymbolic]):
+    value: TSymbolic
+
+    def resolve(self) -> TSymbolic:
         return self.value
 
+
 @dataclass(frozen=True)
-class UnaryOp(Op[TOperand]):
+class UnaryNode(SymbolicNode[TSymbolic]):
     optype: UnaryOpType
-    operand: Op[TOperand]
+    operand: SymbolicNode[TSymbolic]
 
-    def fold(self) -> TOperand:
-        val = self.operand.fold()
-
+    def resolve(self) -> TSymbolic:
+        value = self.operand.resolve()
         if self.optype == UnaryOpType.NEG:
-            return -val
-
+            return -value
         raise ValueError(f"Unknown OpType: {self.optype}")
 
-@dataclass(frozen=True)
-class BinaryOp(Op[TOperand]):
-    optype: BinaryOpType
-    left: Op[TOperand]
-    right: Op[TOperand]
 
-    def fold(self) -> TOperand:
-        l = self.left.fold()
-        r = self.right.fold()
+@dataclass(frozen=True)
+class BinaryNode(SymbolicNode[TSymbolic]):
+    optype: BinaryOpType
+    left: SymbolicNode[TSymbolic]
+    right: SymbolicNode[TSymbolic]
+
+    def resolve(self) -> TSymbolic:
+        l = self.left.resolve()
+        r = self.right.resolve()
 
         match self.optype:
             case BinaryOpType.ADD:
@@ -45,7 +48,7 @@ class BinaryOp(Op[TOperand]):
             case BinaryOpType.SUB:
                 return l - r
             case BinaryOpType.MUL:
-                return l * r 
+                return l * r
             case BinaryOpType.DIV:
                 return l / r
 

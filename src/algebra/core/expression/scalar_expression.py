@@ -1,16 +1,17 @@
 from __future__ import annotations
-from typing import Self, Callable
+from typing import Callable
 import numpy as np
 
+from algebra.core.space import FieldShape
 from .expression import Expression
 
 
 class ScalarExpression(Expression):
     def __init__(self, value: float | Callable[[], float]):
-        super().__init__(())
+        super().__init__(FieldShape.scalar())
         self._value = value
 
-    def copy(self) -> Self:
+    def copy(self) -> "ScalarExpression":
         return ScalarExpression(self._value)
 
     def eval(self) -> np.ndarray:

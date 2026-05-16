@@ -1,10 +1,14 @@
 from __future__ import annotations
-from typing import Self, Any, Callable, Generic
+from typing import Self, Any, Callable
 import numpy as np
 
 from algebra.core.operator import Operator
-from algebra.core.expression import Expression, CallableExpression, ScalarExpression, ZeroExpression
-from algebra.core.space import TSpace
+from algebra.core.expression import (
+    Expression,
+    CallableExpression,
+    ScalarExpression,
+    ZeroExpression,
+)
 
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression, AffineOperator
@@ -12,12 +16,13 @@ from tools.symbolic import BinaryOpType, BINARY_OPS
 
 from .field import Field
 
-class FieldOperator(AffineOperator, Expression, Generic[TSpace]):
+
+class FieldOperator(AffineOperator, Expression):
     def __init__(
         self,
-        field: Field[TSpace],
+        field: Field,
         operator: Operator,
-        expression: Expression | None = None
+        expression: Expression | None = None,
     ):
         if field.shape != operator.input_shape:
             raise ShapeMismatchError("Field has to match operator.")
@@ -27,19 +32,14 @@ class FieldOperator(AffineOperator, Expression, Generic[TSpace]):
         AffineOperator.__init__(self, operator, expression)
         Expression.__init__(self, operator.output_shape)
 
-
     @property
-    def field(self) -> Field[TSpace]:
+    def field(self) -> Field:
         return self._field
 
     def _new(self, op: Operator, exp: Expression) -> "FieldOperator":
         return FieldOperator(self._field, op, exp)
 
-    def _combine(
-        self,
-        other: Any,
-        optype: BinaryOpType
-    ) -> Self | SymbolicExpression:
+    def _combine(self, other: Any, optype: BinaryOpType) -> Self | SymbolicExpression:
         binary_op = BINARY_OPS[optype]
         if isinstance(other, type(self)):
             if other.field == self.field:
@@ -71,51 +71,42 @@ class FieldOperator(AffineOperator, Expression, Generic[TSpace]):
         return output_field
 
     def copy(self) -> Self:
-        return FieldOperator(
-            self._field, self.operator.copy(), self.expression.copy()
-        )
+        return FieldOperator(self._field, self.operator.copy(), self.expression.copy())
 
     def __neg__(self) -> Self:
         return self._new(-self.operator.copy(), -self.expression.copy())
 
     def __add__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.ADD)
 
     def __radd__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.ADD)
 
     def __sub__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.SUB)
 
     def __rsub__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return (-self) + other
 
     def __mul__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.MUL)
 
     def __rmul__(
-        self,
-        other: "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.MUL)
 
     def __truediv__(
-        self, other:
-        "FieldOperator" | Expression | float | np.ndarray
+        self, other: "FieldOperator" | Expression | float | np.ndarray
     ) -> Self | SymbolicExpression:
         return self._combine(other, BinaryOpType.DIV)

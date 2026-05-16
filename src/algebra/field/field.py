@@ -1,5 +1,5 @@
 from algebra.core.expression import Expression, CallableExpression
-from algebra.core.space import FieldShaped, TSpace
+from algebra.core.space import FieldShaped
 
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression
@@ -9,9 +9,10 @@ from tools.action import LazyAction
 
 from .field_value_buffer import FieldValueBuffer
 
-class Field(FieldShaped[TSpace]):
+
+class Field(FieldShaped):
     def __init__(self, value_buffer: FieldValueBuffer):
-        super().__init__(value_buffer.space, value_buffer.components)
+        super().__init__(value_buffer.fieldshape)
         self._buffer = value_buffer
 
     @property
@@ -21,7 +22,7 @@ class Field(FieldShaped[TSpace]):
     def past(self, step: int = 1) -> "Field":
         self.buffer.set_saved_steps(step + 1)
         buffer = ShiftProxyValueBuffer(self.buffer, step)
-        field_buffer = FieldValueBuffer(self.space, self.components, buffer)
+        field_buffer = FieldValueBuffer(self.fieldshape, buffer)
         return Field(field_buffer)
 
     def value(self) -> SymbolicExpression:
@@ -36,10 +37,14 @@ class Field(FieldShaped[TSpace]):
 
     def set_value(self, value: Expression) -> LazyAction:
         if value.output_shape != self.shape:
-            raise ShapeMismatchError((
-                f"Cannot set_value, passed value shape: {value.output_shape} does not ",
-                f"match field shape: {self.shape}"
-            ))
+            raise ShapeMismatchError(
+                (
+                    f"Cannot set_value, passed value shape: {value.output_shape} does not ",
+                    f"match field shape: {self.shape}",
+                )
+            )
+
         def set_buffer():
             self.buffer.set(value.eval())
-        return LazyAction(set_buffer)
+
+        return LazyAction(set_buffer, None)

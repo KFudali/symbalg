@@ -2,15 +2,12 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Self, TypeVar
 import numpy as np
+from algebra.fieldshape import FieldShape, FieldShaped
 
 
-class Expression(ABC):
-    def __init__(self, output_shape: tuple[int, ...]):
-        self._output_shape = output_shape
-
-    @property
-    def output_shape(self) -> tuple[int, ...]:
-        return self._output_shape
+class Expression(FieldShaped, ABC):
+    def __init__(self, shape: FieldShape):
+        super().__init__(shape)
 
     @abstractmethod
     def copy(self) -> Self:
@@ -20,4 +17,5 @@ class Expression(ABC):
     def eval(self) -> np.ndarray:
         pass
 
-TExpression = TypeVar("TExpression", bound = Expression)
+
+TExpression = TypeVar("TExpression", bound=Expression)

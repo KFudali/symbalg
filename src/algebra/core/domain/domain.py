@@ -3,6 +3,7 @@ from typing import TypeVar
 
 from .boundary import Boundary, BoundaryId
 
+
 class Domain(ABC):
     @abstractmethod
     def boundary(self, boundary_id: BoundaryId) -> Boundary:
@@ -12,5 +13,6 @@ class Domain(ABC):
     @abstractmethod
     def boundaries(self) -> dict[BoundaryId, Boundary]:
         pass
+
 
 TDomain = TypeVar("TDomain", bound=Domain)

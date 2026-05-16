@@ -68,6 +68,6 @@ class DequeValueBuffer(ValueBuffer):
 
     def reset(self):
         self._buffer = deque(
-            (np.zeros(shape=self.shape) for _ in \
-            range(self.saved_steps)), maxlen=self.saved_steps
+            (np.zeros(shape=self.shape) for _ in range(self.saved_steps)),
+            maxlen=self.saved_steps,
         )
