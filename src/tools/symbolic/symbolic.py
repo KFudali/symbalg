@@ -1,9 +1,11 @@
 from __future__ import annotations
+from dataclasses import dataclass
 from typing import Any, Self, Union
-from .symbolic_node import SymbolicNode, TSymbolic, ValueNode, UnaryNode, BinaryNode
+from .nodes import SymbolicNode, ValueNode, UnaryNode, BinaryNode, TSymbolic
 from .optype import UnaryOpType, BinaryOpType
 
 
+@dataclass(frozen=True)
 class Symbolic(SymbolicNode[TSymbolic]):
     Types = Union["Symbolic", SymbolicNode[TSymbolic], TSymbolic]
 
@@ -33,6 +35,7 @@ class Symbolic(SymbolicNode[TSymbolic]):
     def _make_binary(
         self, other: SymbolicNode, optype: BinaryOpType
     ) -> BinaryNode[TSymbolic]:
+        self._assert_compatible(other, optype)
         return BinaryNode(optype, self._node, self._ensure_node(other))
 
     def _make_unary(self, optype: UnaryOpType) -> UnaryNode[TSymbolic]:
@@ -41,60 +44,36 @@ class Symbolic(SymbolicNode[TSymbolic]):
     def _make_value(self, operand: TSymbolic) -> ValueNode[TSymbolic]:
         return ValueNode(operand)
 
-    # ---- operations ----
-
-    def neg(self) -> Self:
-        return self._new(self._make_unary(UnaryOpType.NEG))
-
-    def add(self, other: SymbolicNode[TSymbolic]) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.ADD))
-
-    def sub(self, other: SymbolicNode[TSymbolic]) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.SUB))
-
-    def mul(self, other: SymbolicNode[TSymbolic]) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.MUL))
-
-    def div(self, other: SymbolicNode[TSymbolic]) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.DIV))
-
     # ---- operator overloads ----
     def __neg__(self) -> Self:
-        return self.neg()
+        return self._new(self._make_unary(UnaryOpType.NEG))
 
     def __add__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.ADD)
-        return self.add(other)
+        return self._new(self._make_binary(other, BinaryOpType.ADD))
 
     def __sub__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.SUB)
-        return self.sub(other)
+        return self._new(self._make_binary(other, BinaryOpType.ADD))
 
     def __mul__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.MUL)
-        return self.mul(other)
+        return self._new(self._make_binary(other, BinaryOpType.ADD))
 
     def __truediv__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.DIV)
-        return self.div(other)
+        return self._new(self._make_binary(other, BinaryOpType.ADD))
 
     # ---- reverse operators ----
 
     def __radd__(self, other: Types) -> Self:
         self._assert_compatible(other, BinaryOpType.ADD)
-        return self.add(other)
+        return self.__add__(other)
 
     def __rsub__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.SUB)
-        return self._new(self._ensure_node(other)) + (-self)
+        return self.__neg__().__add__(other)
 
     def __rmul__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.MUL)
-        return self.mul(other)
+        return self.__mul__(other)
 
     def __rtruediv__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.DIV)
-        return self._new(self._ensure_node(other)).div(self._node)
+        return self._new(self._ensure_node(other)).__truediv__(self._node)
 
     def __repr__(self) -> str:
         return f"Symbolic({self.node})"

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Generic, TypeVar
-from .optype import UnaryOpType, BinaryOpType
+from .optype import UnaryOpType, BinaryOpType, BINARY_OPS
 
 TSymbolic = TypeVar("TSymbolic")
 
@@ -42,15 +42,4 @@ class BinaryNode(SymbolicNode[TSymbolic]):
     def resolve(self) -> TSymbolic:
         l = self.left.resolve()
         r = self.right.resolve()
-
-        match self.optype:
-            case BinaryOpType.ADD:
-                return l + r
-            case BinaryOpType.SUB:
-                return l - r
-            case BinaryOpType.MUL:
-                return l * r
-            case BinaryOpType.DIV:
-                return l / r
-
-        raise ValueError(f"Unknown OpType: {self.optype}")
+        return BINARY_OPS[self.optype](l, r)

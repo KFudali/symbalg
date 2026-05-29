@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Self, Any, Callable
+from typing import Self, Any
 import numpy as np
 
 from algebra.core.operator import Operator

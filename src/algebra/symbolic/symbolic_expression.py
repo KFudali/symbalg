@@ -89,9 +89,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return ExpressionUnaryNode(optype, self._node)
 
     def _make_binary(self, other: Any, optype: BinaryOpType) -> ExpressionBinaryNode:
-        return ExpressionBinaryNode(
-            optype, self._node, self._ensure_node(other)
-        )
+        return ExpressionBinaryNode(optype, self._node, self._ensure_node(other))
 
     # ---- compatibility checks ----
 

@@ -1,13 +1,17 @@
-from algebra.core.space import TimeDim
 from tools.advanceable import Advanceable, AdvanceableSeries
 
-class DiscreteTime(TimeDim):
+
+class DiscreteTime:
     def __init__(self, dt: float = 0.01):
-        TimeDim.__init__(self)
+        self._current = 0.0
         self._discrete_steps = [0.0]
         self._dt = dt
         self._dts = list[float]()
         self._advanceables = AdvanceableSeries()
+
+    @property
+    def current(self) -> float:
+        return self._current
 
     def set_dt(self, dt: float):
         self._dt = dt
@@ -25,6 +29,7 @@ class DiscreteTime(TimeDim):
     def reset(self):
         self._discrete_steps = [0.0]
         self._dts.clear()
+        self._current = 0.0
 
     @property
     def discrete_steps(self) -> list[float]:

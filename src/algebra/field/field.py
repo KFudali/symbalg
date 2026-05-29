@@ -1,5 +1,5 @@
 from algebra.core.expression import Expression, CallableExpression
-from algebra.fieldshape import FieldShaped
+from algebra.core.fieldshape import FieldShaped, FieldShape
 
 from algebra.exceptions import ShapeMismatchError
 from algebra.symbolic import SymbolicExpression
@@ -9,9 +9,8 @@ from tools.action import LazyAction
 
 
 class Field(FieldShaped):
-    def __init__(self, shape: FieldShape, value_buffer: ValueBuffer):
-        assert shape == value_buffer.shape, "Value buffer shape has to match shape"
-        super().__init__(shape)
+    def __init__(self, value_buffer: ValueBuffer, spacedim: int):
+        super().__init__(FieldShape(value_buffer.shape, spacedim))
         self._value_buffer = value_buffer
 
     def past(self, step: int = 1) -> "Field":

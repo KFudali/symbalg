@@ -1,6 +1,6 @@
 from enum import Enum, auto
 from dataclasses import dataclass
-from algebra.core.space.domain import BoundaryId
+from algebra.core. import BoundaryId
 
 class BCType(Enum):
     DIRICHLET = auto()
@@ -11,4 +11,3 @@ class BoundaryCondition():
     boundary: BoundaryId
     bctype: BCType
     value: float
-

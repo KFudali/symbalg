@@ -1,14 +1,16 @@
 from discrete.core.dx import DxOperators
 from discrete.fd.domain import FDDomain
 from algebra.core.space import Space
-from . import dx
+from . import operators
+from ders import dx
+
 
 class FDDxOperators(DxOperators):
     def __init__(self, space: Space[FDDomain]):
         super().__init__()
         self._space = space
 
-    def laplace(self, components: int) -> dx.LapStencilOperator:
+    def laplace(self, components: int) -> operators.FD:
         return dx.laplace(self._space, components)
 
     def grad(self, components: int) -> dx.GradStencilOperator:
