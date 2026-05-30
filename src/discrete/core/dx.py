@@ -1,15 +1,16 @@
 from abc import ABC, abstractmethod
-from algebra.core.operator import Operator
+from algebra.operator import Operator
+
 
 class DxOperators(ABC):
     @abstractmethod
-    def laplace(self, components: int) -> Operator:
+    def laplace(self) -> Operator:
         pass
 
     @abstractmethod
-    def grad(self, components: int) -> Operator:
+    def grad(self) -> Operator:
         pass
 
     @abstractmethod
-    def div(self, components: int) -> Operator:
+    def div(self) -> Operator:
         pass

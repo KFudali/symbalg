@@ -1,79 +1,78 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import Any, Self, Union
+from typing import Any, Self
 from .nodes import SymbolicNode, ValueNode, UnaryNode, BinaryNode, TSymbolic
 from .optype import UnaryOpType, BinaryOpType
 
 
 @dataclass(frozen=True)
 class Symbolic(SymbolicNode[TSymbolic]):
-    Types = Union["Symbolic", SymbolicNode[TSymbolic], TSymbolic]
-
-    def __init__(self, node: Types):
-        self._node = self._ensure_node(node)
-
-    @property
-    def node(self) -> SymbolicNode[TSymbolic]:
-        return self._node
+    node: SymbolicNode[TSymbolic]
 
     def resolve(self) -> TSymbolic:
-        return self._node.resolve()
+        return self.node.resolve()
 
-    def _ensure_node(self, other) -> SymbolicNode[TSymbolic]:
+    def copy(self) -> Self:
+        return self.__class__(self.node)
+
+    @classmethod
+    def wrap(cls, value: TSymbolic) -> Self:
+        return cls(cls._make_value((value)))
+
+    @classmethod
+    def _ensure_node(
+        cls, other: Symbolic | SymbolicNode | TSymbolic
+    ) -> SymbolicNode[TSymbolic]:
         if isinstance(other, Symbolic):
             return other.node
         if isinstance(other, SymbolicNode):
             return other
-        return self._make_value(other)
+        return cls._make_value(other)
 
-    def _assert_compatible(self, other: Any, optype: BinaryOpType):
-        pass
+    @classmethod
+    def _make_value(cls, other: TSymbolic) -> ValueNode[TSymbolic]:
+        return ValueNode(other)
 
-    def _new(self, expr: SymbolicNode[TSymbolic]) -> Self:
-        return self.__class__(expr)
+    def _new(self, node: SymbolicNode[TSymbolic]) -> Self:
+        return self.__class__(node)
 
-    def _make_binary(
-        self, other: SymbolicNode, optype: BinaryOpType
-    ) -> BinaryNode[TSymbolic]:
-        self._assert_compatible(other, optype)
-        return BinaryNode(optype, self._node, self._ensure_node(other))
+    def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
+        return True
 
-    def _make_unary(self, optype: UnaryOpType) -> UnaryNode[TSymbolic]:
-        return UnaryNode(optype, self._node)
-
-    def _make_value(self, operand: TSymbolic) -> ValueNode[TSymbolic]:
-        return ValueNode(operand)
+    def _combine_binary(self, other: Any, optype: BinaryOpType) -> Self:
+        if self._compatible(other, optype):
+            other_node = self._ensure_node(other)
+            return self._new(BinaryNode(optype, self.node, other_node))
+        return NotImplemented
 
     # ---- operator overloads ----
     def __neg__(self) -> Self:
-        return self._new(self._make_unary(UnaryOpType.NEG))
+        return self._new(UnaryNode(UnaryOpType.NEG, self))
 
-    def __add__(self, other: Types) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.ADD))
+    def __add__(self, other: Any) -> Self:
+        return self._combine_binary(other, BinaryOpType.ADD)
 
-    def __sub__(self, other: Types) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.ADD))
+    def __sub__(self, other: Any) -> Self:
+        return self._combine_binary(other, BinaryOpType.SUB)
 
-    def __mul__(self, other: Types) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.ADD))
+    def __mul__(self, other: Any) -> Self:
+        return self._combine_binary(other, BinaryOpType.MUL)
 
-    def __truediv__(self, other: Types) -> Self:
-        return self._new(self._make_binary(other, BinaryOpType.ADD))
+    def __truediv__(self, other: Any) -> Self:
+        return self._combine_binary(other, BinaryOpType.DIV)
 
     # ---- reverse operators ----
-
-    def __radd__(self, other: Types) -> Self:
-        self._assert_compatible(other, BinaryOpType.ADD)
+    def __radd__(self, other: Any) -> Self:
         return self.__add__(other)
 
-    def __rsub__(self, other: Types) -> Self:
+    def __rsub__(self, other: Any) -> Self:
         return self.__neg__().__add__(other)
 
-    def __rmul__(self, other: Types) -> Self:
+    def __rmul__(self, other: Any) -> Self:
         return self.__mul__(other)
 
-    def __rtruediv__(self, other: Types) -> Self:
-        return self._new(self._ensure_node(other)).__truediv__(self._node)
+    def __rtruediv__(self, other: Any) -> Self:
+        return self._new(self._ensure_node(other)).__truediv__(self.node)
 
     def __repr__(self) -> str:
         return f"Symbolic({self.node})"

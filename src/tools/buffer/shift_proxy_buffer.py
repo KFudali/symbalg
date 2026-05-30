@@ -6,13 +6,8 @@ class ShiftProxyValueBuffer(ValueBuffer):
     def __init__(self, base: ValueBuffer, shift: int):
         if shift < 0:
             raise ValueError("shift must be >= 0")
-
         if shift >= base.saved_steps:
-            raise ValueError(
-                f"Cannot create past proxy with shift={shift}; "
-                f"base buffer only has {base.saved_steps} saved steps"
-            )
-
+            base.set_saved_steps(shift)
         self._base = base
         self._shift = shift
 

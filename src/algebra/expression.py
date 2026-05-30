@@ -37,7 +37,7 @@ class CallableExpression(Expression):
 class ScalarExpression(Expression):
     def __init__(self, scalar: float):
         super().__init__(())
-        self._scalar = scalar
+        self._scalar = np.array(scalar)
 
     def eval(self) -> np.ndarray:
         return self._scalar

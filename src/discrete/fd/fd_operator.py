@@ -7,9 +7,7 @@ from tools.stencil import AxStencil
 class FDOperator(Operator):
     def __init__(
         self,
-        input_shape: FieldShape,
-        output_shape: FieldShape,
-        ax_stencils: tuple[AxStencil, ...],
+        x_stencils: tuple[AxStencil, ...],
     ):
         assert len(ax_stencils) == input_shape.spacedim
         super().__init__(input_shape, output_shape)

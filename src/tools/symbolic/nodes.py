@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Self
 from .optype import UnaryOpType, BinaryOpType, BINARY_OPS
 
 TSymbolic = TypeVar("TSymbolic")

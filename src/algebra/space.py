@@ -40,6 +40,10 @@ class FieldShaped:
         self._shape = shape
 
     @property
+    def fieldshape(self) -> FieldShape:
+        return self._shape
+
+    @property
     def space(self) -> Space:
         return self._shape.space
 

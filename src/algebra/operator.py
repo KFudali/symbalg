@@ -1,7 +1,10 @@
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import TypeVar
-from .expression import Expression
+from typing import TypeVar, Self
+from tools.symbolic.optype import BinaryOpType
+
+import numpy as np
 from .space import Space, ShapeTransform
 
 
@@ -19,54 +22,58 @@ class Operator(ABC):
         return self._space
 
     @abstractmethod
-    def apply(self, expression: Expression) -> Expression:
+    def copy(self) -> Self:
         pass
 
     @abstractmethod
-    def _combine(self, other: "Operator", binary_op):
+    def apply(self, inp: np.ndarray, out: np.ndarray):
         pass
 
     @abstractmethod
-    def _scale(self, other: float) -> "Operator":
+    def _combine(self, other: "Operator", optype: BinaryOpType):
         pass
 
-    def combine(self, other: "Operator", binary_op) -> "Operator":
+    @abstractmethod
+    def _scale(self, other: float) -> Self:
+        pass
+
+    def combine(self, other: "Operator", optype: BinaryOpType) -> Self:
         assert (
             other.space == self.space
         ), "Cannot combine operators from different spaces"
         assert (
             other.shape_transform == self.shape_transform
         ), "Cannot combine operators with different shape transformations"
-        return self._combine(other, binary_op)
+        return self._combine(other, optype)
 
-    def __neg__(self) -> Operator:
+    def __neg__(self) -> Self:
         return NotImplemented
 
-    def __add__(self, other):
+    def __add__(self, other) -> Self:
         if isinstance(other, Operator):
-            return self.combine(other, lambda a, b: a + b)
+            return self.combine(other, BinaryOpType.ADD)
         return NotImplemented
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> Self:
         if isinstance(other, Operator):
-            return self.combine(other, lambda a, b: a - b)
+            return self.combine(other, BinaryOpType.SUB)
         return NotImplemented
 
-    def __mul__(self, other):
+    def __mul__(self, other) -> Self:
         if isinstance(other, Operator):
-            return self.combine(other, lambda a, b: a * b)
+            return self.combine(other, BinaryOpType.MUL)
         if isinstance(other, float):
             return self._scale(other)
         return NotImplemented
 
-    def __div__(self, other):
+    def __div__(self, other) -> Self:
         if isinstance(other, Operator):
-            return self.combine(other, lambda a, b: a / b)
+            return self.combine(other, BinaryOpType.DIV)
         if isinstance(other, float):
             return self._scale(1.0 / other)
         return NotImplemented
 
-    def __rmul__(self, other: float):
+    def __rmul__(self, other: float) -> Self:
         return self.__mul__(other)
 
 
