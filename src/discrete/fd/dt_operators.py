@@ -1,15 +1,16 @@
-from discrete.core.dt import DtOperators
-from discrete.core import DiscreteTime
+from discrete.core import DtOperators, DiscreteTimeView
 from algebra.symbolic import AffineOperator
+from algebra.expression import CallableScalarExpression
+from algebra.space import Space
 from algebra.field import Field
+from .operators.dt import explicit
 
-from . import dt
 
 class FDDtOperators(DtOperators):
-    def euler(self, field: Field, time: DiscreteTime) -> AffineOperator:
-        return dt.explicit.euler(field, time)
+    def __init__(self, space: Space, time: DiscreteTimeView):
+        self._space = space
+        self._time = time
 
-    def bfd(
-        self, field: Field, time: DiscreteTime, order: int
-    ) -> AffineOperator:
-        return dt.explicit.bfd(field, time, order)
+    def euler(self, field: Field) -> AffineOperator:
+        dt = CallableScalarExpression(self._time.dt)
+        return explicit.euler(field, dt)

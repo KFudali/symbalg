@@ -30,14 +30,14 @@ class Operator(ABC):
         pass
 
     @abstractmethod
-    def _combine(self, other: "Operator", optype: BinaryOpType):
+    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
         pass
 
     @abstractmethod
     def _scale(self, other: float) -> Self:
         pass
 
-    def combine(self, other: "Operator", optype: BinaryOpType) -> Self:
+    def combine(self, other: Self, optype: BinaryOpType) -> Self:
         assert (
             other.space == self.space
         ), "Cannot combine operators from different spaces"

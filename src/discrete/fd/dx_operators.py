@@ -1,20 +1,22 @@
+from tools.geometry import StructuredGridND
 from discrete.core.dx import DxOperators
-from discrete.fd.domain import FDDomain
-from algebra.core.space import Space
-from . import operators
-from ders import dx
+from algebra.operator import Operator
+from algebra.space import Space
+
+from .operators import dx
 
 
 class FDDxOperators(DxOperators):
-    def __init__(self, space: Space[FDDomain]):
+    def __init__(self, space: Space, grid: StructuredGridND):
         super().__init__()
         self._space = space
+        self._grid = grid
 
-    def laplace(self, components: int) -> operators.FD:
-        return dx.laplace(self._space, components)
+    def laplace(self, order: int = 1) -> Operator:
+        return dx.laplace(self._space, order, self._grid.spacing[0])
 
-    def grad(self, components: int) -> dx.GradStencilOperator:
-        return dx.grad(self._space, components)
+    def grad(self, order: int = 1) -> Operator:
+        return dx.grad(self._space, order, self._grid.spacing[0])
 
-    def div(self, components: int) -> dx.DivStencilOperator:
-        return dx.div(self._space, components)
+    def div(self, order: int = 1) -> Operator:
+        return dx.div(self._space, order, self._grid.spacing[0])

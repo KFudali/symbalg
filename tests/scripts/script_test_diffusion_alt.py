@@ -1,5 +1,5 @@
 from discrete import fd
-from fieldspace import FieldSpace, dx, dt, systems, monitors
+from fieldspace import FieldSpace, systems, monitors
 from tools.geometry import StructuredGridND
 
 N = 20
@@ -8,65 +8,25 @@ space = fd.FdDiscreteSpace(grid)
 top, bottom = space.domain.ax_boundaries(ax=0)
 left, right = space.domain.ax_boundaries(ax=1)
 
-fieldspace = FieldSpace(space)
+space = FieldSpace(space)
 
-F = fieldspace.field(components=(3,))
-
+s = space.field.scalar(init_value=0.0)
 L = 1.0
-f_dx = dx.laplace()
-f_dt = dt.euler()
-
+f_dx = space.dx.laplace()
+f_dt = space.dt.euler()
 lhs = f_dt - L * f_dx
 rhs = fieldspace.field(components=(), init_value=0.0)
 
-lhs.apply(field) -> expression
-
 equation = systems.les(lhs, rhs.value())
-
 top_bc = systems.bcs.dirichlet(top, 10)
 bot_bc = systems.bcs.dirichlet(bottom, 0)
 left_bc = systems.bcs.neumann(left, -20)
 right_bc = systems.bcs.neumann(right, 20)
 bcs = [top_bc, bot_bc, left_bc, right_bc]
-
-
-
-equation.add_bcs(bcs)
+les = systems.les(lhs, rhs.value(), bcs)
 
 f_history = monitors.FieldMonitor2D(F)
 for step in fieldspace.time.run(duration=1.0, init_dt=0.01):
-    solution = equation.solve()
-    F.set_value(solution).perform()
+    F.set_value(les).perform()
+
 f_history.animate()
-
-SpaceShape(tuple)
-    ndim
-FieldShape(tuple)
-    sapce
-    rank
-    ranks
-    ndim
-
-Expression
-    eval() -> np.ndarray
-Operator
-    apply(expression | np.ndarray) -> Expression:
-
-Field(Expression)
-    past() -> Field
-    set(Expression | np.ndarray) -> LazyAction:
-
-systems.les(Operator, Expression, boundary_conditions).solve() -> Expression
-
-algebra/
-    shapes.py -> SpaceShape, FieldShape
-    operator
-    expression
-    field
-    symbolic/
-        operator
-        expression
-s = FDDiscreteSpace(strucutred_gird)
-
-s.dx.laplace() -> SymbolicOperator
-s.dx.laplace(field) -> SymbolicExpression

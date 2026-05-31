@@ -5,7 +5,8 @@ import numpy as np
 from tools.symbolic import BinaryOpType, BINARY_OPS
 from algebra.operator import Operator
 from algebra.expression import Expression
-from .symbolic import SymbolicExpression, SymbolicOperator
+from .symbolic_expression import SymbolicExpression
+from .symbolic_operator import SymbolicOperator
 
 
 class AffineOperator(Operator):
@@ -30,6 +31,7 @@ class AffineOperator(Operator):
         return self.__class__(self.operator, self.expression)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
+        assert out.shape == self.expression.shape
         self.operator.apply(inp, out)
         out += self.expression.eval()
 

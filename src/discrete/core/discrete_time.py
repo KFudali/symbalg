@@ -1,7 +1,19 @@
-from tools.advanceable import Advanceable, AdvanceableSeries
+from abc import ABC, abstractmethod
+from tools.advanceable import AdvanceableSeries
 
 
-class DiscreteTime:
+class DiscreteTimeView(ABC):
+    @abstractmethod
+    def dt(self) -> float:
+        pass
+
+    @property
+    @abstractmethod
+    def current(self) -> float:
+        pass
+
+
+class DiscreteTime(DiscreteTimeView):
     def __init__(self, dt: float = 0.01):
         self._current = 0.0
         self._discrete_steps = [0.0]
@@ -27,9 +39,9 @@ class DiscreteTime:
         self._discrete_steps.append(self._current)
 
     def reset(self):
+        self._current = 0.0
         self._discrete_steps = [0.0]
         self._dts.clear()
-        self._current = 0.0
 
     @property
     def discrete_steps(self) -> list[float]:

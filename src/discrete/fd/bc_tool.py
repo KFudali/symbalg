@@ -4,18 +4,16 @@ from algebra.systems.bcs import BoundaryCondition, BCType, BCTool
 
 from tools import region
 from .domain import FDDomain, FDBoundary
-from .dx.space_stencil_operator import SpaceStencilOperator
+from .operators import FDOperator
+
 
 @dataclass(frozen=True)
-class FDBCondition():
+class FDBCondition:
     boundary: FDBoundary
     value: float
 
-def apply_dirichlet(
-    bc: FDBCondition,
-    lhs: SpaceStencilOperator,
-    rhs: np.ndarray
-):
+
+def apply_dirichlet(bc: FDBCondition, lhs: FDOperator, rhs: np.ndarray):
     stencil = lhs.boundary_stencils[bc.boundary.id]
     for ax in stencil.contribs.keys():
         if ax != bc.boundary.ax:
@@ -31,20 +29,14 @@ def apply_dirichlet(
         offsets[bc.boundary.ax] = tuple(ranges)
         boundary_interior = region.interior(bc.boundary.grid.shape, tuple(offsets))
         stencil.apply_to_region_on_ax(
-            field[comp],
-            dirichlet_contrib,
-            boundary_interior,
-            bc.boundary.ax
+            field[comp], dirichlet_contrib, boundary_interior, bc.boundary.ax
         )
         rhs[comp][bc.boundary.region] = 0.0
         rhs[comp] -= dirichlet_contrib
     stencil.contribs[bc.boundary.ax] = {0: 1}
 
-def apply_neumann(
-    bc: FDBCondition,
-    lhs: SpaceStencilOperator,
-    rhs: np.ndarray
-):
+
+def apply_neumann(bc: FDBCondition, lhs: SpaceStencilOperator, rhs: np.ndarray):
     stencil = lhs.boundary_stencils[bc.boundary.id]
     contribs = stencil.contribs[bc.boundary.ax]
     h = lhs.domain.grid.ax_spacing(bc.boundary.ax)
@@ -56,15 +48,13 @@ def apply_neumann(
             for comp in range(lhs.output_components):
                 rhs[comp][bc.boundary.region] -= contrib * 2 * h * bc.value
 
+
 class FDBCTool(BCTool):
     def __init__(self, domain: FDDomain):
         self._domain = domain
 
     def apply(
-        self,
-        bcs: list[BoundaryCondition],
-        lhs: SpaceStencilOperator,
-        rhs: np.ndarray
+        self, bcs: list[BoundaryCondition], lhs: SpaceStencilOperator, rhs: np.ndarray
     ):
         for bc in bcs:
             boundary = self._domain.boundary(bc.boundary)
