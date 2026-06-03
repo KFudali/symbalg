@@ -14,7 +14,7 @@ def euler(field: Field, dt: Expression) -> AffineOperator:
     return AffineOperator(mass, const)
 
 
-def bfd(field: Field, dt: ScalarExpression, order: int = 1) -> AffineOperator:
+def bfd(field: Field, dt: Expression, order: int = 1) -> AffineOperator:
     if order == 1:
         return euler(field, dt)
     if order == 2:

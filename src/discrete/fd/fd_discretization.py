@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import numpy as np
 from tools.geometry import StructuredGridND
 
@@ -7,7 +6,7 @@ from algebra.space import Space
 from .domain import FDDomain
 from .dt_operators import FDDtOperators
 from .dx_operators import FDDxOperators
-from .bc_tool import FDBCTool
+from .bcs import FDBCTool
 
 
 class FdDiscretization(Discretization[FDDomain]):
@@ -17,7 +16,7 @@ class FdDiscretization(Discretization[FDDomain]):
         super().__init__(space, domain)
         self._dx = FDDxOperators(space, grid)
         self._dt = FDDtOperators(space, self._time)
-        self._bcs = FDBCTool(domain)
+        self._bcs = FDBCTool()
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -35,7 +34,7 @@ class FdDiscretization(Discretization[FDDomain]):
     def dx(self) -> FDDxOperators:
         return self._dx
 
-    def points(self) -> np.ndarray:
+    def points(self) -> tuple[np.ndarray, ...]:
         grid = self.domain.grid
         spaces = []
         for nx, dx in zip(grid.shape, grid.spacing):
