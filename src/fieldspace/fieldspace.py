@@ -10,7 +10,7 @@ class FieldSpace:
     def __init__(self, discretization: Discretization):
         super().__init__()
         self._discrete = discretization
-        self._systems = SystemFactory(discretization.bc_tool)
+        self._systems = SystemFactory(discretization)
         self._fields = FieldFactory(discretization.space)
         self._monitors = MonitorFactory(discretization)
         self._time_series = TimeSeries(discretization.time)

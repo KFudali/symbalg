@@ -1,5 +1,6 @@
 from __future__ import annotations
 from tools.buffer import ValueBuffer, ShiftProxyValueBuffer
+from tools.action import LazyAction
 from .expression import Expression, CallableExpression
 from .space import FieldShaped, FieldShape
 
@@ -15,3 +16,7 @@ class Field(FieldShaped):
 
     def value(self) -> Expression:
         return CallableExpression(self.shape, self._value_buffer.get)
+
+    def set_value(self, value: Expression) -> LazyAction:
+        assert value.shape == self.shape
+        return LazyAction(self._value_buffer.set(value.eval()))

@@ -34,6 +34,10 @@ class FdDiscretization(Discretization[FDDomain]):
     def dx(self) -> FDDxOperators:
         return self._dx
 
+    @property
+    def bc_tool(self) -> FDBCTool:
+        return self._bcs
+
     def points(self) -> tuple[np.ndarray, ...]:
         grid = self.domain.grid
         spaces = []

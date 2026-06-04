@@ -1,2 +1,1 @@
-from . import domain, dx
-from .fd_space import FdDiscreteSpace
+from .fd_discretization import FdDiscretization

@@ -1,6 +1,7 @@
-from algebra.core.space.domain import Domain, BoundaryId
 from tools.geometry import StructuredGridND
+from discrete.core.domain import Domain, BoundaryId
 from .fd_boundary import FDBoundary
+
 
 class FDDomain(Domain):
     def __init__(self, grid: StructuredGridND):
@@ -29,9 +30,11 @@ class FDDomain(Domain):
         for ax in range(self.grid.ndim):
             left_id = BoundaryId(next_id)
             right_id = BoundaryId(next_id + 1)
-            left = FDBoundary(left_id, self._grid, ax, -1)
-            right = FDBoundary(right_id, self.grid, ax, 1)
+            exclude_conrers = ax % 2 == 0
+            dh = self._grid.ax_spacing(ax)
+            left = FDBoundary(left_id, ax, -1, exclude_conrers, dh)
+            right = FDBoundary(right_id, ax, 1, exclude_conrers, dh)
             self._boundaries[left_id] = left
             self._boundaries[right_id] = right
             self._boundaries_by_ax[ax] = (left_id, right_id)
-            next_id +=2
+            next_id += 2

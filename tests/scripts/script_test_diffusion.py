@@ -1,36 +1,31 @@
-from discrete import fd
-from fieldspace import FieldSpace, dx, dt, systems, monitors
+from fieldspace import FieldSpace
 from tools.geometry import StructuredGridND
+from discrete import fd
 
 N = 20
 grid = StructuredGridND((N, N), (0.1, 0.1))
-space = fd.FdDiscreteSpace(grid)
-top, bottom = space.domain.ax_boundaries(ax = 0)
-left, right = space.domain.ax_boundaries(ax = 1)
+discrete = fd.FdDiscretization(grid)
+s = FieldSpace(discrete)
 
-fieldspace = FieldSpace(space)
-
-F = fieldspace.field(components = 1)
-
-L = 1.0
-f_dx = dx.laplace(F)
-f_dt = dt.euler(F)
-
-lhs = f_dt - L * f_dx
-rhs = fieldspace.field(components = 1, init_value=0.0)
-
-equation = systems.les(lhs, rhs.value())
-
-top_bc = systems.bcs.dirichlet(top, 10)
-bot_bc = systems.bcs.dirichlet(bottom, 0)
-left_bc = systems.bcs.neumann(left, -20)
-right_bc = systems.bcs.neumann(right, 20)
+top, bottom = discrete.domain.ax_boundaries(ax=0)
+left, right = discrete.domain.ax_boundaries(ax=1)
+top_bc = s.systems.bc.dirichlet(top, 10.0)
+bot_bc = s.systems.bc.dirichlet(top, 0.0)
+left_bc = s.systems.bc.neumann(left, -20.0)
+right_bc = s.systems.bc.neumann(right, 20.0)
 bcs = [top_bc, bot_bc, left_bc, right_bc]
 
-equation.add_bcs(bcs)
 
-f_history = monitors.FieldMonitor2D(F)
-for step in fieldspace.time.run(duration = 1.0, init_dt = 0.01):
+F = s.fields.scalar()
+L = 1.0
+f_dx = s.dx.laplace()
+f_dt = s.dt.euler(F)
+lhs = f_dt - L * f_dx
+rhs = s.fields.scalar()
+equation = s.systems.les(lhs, rhs.value(), bcs)
+
+for step in s.time.run(duration=1.0, init_dt=0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
-f_history.animate()
+
+s.monitors.plot_field(F)
