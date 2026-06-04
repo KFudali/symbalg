@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Any, Self
+import numpy as np
 
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
@@ -18,6 +19,15 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     ):
         Symbolic.__init__(self, node)
         Operator.__init__(self, space, shape_transform)
+
+    def apply(self, inp: np.ndarray, out: np.ndarray):
+        self.resolve().apply(inp, out)
+
+    def _scale(self, other: float) -> Self:
+        raise ValueError("SymbolicOperator should not use _scale method")
+
+    def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
+        raise ValueError("SymbolicOperator should not use _combine method")
 
     @classmethod
     def wrap(cls, value: TOperator) -> Self:
