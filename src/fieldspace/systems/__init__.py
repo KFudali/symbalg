@@ -1,2 +1,1 @@
-from .systems import les
-from . import bcs
+from .systems import SystemFactory

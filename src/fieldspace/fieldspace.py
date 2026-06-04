@@ -1,30 +1,39 @@
-import numpy as np
+from discrete.core import Discretization, DxOperators, DtOperators
+from .fields import FieldFactory
+from .systems import SystemFactory
+from .monitors import MonitorFactory
 
-from discrete.core import Discretization
-
-from discrete import DiscreteSpace
-from tools.buffer import DequeValueBuffer
 from .time_series import TimeSeries
 
 
 class FieldSpace:
     def __init__(self, discretization: Discretization):
         super().__init__()
-        self._discretization = discretization
+        self._discrete = discretization
+        self._systems = SystemFactory(discretization.bc_tool)
+        self._fields = FieldFactory(discretization.space)
+        self._monitors = MonitorFactory(discretization)
         self._time_series = TimeSeries(discretization.time)
 
-    def field(self, 0) -> Field:
-        shape = FieldShape((*ranks, self._space.shape), self._space.ndim)
-        buffer = DequeValueBuffer(shape)
-        buffer.set(init_value * np.ones(shape=shape, dtype=float))
-        field = Field(buffer)
-        return field
+    @property
+    def dx(self) -> DxOperators:
+        return self._discrete.dx
 
-    def dx(self):
-        pass
+    @property
+    def dt(self) -> DtOperators:
+        return self._discrete.dt
 
-    def dt(self):
-        pass
+    @property
+    def systems(self) -> SystemFactory:
+        return self._systems
+
+    @property
+    def fields(self) -> FieldFactory:
+        return self._fields
+
+    @property
+    def monitors(self) -> MonitorFactory:
+        return self._monitors
 
     @property
     def time(self) -> TimeSeries:

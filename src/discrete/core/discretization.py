@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 from typing import Generic
+import numpy as np
 from algebra.space import Space
 from algebra.operator import Operator
 from .domain import TDomain, Boundary
@@ -24,6 +25,10 @@ class Discretization(ABC, Generic[TDomain]):
         return self._domain
 
     @property
+    def time(self) -> DiscreteTime:
+        return self._time
+
+    @property
     @abstractmethod
     def dx(self) -> DxOperators:
         pass
@@ -36,4 +41,8 @@ class Discretization(ABC, Generic[TDomain]):
     @property
     @abstractmethod
     def bc_tool(self) -> BCTool[Operator, Boundary]:
+        pass
+
+    @abstractmethod
+    def points(self) -> tuple[np.ndarray, ...]:
         pass

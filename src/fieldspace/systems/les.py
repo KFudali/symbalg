@@ -1,4 +1,3 @@
-from pygments.lexers.hdl import SystemVerilogLexer
 from scipy.sparse.linalg import LinearOperator, cg
 import numpy as np
 
