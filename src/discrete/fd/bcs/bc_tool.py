@@ -28,5 +28,6 @@ class FDBCTool(BCTool[FDOperator, FDBoundary]):
             lhs = lhs.modify(bc.boundary.ax, modified_stencil)
         return lhs
 
-    def post_solve(self, bc: BoundaryCondition, field: np.ndarray):
-        FDBCTool.POST_SOLVE[bc.bc_type](bc, field)
+    def post_solve(self, bcs: list[BoundaryCondition[FDBoundary]], field: np.ndarray):
+        for bc in bcs:
+            FDBCTool.POST_SOLVE[bc.bc_type](bc, field)

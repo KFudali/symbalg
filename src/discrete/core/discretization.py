@@ -1,11 +1,11 @@
 from abc import abstractmethod, ABC
 from typing import Generic
 from algebra.space import Space
-
-from .domain import TDomain
+from algebra.operator import Operator
+from .domain import TDomain, Boundary
 from .dx import DxOperators
 from .dt import DtOperators
-from .bc_tool import BCTool
+from .bcs import BCTool
 from .discrete_time import DiscreteTime
 
 
@@ -35,5 +35,5 @@ class Discretization(ABC, Generic[TDomain]):
 
     @property
     @abstractmethod
-    def bc_tool(self) -> BCTool:
+    def bc_tool(self) -> BCTool[Operator, Boundary]:
         pass

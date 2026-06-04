@@ -1,29 +1,51 @@
-from algebra.systems import LES, bcs
-from algebra.field import FieldOperator
-from algebra.core.expression import Expression, CallableExpression
-from algebra.symbolic import SymbolicExpression
+from pygments.lexers.hdl import SystemVerilogLexer
+from scipy.sparse.linalg import LinearOperator, cg
+import numpy as np
 
-from discrete import DiscreteSpace
+from discrete.core.bcs import BoundaryCondition, BCTool
+from discrete.core.domain import Boundary
+from algebra.symbolic import SymbolicExpression, AffineOperator
+from algebra.operator import Operator
+from algebra.expression import Expression, CallableExpression
 
-class SymbolicLES():
+
+class LES:
     def __init__(
         self,
-        lhs: FieldOperator[DiscreteSpace],
-        rhs: Expression
+        bc_tool: BCTool[Operator, Boundary],
+        lhs: Operator,
+        rhs: Expression,
+        bcs: list[BoundaryCondition[Boundary]],
     ):
-        self._lhs = lhs
+        self._bc_tool = bc_tool
+        if isinstance(lhs, AffineOperator):
+            rhs -= lhs.expression
+            lhs = lhs.operator
         self._rhs = rhs
-        self._bcs = set[bcs.BoundaryCondition]()
+        self._lhs = lhs
+        self._bcs = bcs
+
+    def _assemble(self) -> tuple[LinearOperator, np.ndarray]:
+        rhs = self._rhs.eval()
+        lhs = self._bc_tool.apply(self._bcs, self._lhs, rhs)
+        out = np.zeros_like(rhs)
+
+        def matvec(x: np.ndarray) -> np.ndarray:
+            out[:] = 0.0
+            lhs.apply(x, out)
+            return out.flatten()
+
+        n = rhs.flatten().shape
+        linop = LinearOperator(dtype=float, shape=(*n, *n), matvec=matvec)
+        return linop, rhs
 
     def solve(self) -> SymbolicExpression:
-        lhs = self._lhs.operator.fold()
-        def eval_rhs():
-            return self._rhs.eval() - self._lhs.expression.eval()
-        rhs = CallableExpression(eval_rhs, self._rhs.output_shape)
-        les = LES(lhs, rhs, self._lhs.field.space.bcs)
-        les.add_bcs(list(self._bcs))
-        return SymbolicExpression(les.solve())
+        linop, rhs = self._assemble()
 
-    def add_bcs(self, bc_list: list[bcs.BoundaryCondition]):
-        for bc in bc_list:
-            self._bcs.add(bc)
+        def solve() -> np.ndarray:
+            result, _ = cg(linop, rhs.flatten(), maxiter=1000, rtol=1e-8)
+            result = result.reshape(rhs.shape)
+            self._bc_tool.post_solve(self._bcs, result)
+            return result
+
+        return SymbolicExpression.wrap(CallableExpression(rhs.shape, solve))

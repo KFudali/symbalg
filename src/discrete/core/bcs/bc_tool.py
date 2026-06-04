@@ -13,3 +13,7 @@ class BCTool(ABC, Generic[TOperator, TBoundary]):
         self, bcs: list[BoundaryCondition[TBoundary]], lhs: TOperator, rhs: np.ndarray
     ) -> TOperator:
         pass
+
+    @abstractmethod
+    def post_solve(self, bcs: list[BoundaryCondition[TBoundary]], field: np.ndarray):
+        pass

@@ -1,4 +1,4 @@
-from .bc_tool import BCTool
+from .bcs import BCTool
 from .dx import DxOperators
 from .dt import DtOperators
 from .discretization import Discretization

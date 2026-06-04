@@ -1,3 +1,3 @@
-from .core import DiscreteSpace, DiscreteField, DiscreteTime
+from .core import Discretization, bcs
 from . import core
 from . import fd
