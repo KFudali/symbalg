@@ -3,7 +3,7 @@ import numpy as np
 
 
 from algebra.symbolic import AffineOperator
-from algebra.core.expression import CallableExpression
+from algebra.expression import CallableExpression, ScalarExpression
 from conftest import MockOperator
 
 
@@ -19,7 +19,7 @@ def double_add_one():
     def return_ones():
         return np.ones(shape=(10,), dtype=float)
 
-    ones = CallableExpression(return_ones, (10,))
+    ones = CallableExpression((10,), return_ones)
     operator = AffineOperator(double_op, ones)
     return operator
 
@@ -36,7 +36,7 @@ def triple_sub_three():
     def return_threes():
         return -3.0 * np.ones(shape=(10,), dtype=float)
 
-    threes = CallableExpression(return_threes, (10,))
+    threes = CallableExpression((10,), return_threes)
     operator = AffineOperator(tiple_op, threes)
     return operator
 
@@ -97,8 +97,6 @@ def test_affine_operator_with_floats(double_add_one):
 
 
 def test_affine_operator_with_scalar_exp(double_add_one):
-    from algebra.core.expression import ScalarExpression
-
     scalar = ScalarExpression(2.0)
 
     op_add = double_add_one + scalar
@@ -124,7 +122,7 @@ def test_affine_operator_with_expression(double_add_one):
     def return_twos():
         return two_arr
 
-    twos = CallableExpression(return_twos, (10,))
+    twos = CallableExpression((10,), return_twos())
 
     op_add = double_add_one + twos
     assert op_add.operator.resolve().name == "A"

@@ -1,21 +1,26 @@
 import pytest
 import numpy as np
-import operators
+from discrete.fd.operators import dx
+from algebra.space import Space
 
 
 def test_div_shapes():
-    d = operators.div(order=2, h=0.01, ndim = 1)
+    shape = (10,)
+    space = Space(shape)
+    d = dx.div(space, order=2, h=0.01)
 
     # Vector field, 1D space (1 component) -> scalar field
-    arr = np.ones(shape=(1, 10))
+    arr = np.ones(shape=(1, *shape))
     out = d.apply(arr)
-    assert out.shape == (10,)
+    assert out.shape == shape
 
     # Vector field, 2D space (2 components) -> scalar field
-    d = operators.div(order=2, h=0.01, ndim = 2)
-    arr = np.ones(shape=(2, 10, 10))
+    shape = (10, 10)
+    space = Space(shape)
+    d = dx.div(space, order=2, h=0.01)
+    arr = np.ones(shape=(2, *shape))
     out = d.apply(arr)
-    assert out.shape == (10, 10)
+    assert out.shape == shape
 
     # Tensor (outer rank 3) field, 2D space, contracting last rank axis
     # Shape (3, 2, 10, 10) -> (3, 10, 10)
@@ -41,7 +46,7 @@ def test_div_shapes():
 
 
 def test_div_values():
-    d = operators.div(order=2, h=0.01, ndim = 2)
+    d = operators.div(order=2, h=0.01, ndim=2)
 
     # Constant vector field -> divergence is 0
     arr = np.ones(shape=(2, 10, 10), dtype=float)
@@ -49,7 +54,7 @@ def test_div_values():
     assert np.allclose(out, 0.0, atol=1e-6)
 
     # Linear 1D vector field v(x) = x  ->  div(v) = dv/dx = 1
-    d = operators.div(order=2, h=0.01, ndim = 1)
+    d = operators.div(order=2, h=0.01, ndim=1)
     x = np.arange(0.0, 10.01, 0.01)
     arr = x[np.newaxis, :].copy()  # shape (1, N)
     out = d.apply(arr)

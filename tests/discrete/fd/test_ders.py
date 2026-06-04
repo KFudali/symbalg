@@ -1,6 +1,6 @@
 import numpy as np
 
-import ders
+import discrete.fd.tools as ders
 
 
 def test_dx():

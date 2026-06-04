@@ -1,8 +1,7 @@
 import pytest
 import numpy as np
 from algebra.exceptions import ShapeMismatchError
-from algebra.core.expression import ScalarExpression, CallableExpression
-from algebra.fieldshape import FieldShape
+from algebra.expression import ScalarExpression, CallableExpression
 from algebra.symbolic import SymbolicOperator
 from conftest import MockOperator
 
@@ -11,14 +10,14 @@ def test_symbolic_operator_with_operator():
     op_a = MockOperator("A")
     op_b = MockOperator("B")
     op_c = MockOperator("C")
-    symbolic = SymbolicOperator[MockOperator](op_a)
+    symbolic = SymbolicOperator[MockOperator].wrap(op_a)
     result = ((symbolic + op_b) * op_c).resolve()
     assert result.name == "[[A + B] * C]"
 
 
 def test_symbolic_operator_with_floats():
     op_a = MockOperator("A")
-    symbolic = SymbolicOperator[MockOperator](op_a)
+    symbolic = SymbolicOperator[MockOperator].wrap((op_a))
     result = (symbolic * 10.0).resolve()
     assert result.name == "[A * 10.0]"
 
@@ -33,9 +32,9 @@ def test_symbolic_operator_with_floats():
 
 
 def test_symbolic_operator_with_array():
-    op_a = MockOperator("A", input_shape=(2,), output_shape=(2,))
-    symbolic = SymbolicOperator[MockOperator](op_a)
-    arr = np.array([2.0, 2.0])
+    op_a = MockOperator("A")
+    symbolic = SymbolicOperator[MockOperator].wrap(op_a)
+    arr = np.array(op_a.space.shape)
     result = (symbolic * arr).resolve()
     assert result.name == f"[A * {arr}]"
 
@@ -55,7 +54,7 @@ def test_symbolic_operator_with_array():
 
 def test_symbolic_operator_with_scalar_expression():
     op_a = MockOperator("A")
-    symbolic = SymbolicOperator[MockOperator](op_a)
+    symbolic = SymbolicOperator[MockOperator].wrap(op_a)
     exp = ScalarExpression(10.0)
 
     result = (symbolic * exp).resolve()
@@ -72,9 +71,9 @@ def test_symbolic_operator_with_scalar_expression():
 
 
 def test_symbolic_operator_with_expression():
-    op_a = MockOperator("A", input_shape=(2,), output_shape=(2,))
-    symbolic = SymbolicOperator[MockOperator](op_a)
-    twos = 2.0 * np.ones(shape=(2,), dtype=float)
+    op_a = MockOperator("A")
+    symbolic = SymbolicOperator[MockOperator].wrap(op_a)
+    twos = 2.0 * np.ones(shape=(op_a.space.shape), dtype=float)
 
     def return_twos():
         return twos

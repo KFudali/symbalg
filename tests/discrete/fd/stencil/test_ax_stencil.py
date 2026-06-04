@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-import stencil as st
+import discrete.fd.tools.stencil as st
 
 
 def test_ax_stencil_init():

@@ -1,22 +1,18 @@
 from typing import Self, Callable
 import numpy as np
-from algebra.core.operator import Operator
-from algebra.fieldshape import FieldShape
+from algebra.operator import Operator
+from algebra.space import Space, ShapeTransform
 
 
 class MockOperator(Operator):
-    def __init__(
-        self,
-        name: str,
-        input_shape=FieldShape((10,), 1),
-        output_shape=FieldShape((10,), 1),
-    ):
-        super().__init__(input_shape, output_shape)
+    def __init__(self, name: str):
+        space = Space((10, 10))
+        super().__init__(space, ShapeTransform.NONE)
         self.name = name
         self._apply_callable = None
 
     def copy(self) -> Self:
-        return self.__class__(self.name, self.input_shape, self.output_shape)
+        return self.__class__(self.name)
 
     def set_apply(self, apply: Callable[[np.ndarray, np.ndarray], None]):
         self._apply_callable = apply

@@ -1,5 +1,5 @@
 import numpy as np
-import stencil as st
+import discrete.fd.tools.stencil as st
 
 
 def test_stencil():

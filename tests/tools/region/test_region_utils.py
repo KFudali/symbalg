@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 
-import region
-from region import Region
+from tools import region
+from tools.region import Region
 
 
 def test_full_region():

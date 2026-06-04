@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from region import Region, ShiftOutsideBounds
+from tools.region import Region, ShiftOutsideBounds
 
 
 def test_region_access():

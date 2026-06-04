@@ -4,7 +4,7 @@ from discrete.fd.tools.stencil import AxStencil
 from .fd_operator import FDOperator
 
 
-class FdDivLikeOperator(FDOperator):
+class FDDivLikeOperator(FDOperator):
     """Divergence-like operator. Decreases tensor rank by 1.
 
     A field with shape ``(*outer, self.ndim, *space)`` is mapped to a field
