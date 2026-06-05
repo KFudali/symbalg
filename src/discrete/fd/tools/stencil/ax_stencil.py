@@ -68,14 +68,26 @@ class AxStencil:
     def _combine(
         self, other: "AxStencil", binary_op: Callable[[Stencil, Stencil], Stencil]
     ) -> "AxStencil":
-        assert len(self.lefts) == len(other.lefts)
-        assert len(self.rights) == len(other.rights)
         interior = binary_op(self.interior, other.interior)
+
+        def pick(stencils: tuple[Stencil, ...], fallback: Stencil, i: int) -> Stencil:
+            return stencils[i] if i < len(stencils) else fallback
+
+        n_lefts = max(len(self.lefts), len(other.lefts))
+        n_rights = max(len(self.rights), len(other.rights))
         lefts = tuple(
-            binary_op(self.lefts[i], other.lefts[i]) for i in range(len(self.lefts))
+            binary_op(
+                pick(self.lefts, self.interior, i),
+                pick(other.lefts, other.interior, i),
+            )
+            for i in range(n_lefts)
         )
         rights = tuple(
-            binary_op(self.rights[i], other.rights[i]) for i in range(len(self.rights))
+            binary_op(
+                pick(self.rights, self.interior, i),
+                pick(other.rights, other.interior, i),
+            )
+            for i in range(n_rights)
         )
         return AxStencil(interior, lefts, rights)
 
