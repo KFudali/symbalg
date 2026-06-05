@@ -22,14 +22,17 @@ class FDOperator(Operator):
     def stencils(self) -> tuple[AxStencil, ...]:
         return self._ax_stencils
 
+    def _rebuild(self, stencils: tuple[AxStencil, ...]) -> Self:
+        return self.__class__(self.space, stencils)
+
     def copy(self) -> Self:
-        stencils = (stencil.copy() for stencil in self.stencils)
-        return self.__class__(self.space, self.shape_transform, tuple(stencils))
+        stencils = tuple(stencil.copy() for stencil in self.stencils)
+        return self._rebuild(stencils)
 
     def modify(self, ax: int, new_stencil: AxStencil) -> Self:
         stencils = [stencil.copy() for stencil in self.stencils]
         stencils[ax] = new_stencil
-        return self.__class__(self.space, self.shape_transform, tuple(stencils))
+        return self._rebuild(tuple(stencils))
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
         if not isinstance(other, type(self)):
@@ -38,8 +41,8 @@ class FDOperator(Operator):
         binary_op = BINARY_OPS[optype]
         for ax, stencil in enumerate(self.stencils):
             stencils.append(binary_op(stencil, other.stencils[ax]))
-        return self.__class__(self.space, self.shape_transform, tuple(stencils))
+        return self._rebuild(tuple(stencils))
 
     def _scale(self, other: float | int) -> Self:
         stencils = tuple(stencil * other for stencil in self.stencils)
-        return self.__class__(self.space, self.shape_transform, tuple(stencils))
+        return self._rebuild(stencils)

@@ -31,4 +31,4 @@ class FDDivLikeOperator(FDOperator):
                 "DivLikeOperator requires field and out to share leading " "rank dims"
             )
             for comp in range(inp.shape[0]):
-                self._apply(inp[comp], out[comp])
+                self.apply(inp[comp], out[comp])

@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from typing import TypeVar, Self
+import numpy as np
 from tools.symbolic.optype import BinaryOpType
 
-import numpy as np
 from .space import Space, ShapeTransform
 
 
@@ -28,10 +28,12 @@ class Operator(ABC):
     @abstractmethod
     def apply(self, inp: np.ndarray, out: np.ndarray):
         pass
-    
-    @abstractmethod
+
     def apply_to(self, inp: np.ndarray) -> np.ndarray:
-        pass
+        out_shape = self._shape_transform.transform(self._space, inp.shape)
+        out = np.zeros(out_shape, dtype=inp.dtype)
+        self.apply(inp, out)
+        return out
 
     @abstractmethod
     def _combine(self, other: Self, optype: BinaryOpType) -> Self:

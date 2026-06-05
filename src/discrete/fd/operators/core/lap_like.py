@@ -21,4 +21,4 @@ class FDLapLikeOperator(FDOperator):
                 self.stencils[ax].eval_to(ax, inp, out)
         else:
             for comp in range(inp.shape[0]):
-                self._apply(inp[comp], out[comp])
+                self.apply(inp[comp], out[comp])
