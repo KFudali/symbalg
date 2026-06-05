@@ -2,7 +2,7 @@ from fieldspace import FieldSpace
 from tools.geometry import StructuredGridND
 from discrete import fd
 
-N = 20
+N = 4
 grid = StructuredGridND((N, N), (0.1, 0.1))
 discrete = fd.FdDiscretization(grid)
 s = FieldSpace(discrete)
@@ -10,7 +10,7 @@ s = FieldSpace(discrete)
 top, bottom = discrete.domain.ax_boundaries(ax=0)
 left, right = discrete.domain.ax_boundaries(ax=1)
 top_bc = s.systems.bc.dirichlet(top, 10.0)
-bot_bc = s.systems.bc.dirichlet(top, 0.0)
+bot_bc = s.systems.bc.dirichlet(bottom, 0.0)
 left_bc = s.systems.bc.neumann(left, -20.0)
 right_bc = s.systems.bc.neumann(right, 20.0)
 bcs = [top_bc, bot_bc, left_bc, right_bc]

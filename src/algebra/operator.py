@@ -52,6 +52,7 @@ class Operator(ABC):
         ), "Cannot combine operators with different shape transformations"
         return self._combine(other, optype)
 
+    @abstractmethod
     def __neg__(self) -> Self:
         return NotImplemented
 
@@ -81,6 +82,5 @@ class Operator(ABC):
 
     def __rmul__(self, other: float) -> Self:
         return self.__mul__(other)
-
 
 TOperator = TypeVar("TOperator", bound=Operator)
