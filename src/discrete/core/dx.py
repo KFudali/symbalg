@@ -4,13 +4,13 @@ from algebra.operator import Operator
 
 class DxOperators(ABC):
     @abstractmethod
-    def laplace(self) -> Operator:
+    def laplace(self, order: int = 2) -> Operator:
         pass
 
     @abstractmethod
-    def grad(self) -> Operator:
+    def grad(self, order: int = 2) -> Operator:
         pass
 
     @abstractmethod
-    def div(self) -> Operator:
+    def div(self, order: int = 2) -> Operator:
         pass

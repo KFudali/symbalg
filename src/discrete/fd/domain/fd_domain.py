@@ -30,7 +30,7 @@ class FDDomain(Domain):
         for ax in range(self.grid.ndim):
             left_id = BoundaryId(next_id)
             right_id = BoundaryId(next_id + 1)
-            exclude_conrers = ax % 2 == 0
+            exclude_conrers = ax % 2 != 0
             dh = self._grid.ax_spacing(ax)
             left = FDBoundary(left_id, ax, -1, exclude_conrers, dh)
             right = FDBoundary(right_id, ax, 1, exclude_conrers, dh)

@@ -19,4 +19,6 @@ class Field(FieldShaped):
 
     def set_value(self, value: Expression) -> LazyAction:
         assert value.shape == self.shape
-        return LazyAction(self._value_buffer.set(value.eval()))
+        def set():
+            self._value_buffer.set(value.eval())
+        return LazyAction(set)

@@ -12,11 +12,11 @@ class FDDxOperators(DxOperators):
         self._space = space
         self._grid = grid
 
-    def laplace(self, order: int = 1) -> Operator:
+    def laplace(self, order: int = 2) -> Operator:
         return dx.laplace(self._space, order, self._grid.spacing[0])
 
-    def grad(self, order: int = 1) -> Operator:
+    def grad(self, order: int = 2) -> Operator:
         return dx.grad(self._space, order, self._grid.spacing[0])
 
-    def div(self, order: int = 1) -> Operator:
+    def div(self, order: int = 2) -> Operator:
         return dx.div(self._space, order, self._grid.spacing[0])

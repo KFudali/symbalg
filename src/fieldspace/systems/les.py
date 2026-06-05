@@ -31,7 +31,7 @@ class LES:
 
         def matvec(x: np.ndarray) -> np.ndarray:
             out[:] = 0.0
-            lhs.apply(x, out)
+            lhs.apply(x.reshape(self._rhs.shape), out)
             return out.flatten()
 
         n = rhs.flatten().shape

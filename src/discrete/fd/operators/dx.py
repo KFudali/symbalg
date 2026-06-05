@@ -25,6 +25,8 @@ def div(space: Space, order: int, h: float) -> FDDivLikeOperator:
 
 
 def eye(space: Space) -> FDLapLikeOperator:
-    stencils = [stencil.AxStencil(stencil.Stencil({}), (), ())]
+    stencils = []
+    for ax in range(space.ndim):
+        stencils.append(stencil.AxStencil(stencil.Stencil({}), (), ()))
     stencils[0] = stencil.AxStencil(stencil.Stencil({0: 1.0}), (), ())
-    return FDLapLikeOperator(space, stencils)
+    return FDLapLikeOperator(space, tuple(stencils))

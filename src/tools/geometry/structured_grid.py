@@ -33,12 +33,11 @@ class StructuredGridND:
         axes = [np.arange(self.shape[d]) * self.spacing[d] for d in range(self.ndim)]
         return np.meshgrid(*axes, indexing="ij")
 
-    def boundary(self, ax: int, side: int) -> Region:
+    def boundary(self, ax: int, side: int, exclude_corners: bool = False) -> Region:
         if side not in (-1, 1):
             raise ValueError("side must be -1 (left boundary) or 1 (right boundary)")
         if not 0 <= ax < self.ndim:
             raise IndexError(f"ax must be in [0, {self.ndim-1}]; got {ax}")
-        exclude_corners = ax % 2 != 0
         return boundary(self.ndim, ax, side, exclude_corners)
 
     def ax_spacing(self, axis: int) -> float:

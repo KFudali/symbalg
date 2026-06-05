@@ -7,7 +7,7 @@ class ShiftProxyValueBuffer(ValueBuffer):
         if shift < 0:
             raise ValueError("shift must be >= 0")
         if shift >= base.saved_steps:
-            base.set_saved_steps(shift)
+            base.set_saved_steps(shift + 1)
         self._base = base
         self._shift = shift
 

@@ -20,7 +20,7 @@ F = s.fields.scalar()
 L = 1.0
 f_dx = s.dx.laplace()
 f_dt = s.dt.euler(F)
-lhs = f_dt - L * f_dx
+lhs = f_dt - (L * f_dx)
 rhs = s.fields.scalar()
 equation = s.systems.les(lhs, rhs.value(), bcs)
 
