@@ -3,7 +3,7 @@ import numpy as np
 
 from discrete.core.bcs import BoundaryCondition, BCTool
 from discrete.core.domain import Boundary
-from algebra.symbolic import SymbolicExpression, AffineOperator
+from algebra.symbolic import SymbolicExpression, SymbolicOperator, AffineOperator
 from algebra.operator import Operator
 from algebra.expression import Expression, CallableExpression
 
@@ -26,7 +26,10 @@ class LES:
 
     def _assemble(self) -> tuple[LinearOperator, np.ndarray]:
         rhs = self._rhs.eval()
-        lhs = self._bc_tool.apply(self._bcs, self._lhs, rhs)
+        lhs = self._lhs
+        if isinstance(lhs, SymbolicOperator):
+            lhs = self._lhs.resolve()
+        lhs = self._bc_tool.apply(self._bcs, lhs, rhs)
         out = np.zeros_like(rhs)
 
         def matvec(x: np.ndarray) -> np.ndarray:
