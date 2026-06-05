@@ -1,4 +1,4 @@
-from .core import FDLapLikeOperator, FDGradLikeOperator, FdDivLikeOperator
+from .core import FDLapLikeOperator, FDGradLikeOperator, FDDivLikeOperator
 from discrete.fd.tools import dx, ddx, stencil
 from algebra.space import Space
 

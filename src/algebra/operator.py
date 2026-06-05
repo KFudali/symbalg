@@ -28,6 +28,10 @@ class Operator(ABC):
     @abstractmethod
     def apply(self, inp: np.ndarray, out: np.ndarray):
         pass
+    
+    @abstractmethod
+    def apply_to(self, inp: np.ndarray) -> np.ndarray:
+        pass
 
     @abstractmethod
     def _combine(self, other: Self, optype: BinaryOpType) -> Self:
@@ -66,7 +70,7 @@ class Operator(ABC):
             return self._scale(other)
         return NotImplemented
 
-    def __div__(self, other) -> Self:
+    def __truediv__(self, other) -> Self:
         if isinstance(other, Operator):
             return self.combine(other, BinaryOpType.DIV)
         if isinstance(other, float):

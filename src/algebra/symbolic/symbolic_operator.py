@@ -48,8 +48,8 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
         if isinstance(other, Operator):
-            matches_space = self.space != other.space
-            matches_shape_transform = self.shape_transform != other.shape_transform
+            matches_space = self.space == other.space
+            matches_shape_transform = self.shape_transform == other.shape_transform
             if matches_space and matches_shape_transform:
                 return True
         is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)

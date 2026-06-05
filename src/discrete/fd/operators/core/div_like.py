@@ -16,7 +16,7 @@ class FDDivLikeOperator(FDOperator):
     def __init__(self, space: Space, stencils: tuple[AxStencil, ...]):
         super().__init__(space, ShapeTransform.REDUCE_RANK, stencils)
 
-    def _apply(self, inp: np.ndarray, out: np.ndarray):
+    def apply(self, inp: np.ndarray, out: np.ndarray):
         rank = len(inp.shape[: -self.space.ndim])
         assert rank >= 1, "DivLikeOperator requires field rank >= 1"
         assert (

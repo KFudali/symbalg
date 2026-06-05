@@ -2,8 +2,7 @@ from typing import Callable
 from dataclasses import dataclass
 from types import MappingProxyType
 import numpy as np
-import region
-
+from tools import region
 
 @dataclass(frozen=True)
 class Stencil:

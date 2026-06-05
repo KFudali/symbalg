@@ -15,7 +15,7 @@ class FDGradLikeOperator(FDOperator):
     def __init__(self, space: Space, stencils: tuple[AxStencil, ...]):
         super().__init__(space, ShapeTransform.INCREASE_RANK, stencils)
 
-    def _apply(self, inp: np.ndarray, out: np.ndarray):
+    def apply(self, inp: np.ndarray, out: np.ndarray):
         field_rank = len(inp.shape[: -self.space.ndim])
         if field_rank == 0:
             for ax in range(self.space.ndim):

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable
 import numpy as np
-import region
+from tools import region
 from .stencil import Stencil
 
 

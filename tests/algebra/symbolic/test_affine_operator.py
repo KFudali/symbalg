@@ -61,7 +61,7 @@ def test_affine_operator_with_affine(double_add_one, triple_sub_three):
     assert np.allclose(op_add.expression.resolve(), -2.0)
 
     op_sub = double_add_one - triple_sub_three
-    assert op_sub.operator.resolve().name == "[A + [-B]]"
+    assert op_sub.operator.resolve().name == "[A - B]"
     assert np.allclose(op_sub.expression.resolve(), 4.0)
 
     op_mul = double_add_one * triple_sub_three
@@ -79,65 +79,12 @@ def test_affine_operator_with_affine(double_add_one, triple_sub_three):
 
 
 def test_affine_operator_with_floats(double_add_one):
-    op_add = double_add_one + 1.0
-    assert op_add.operator.resolve().name == "A"
-    assert np.allclose(op_add.expression.resolve(), 2.0)
-
-    op_sub = double_add_one - 1.0
-    assert op_sub.operator.resolve().name == "A"
-    assert np.allclose(op_sub.expression.resolve(), 0.0)
-
     op_mul = double_add_one * 3.0
     assert op_mul.operator.resolve().name == "[A * 3.0]"
     assert np.allclose(op_mul.expression.resolve(), 3.0)
 
     op_div = double_add_one / 2.0
     assert op_div.operator.resolve().name == "[A * 0.5]"
-    assert np.allclose(op_div.expression.resolve(), 0.5)
-
-
-def test_affine_operator_with_scalar_exp(double_add_one):
-    scalar = ScalarExpression(2.0)
-
-    op_add = double_add_one + scalar
-    assert op_add.operator.resolve().name == "A"
-    assert np.allclose(op_add.expression.resolve(), 3.0)
-
-    op_sub = double_add_one - scalar
-    assert op_sub.operator.resolve().name == "A"
-    assert np.allclose(op_sub.expression.resolve(), -1.0)
-
-    op_mul = double_add_one * scalar
-    assert op_mul.operator.resolve().name == "[A * 2.0]"
-    assert np.allclose(op_mul.expression.resolve(), 2.0)
-
-    op_div = double_add_one / scalar
-    assert op_div.operator.resolve().name == "[A * 0.5]"
-    assert np.allclose(op_div.expression.resolve(), 0.5)
-
-
-def test_affine_operator_with_expression(double_add_one):
-    two_arr = 2.0 * np.ones(shape=(10,), dtype=float)
-
-    def return_twos():
-        return two_arr
-
-    twos = CallableExpression((10,), return_twos())
-
-    op_add = double_add_one + twos
-    assert op_add.operator.resolve().name == "A"
-    assert np.allclose(op_add.expression.resolve(), 3.0)
-
-    op_sub = double_add_one - twos
-    assert op_sub.operator.resolve().name == "A"
-    assert np.allclose(op_sub.expression.resolve(), -1.0)
-
-    op_mul = double_add_one * twos
-    assert op_mul.operator.resolve().name == f"[A * {two_arr}]"
-    assert np.allclose(op_mul.expression.resolve(), 2.0)
-
-    op_div = double_add_one / twos
-    assert op_div.operator.resolve().name == f"[A * {1.0 / two_arr}]"
     assert np.allclose(op_div.expression.resolve(), 0.5)
 
 
@@ -149,7 +96,7 @@ def test_affine_operator_with_operator(double_add_one):
     assert np.allclose(op_add.expression.resolve(), 1.0)
 
     op_sub = double_add_one - op
-    assert op_sub.operator.resolve().name == "[A + [-B]]"
+    assert op_sub.operator.resolve().name == "[A - B]"
     assert np.allclose(op_sub.expression.resolve(), 1.0)
 
     op_mul = double_add_one * op

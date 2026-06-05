@@ -15,8 +15,12 @@ class AffineOperator(Operator):
         operator: Operator,
         expression: Expression,
     ):
-        self._operator = SymbolicOperator.wrap(operator)
-        self._expression = SymbolicExpression.wrap(expression)
+        if not isinstance(operator, SymbolicOperator):
+            operator = SymbolicOperator.wrap(operator)
+        if not isinstance(expression, SymbolicExpression):
+            expression = SymbolicExpression.wrap(expression)
+        self._operator = operator
+        self._expression = expression
         super().__init__(operator.space, operator.shape_transform)
 
     @property

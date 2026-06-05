@@ -46,7 +46,7 @@ def test_div_shapes():
 
 
 def test_div_values():
-    d = operators.div(order=2, h=0.01, ndim=2)
+    d = dx.div(order=2, h=0.01, ndim=2)
 
     # Constant vector field -> divergence is 0
     arr = np.ones(shape=(2, 10, 10), dtype=float)

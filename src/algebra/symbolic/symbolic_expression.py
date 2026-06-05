@@ -1,7 +1,8 @@
 from __future__ import annotations
 from typing import Any, Self
+import numpy as np
 
-from algebra.expression import Expression
+from algebra.expression import Expression, ScalarExpression, CallableExpression
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExpressionNode
@@ -19,7 +20,17 @@ class SymbolicExpression(Symbolic[Expression], Expression):
 
     @classmethod
     def _make_value(cls, other: Expression) -> nodes.ValueNode[Expression]:
-        return ExpressionNode(other)
+        expr = other
+        if isinstance(other, float):
+            expr = ScalarExpression(other)
+        if isinstance(other, np.ndarray):
+            def get_other() -> np.ndarray:
+                return other
+            expr = CallableExpression(other.shape, get_other)
+        return ExpressionNode(expr)
+
+    def eval(self) -> np.ndarray:
+        return self.resolve()
 
     def copy(self) -> Self:
         return self.__class__(self.node, self.shape)
@@ -28,11 +39,12 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return self.__class__(node, self.shape)
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
-        is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Expression):
-            if self.shape == other.shape:
+            if self.shape == other.shape or other.shape == ():
+                return True
+        if isinstance(other, np.ndarray):
+            if self.shape == other.shape or other.shape == ():
                 return True
         if isinstance(other, float):
-            if is_scale:
-                return True
+            return True
         return False
