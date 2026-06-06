@@ -76,3 +76,31 @@ def test_ax_stencil_magics():
         assert binary_op(l_dx, r_dx).interior == binary_op(l_int, r_int)
         assert binary_op(l_dx, r_dx).lefts == (binary_op(l_left, r_left),)
         assert binary_op(l_dx, r_dx).rights == (binary_op(l_right, r_right),)
+
+def test_norm_offsets():
+    left_norm = st.Stencil({0, 10.0})
+    right_norm = st.Stencil({0, -10.0})
+    lefts = (st.Stencil({0: 1.0}), st.Stencil({0: 1.0}), st.Stencil({0: 1.0}))
+    rights = (st.Stencil({0: 5.0}),)
+    new_lefts, new_rights = st.AxStencil.norm_offset(lefts, left_norm, rights, right_norm)
+
+    assert len(new_lefts) == len(new_rights)
+    assert new_rights == (*rights, right_norm.copy(), right_norm.copy())
+
+    lefts = (st.Stencil({0: 5.0}),)
+    rights = (st.Stencil({0: 1.0}), st.Stencil({0: 1.0}), st.Stencil({0: 1.0}))
+    new_lefts, new_rights = st.AxStencil.norm_offset(lefts, left_norm, rights, right_norm)
+    
+    assert len(new_lefts) == len(new_rights)
+    assert new_lefts == (*lefts, left_norm.copy(), left_norm.copy())
+
+def test_ax_stencil_mismatch_magics():
+    l_int = st.Stencil({-1: 1.0, 0: 1.0, 1: 1.0})
+    l_left = st.Stencil({0: 1.0, 1: 1.0})
+    l_right = st.Stencil({-1: 1.0, 0: 1.0})
+    l_dx = st.AxStencil(l_int, (l_left,), (l_right,))
+
+    r_int = st.Stencil({-1: 2.0, 0: 2.0, 1: 2.0})
+    r_left = st.Stencil({0: 2.0, 1: 2.0})
+    r_right = st.Stencil({-1: 2.0, 0: 2.0})
+    r_dx = st.AxStencil(r_int, (r_left,), (r_right,))

@@ -1,5 +1,5 @@
 from tools.geometry import StructuredGridND
-from discrete.core.dx import DxOperators
+from discrete.core.dx_operators import DxOperators
 from algebra.operator import Operator
 from algebra.space import Space
 
@@ -12,11 +12,11 @@ class FDDxOperators(DxOperators):
         self._space = space
         self._grid = grid
 
-    def laplace(self, order: int = 2) -> Operator:
+    def _laplace(self, order: int) -> Operator:
         return dx.laplace(self._space, order, self._grid.spacing[0])
 
-    def grad(self, order: int = 2) -> Operator:
+    def _grad(self, order: int) -> Operator:
         return dx.grad(self._space, order, self._grid.spacing[0])
 
-    def div(self, order: int = 2) -> Operator:
+    def _div(self, order: int) -> Operator:
         return dx.div(self._space, order, self._grid.spacing[0])

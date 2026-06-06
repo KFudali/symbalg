@@ -4,6 +4,9 @@ from algebra.symbolic import AffineOperator
 
 
 class DtOperators(ABC):
-    @abstractmethod
     def euler(self, field: Field) -> AffineOperator:
+        return self._euler(field)
+
+    @abstractmethod
+    def _euler(self, field: Field) -> AffineOperator:
         pass

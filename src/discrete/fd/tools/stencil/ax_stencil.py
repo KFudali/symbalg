@@ -64,30 +64,45 @@ class AxStencil:
         self._eval_to_boundary(ax, -1, field, out)
         self._eval_to_boundary(ax, 1, field, out)
         self._eval_to_interior(ax, field, out)
+    
+    def norm_offset(
+        first: tuple[Stencil, ...], append_first: Stencil,
+        second: tuple[Stencil, ...], append_second: Stencil
+
+    ) -> tuple[tuple[Stencil, ...], tuple[Stencil, ...]]:
+        if len(first) == len(second):
+            return first, second
+        len_diff = len(first) - len(second)
+        if len_diff > 0:
+            new_second = list(second)
+            for _ in range(len_diff):
+                new_second.append(append_second.copy())
+            second = tuple(new_second)
+        else:
+            new_first = list(first)
+            for _ in range(-len_diff):
+                new_first.append(append_first.copy())
+            first = tuple(new_first)
+        return first, second
 
     def _combine(
         self, other: "AxStencil", binary_op: Callable[[Stencil, Stencil], Stencil]
     ) -> "AxStencil":
         interior = binary_op(self.interior, other.interior)
-
-        def pick(stencils: tuple[Stencil, ...], fallback: Stencil, i: int) -> Stencil:
-            return stencils[i] if i < len(stencils) else fallback
-
-        n_lefts = max(len(self.lefts), len(other.lefts))
-        n_rights = max(len(self.rights), len(other.rights))
+        self_lefts, other_lefts = AxStencil.norm_offset(
+            self.lefts, self.interior, other.lefts, other.interior
+        )
+        self_rights, other_rights = AxStencil.norm_offset(
+            self.rights, self.interior, other.rights, other.interior
+        )
+        
         lefts = tuple(
-            binary_op(
-                pick(self.lefts, self.interior, i),
-                pick(other.lefts, other.interior, i),
-            )
-            for i in range(n_lefts)
+            binary_op(self_lefts[i], other_lefts[i])
+            for i in range(len(self_lefts))
         )
         rights = tuple(
-            binary_op(
-                pick(self.rights, self.interior, i),
-                pick(other.rights, other.interior, i),
-            )
-            for i in range(n_rights)
+            binary_op(self_rights[i], other_rights[i])
+            for i in range(len(self_rights))
         )
         return AxStencil(interior, lefts, rights)
 

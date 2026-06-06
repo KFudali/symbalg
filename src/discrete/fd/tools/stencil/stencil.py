@@ -58,11 +58,13 @@ class Stencil:
     def _combine(
         self, other: "Stencil", binary_op: Callable[[float, float], float]
     ) -> "Stencil":
+        #TODO: Test this behavior
         weights = self._weights.copy()
         weights.update(other.weights)
-        for offset, weight in self._weights.items():
-            if offset in other.weights:
-                weights[offset] = binary_op(weight, other.weights[offset])
+        for offset in weights.keys():
+            self_weight = self.weights.get(offset, 0.0)
+            other_weight = other.weights.get(offset, 0.0)
+            weights[offset] = binary_op(self_weight, other_weight)
         return Stencil(weights)
 
     def _combine_exclusive(

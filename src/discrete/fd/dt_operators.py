@@ -11,6 +11,6 @@ class FDDtOperators(DtOperators):
         self._space = space
         self._time = time
 
-    def euler(self, field: Field) -> AffineOperator:
+    def _euler(self, field: Field) -> AffineOperator:
         dt = CallableScalarExpression(self._time.dt)
         return explicit.euler(field, dt)

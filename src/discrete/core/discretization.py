@@ -4,8 +4,8 @@ import numpy as np
 from algebra.space import Space
 from algebra.operator import Operator
 from .domain import TDomain, Boundary
-from .dx import DxOperators
-from .dt import DtOperators
+from .dx_operators import DxOperators
+from .dt_operators import DtOperators
 from .bcs import BCTool
 from .discrete_time import DiscreteTime
 
