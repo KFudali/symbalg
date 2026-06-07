@@ -23,7 +23,7 @@ def bfd(field: Field, dt: Expression, order: int = 1) -> AffineOperator:
         mass = eye / dt_exp
         prev_1 = SymbolicExpression.wrap(field.past(1).value())
         prev_2 = SymbolicExpression.wrap(field.past(2).value())
-        op = mass * (3.0 / 2.0 * dt_exp)
+        op = mass * (3.0 / 2.0)
         exp = (-4.0 * prev_1 + prev_2) / (2.0 * dt_exp)
         return AffineOperator(op, exp)
     return NotImplemented

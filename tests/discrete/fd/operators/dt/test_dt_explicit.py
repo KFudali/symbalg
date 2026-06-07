@@ -14,7 +14,7 @@ def field_buffer() -> tuple[Field, DequeValueBuffer]:
     return Field(fieldshape, buffer), buffer
 
 
-def test_first_odrer_with_const_field():
+def test_first_order_with_const_field():
     time_step = ScalarExpression(0.01)
     field, values = field_buffer()
     values.set(np.ones(shape=field.shape, dtype=float))
@@ -25,7 +25,7 @@ def test_first_odrer_with_const_field():
         assert np.allclose(vals, 0.0)
 
 
-def test_second_odrer_with_const_field():
+def test_second_order_with_const_field():
     time_step = ScalarExpression(0.01)
     field, values = field_buffer()
     values.set_saved_steps(2)
@@ -38,21 +38,23 @@ def test_second_odrer_with_const_field():
         assert np.allclose(vals, 0.0)
 
 
-def test_first_odrer_with_linear_field():
+def test_first_order_with_linear_field():
     time_step = ScalarExpression(0.01)
     field, values = field_buffer()
     dt = explicit.bfd(field, time_step, order=1)
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
-        vals = dt.of(field).eval()
-        assert np.allclose(vals, 1.0)
+        if t > 0:
+            vals = dt.of(field).eval()
+            assert np.allclose(vals, 1.0 / 0.01)
 
 
-def test_second_odrer_with_linear_field():
+def test_second_order_with_linear_field():
     time_step = ScalarExpression(0.01)
     field, values = field_buffer()
     dt = explicit.bfd(field, time_step, order=2)
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
-        vals = dt.of(field).eval()
-        assert np.allclose(vals, 1.0)
+        if t > 1:
+            vals = dt.of(field).eval()
+            assert np.allclose(vals, 1.0 / 0.01)
