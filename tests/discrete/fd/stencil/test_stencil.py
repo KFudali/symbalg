@@ -27,7 +27,7 @@ def test_stencil_combine_add():
 def test_stencil_combine_sub():
     left = st.Stencil({0: 1.0, 1: 5.0})
     right = st.Stencil({-1: 2.0, 0: 1.0, 1: -3.0})
-    assert np.isclose((left - right).weights[-1], 2.0)
+    assert np.isclose((left - right).weights[-1], -2.0)
     assert np.isclose((left - right).weights[0], 0.0)
     assert np.isclose((left - right).weights[1], 8.0)
 

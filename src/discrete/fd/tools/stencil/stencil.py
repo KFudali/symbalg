@@ -58,7 +58,6 @@ class Stencil:
     def _combine(
         self, other: "Stencil", binary_op: Callable[[float, float], float]
     ) -> "Stencil":
-        #TODO: Test this behavior
         weights = self._weights.copy()
         weights.update(other.weights)
         for offset in weights.keys():
