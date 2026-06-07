@@ -4,9 +4,10 @@ from algebra.symbolic import AffineOperator
 
 
 class DtOperators(ABC):
-    def euler(self, field: Field) -> AffineOperator:
-        return self._euler(field)
+    @abstractmethod
+    def explicit(self, field: Field, order: int = 1) -> AffineOperator:
+        pass
 
     @abstractmethod
-    def _euler(self, field: Field) -> AffineOperator:
+    def implicit(self, field: Field, order: int = 1) -> AffineOperator:
         pass
