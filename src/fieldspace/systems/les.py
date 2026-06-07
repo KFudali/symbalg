@@ -43,11 +43,10 @@ class LES:
 
     def solve(self) -> SymbolicExpression:
         linop, rhs = self._assemble()
-
         def solve() -> np.ndarray:
-            result, _ = cg(linop, rhs.flatten(), maxiter=1000, rtol=1e-8)
+            result, _ = cg(linop, rhs.flatten(), maxiter=1000, rtol=1e-9)
             result = result.reshape(rhs.shape)
             self._bc_tool.post_solve(self._bcs, result)
             return result
 
-        return SymbolicExpression.wrap(CallableExpression(rhs.shape, solve))
+        return SymbolicExpression.wrap(CallableExpression(self._rhs.shape, solve))

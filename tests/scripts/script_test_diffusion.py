@@ -2,7 +2,7 @@ from fieldspace import FieldSpace
 from tools.geometry import StructuredGridND
 from discrete import fd
 
-N = 4
+N = 20
 grid = StructuredGridND((N, N), (0.1, 0.1))
 discrete = fd.FdDiscretization(grid)
 s = FieldSpace(discrete)
@@ -23,12 +23,10 @@ f_dt = s.dt.euler(F)
 lhs = f_dt - f_dx
 op = lhs.operator.resolve()
 
-
 rhs = s.fields.scalar()
 equation = s.systems.les(lhs, rhs.value(), bcs)
 
 for step in s.time.run(duration=1.0, init_dt=0.01):
     solution = equation.solve()
     F.set_value(solution).perform()
-
-s.monitors.plot_field(F)
+s.monitors.plot_field(F.past(1))

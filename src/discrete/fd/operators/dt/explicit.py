@@ -10,7 +10,7 @@ def euler(field: Field, dt: Expression) -> AffineOperator:
     eye = SymbolicOperator.wrap(dx.eye(field.space))
     value = SymbolicExpression.wrap(field.past(1).value())
     mass = eye / dt_exp
-    const = value / dt_exp
+    const = -value / dt_exp
     return AffineOperator(mass, const)
 
 

@@ -22,10 +22,10 @@ class ShiftProxyValueBuffer(ValueBuffer):
     def get(self, index: int = 0) -> np.ndarray:
         if index < 0:
             raise IndexError("index must be >= 0")
-        base_index = index + self._shift
-        if base_index >= self._base.saved_steps:
+        index += self._shift
+        if index >= self._base.saved_steps:
             raise IndexError(f"Requested index {index} exceeds available past history")
-        return self._base.get(base_index)
+        return self._base.get(index)
 
     def set(self, value: np.ndarray):
         raise RuntimeError(
