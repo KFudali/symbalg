@@ -30,7 +30,7 @@ fi = s.fields.scalar(init_value=0.0)
 # Step 1
 NU = 0.01
 step_1 = s.systems.les(
-    lhs=s.dt.euler(u) - (NU * s.dx.laplace()),
+    lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
     rhs=s.dx.grad().of(p) + f.value(),
     bcs=u_bcs,
 )
