@@ -58,3 +58,16 @@ def test_second_order_with_linear_field():
         if t > 1:
             vals = dt.of(field).eval()
             assert np.allclose(vals, 1.0 / 0.01)
+
+
+def test_second_order_with_square_field():
+    dt_value = 0.01
+    time_step = ScalarExpression(dt_value)
+    field, values = field_buffer()
+    dt = explicit.bfd(field, time_step, order=2)
+    for t in range(10):
+        time = t * dt_value
+        values.advance(np.ones(shape=field.shape, dtype=float) * time**2)
+        if t > 1:
+            vals = dt.of(field).eval()
+            assert np.allclose(vals, 2.0 * time)
