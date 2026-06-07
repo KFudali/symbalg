@@ -28,7 +28,9 @@ def test_first_odrer_with_const_field():
 def test_second_odrer_with_const_field():
     time_step = ScalarExpression(0.01)
     field, values = field_buffer()
-    values.set(np.ones(shape=field.shape, dtype=float))
+    values.set_saved_steps(2)
+    values.advance(np.ones(shape=field.shape, dtype=float))
+    values.advance(np.ones(shape=field.shape, dtype=float))
     dt = explicit.bfd(field, time_step, order=2)
     for _ in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float))
