@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Self
+from typing import TypeVar, Self, TYPE_CHECKING
 import numpy as np
 from tools.symbolic.optype import BinaryOpType
-
 from .space import Space, ShapeTransform
+
+if TYPE_CHECKING:
+    from .field import Field
+    from .expression import Expression
 
 
 class Operator(ABC):
@@ -21,6 +24,15 @@ class Operator(ABC):
     def space(self) -> Space:
         return self._space
 
+    def of(self, field: "Field") -> "Expression":
+        from .expression import CallableExpression
+
+        def apply_to_field():
+            return self.apply_to(field.value().eval())
+
+        out_shape = self.shape_transform.transform(self.space, field.shape)
+        return CallableExpression(out_shape, apply_to_field)
+
     @abstractmethod
     def copy(self) -> Self:
         pass
@@ -35,14 +47,6 @@ class Operator(ABC):
         self.apply(inp, out)
         return out
 
-    @abstractmethod
-    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
-        pass
-
-    @abstractmethod
-    def _scale(self, other: float) -> Self:
-        pass
-
     def combine(self, other: Self, optype: BinaryOpType) -> Self:
         assert (
             other.space == self.space
@@ -51,6 +55,14 @@ class Operator(ABC):
             other.shape_transform == self.shape_transform
         ), "Cannot combine operators with different shape transformations"
         return self._combine(other, optype)
+
+    @abstractmethod
+    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
+        pass
+
+    @abstractmethod
+    def _scale(self, other: float) -> Self:
+        pass
 
     @abstractmethod
     def __neg__(self) -> Self:
@@ -82,5 +94,6 @@ class Operator(ABC):
 
     def __rmul__(self, other: float) -> Self:
         return self.__mul__(other)
+
 
 TOperator = TypeVar("TOperator", bound=Operator)

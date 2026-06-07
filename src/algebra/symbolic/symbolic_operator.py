@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Self
+from typing import Any, Self, TYPE_CHECKING
 import numpy as np
 
 from algebra.space import Space, ShapeTransform
@@ -8,6 +8,10 @@ from algebra.expression import Expression, ScalarExpression
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExprScaleNode
+
+if TYPE_CHECKING:
+    from algebra.field import Field
+    from .symbolic_expression import SymbolicExpression
 
 
 class SymbolicOperator(Symbolic[TOperator], Operator):
@@ -19,6 +23,11 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     ):
         Symbolic.__init__(self, node)
         Operator.__init__(self, space, shape_transform)
+
+    def of(self, field: "Field") -> "SymbolicExpression":
+        from .symbolic_expression import SymbolicExpression
+
+        return SymbolicExpression.wrap(Operator.of(self, field))
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self.resolve().apply(inp, out)
