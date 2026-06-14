@@ -1,7 +1,7 @@
 import enum
 from typing import Generic
 from dataclasses import dataclass
-from discrete.core.domain.boundary import TBoundary
+from .boundary_id import BoundaryId
 
 
 class BCType(enum.IntEnum):
@@ -10,7 +10,7 @@ class BCType(enum.IntEnum):
 
 
 @dataclass(frozen=True)
-class BoundaryCondition(Generic[TBoundary]):
+class BoundaryCondition:
     bc_type: BCType
     value: float
-    boundary: TBoundary
+    id: BoundaryId

@@ -1,28 +1,31 @@
 import numpy as np
 
-from discrete.core.bcs import BoundaryCondition
 from discrete.fd.tools.stencil import AxStencil, Stencil
 from discrete.fd.domain import FDBoundary
 from tools import region
 
 
 def apply(
-    stencil: AxStencil, bc: BoundaryCondition[FDBoundary], rhs: np.ndarray
+    stencil: AxStencil,
+    boundary: FDBoundary,
+    value: float,
+    rhs: np.ndarray,
 ) -> AxStencil:
-    _add_boundary_rhs_contribution(stencil, bc, rhs)
-    return _stencil(bc.boundary.side, stencil)
+    _add_boundary_rhs_contribution(stencil, boundary, value, rhs)
+    return _stencil(boundary.side, stencil)
 
 
 def _add_boundary_rhs_contribution(
-    stencil: AxStencil, bc: BoundaryCondition[FDBoundary], rhs: np.ndarray
+    stencil: AxStencil, boundary: FDBoundary, value: float, rhs: np.ndarray
 ):
-    b = bc.boundary
-    boundary = region.boundary(rhs.ndim, b.ax, b.side, b.exclude_corners)
+    b_region = region.boundary(
+        rhs.ndim, boundary.ax, boundary.side, boundary.exclude_corners
+    )
     left, right = stencil.interior.max_offsets()
-    if b.side == -1:
-        rhs[boundary] -= 2.0 * bc.value * b.dh * stencil.interior[left]
+    if boundary.side == -1:
+        rhs[b_region] -= 2.0 * value * boundary.dh * stencil.interior[left]
     else:
-        rhs[boundary] -= 2.0 * bc.value * b.dh * stencil.interior[right]
+        rhs[b_region] -= 2.0 * value * boundary.dh * stencil.interior[right]
 
 
 def _stencil(side: int, stencil: AxStencil) -> AxStencil:
@@ -48,5 +51,5 @@ def _stencil(side: int, stencil: AxStencil) -> AxStencil:
     return AxStencil(stencil.interior, tuple(lefts), tuple(rights))
 
 
-def post_solve(bc: BoundaryCondition[FDBoundary], field: np.ndarray):
+def post_solve(boundary: FDBoundary, value: float, field: np.ndarray):
     pass

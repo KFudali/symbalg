@@ -16,7 +16,7 @@ class FdDiscretization(Discretization[FDDomain]):
         super().__init__(space, domain)
         self._dx = FDDxOperators(space, grid)
         self._dt = FDDtOperators(space, self._time)
-        self._bcs = FDBCTool()
+        self._bcs = FDBCTool(domain)
 
     @property
     def shape(self) -> tuple[int, ...]:

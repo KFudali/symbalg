@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from typing import Generic
 import numpy as np
-from algebra.operator import Operator
+from algebra.operator import TOperator
 
 
 @dataclass(frozen=True)
-class LinearSystem:
-    lhs: Operator
+class LinearSystem(Generic[TOperator]):
+    lhs: TOperator
     rhs: np.ndarray
 
     def copy(self) -> "LinearSystem":
