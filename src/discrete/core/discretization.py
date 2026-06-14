@@ -3,10 +3,8 @@ from typing import Generic
 import numpy as np
 
 from algebra.space import Space
-from algebra.operator import Operator
-from algebra.systems.bcs import BoundaryTool
 
-from .domain import TDomain, Boundary
+from .domain import TDomain
 
 from .dx_operators import DxOperators
 from .dt_operators import DtOperators
@@ -39,11 +37,6 @@ class Discretization(ABC, Generic[TDomain]):
     @property
     @abstractmethod
     def dt(self) -> DtOperators:
-        pass
-
-    @property
-    @abstractmethod
-    def bc_tool(self) -> BoundaryTool[Operator, Boundary]:
         pass
 
     @abstractmethod
