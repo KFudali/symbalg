@@ -1,9 +1,10 @@
 import discrete.core as discr
 
-
+from algebra.systems.bcs import BoundaryCondition, BCType
 from algebra.expression import Expression
+
 from algebra.operator import Operator
-from .les import LES
+from algebra.systems import LinearEquation, LinearSystem, SystemConstraint
 
 
 class BCFactory:
@@ -12,17 +13,13 @@ class BCFactory:
 
     def dirichlet(
         self, boundary_id: discr.domain.BoundaryId, value: float
-    ) -> discr.bcs.BoundaryCondition:
-        return discr.bcs.BoundaryCondition(
-            discr.bcs.BCType.DIRICHLET, value, self._domain.boundary(boundary_id)
-        )
+    ) -> BoundaryCondition:
+        return BoundaryCondition(BCType.DIRICHLET, value, boundary_id)
 
     def neumann(
         self, boundary_id: discr.domain.BoundaryId, value: float
-    ) -> discr.bcs.BoundaryCondition:
-        return discr.bcs.BoundaryCondition(
-            discr.bcs.BCType.NEUMANN, value, self._domain.boundary(boundary_id)
-        )
+    ) -> BoundaryCondition:
+        return BoundaryCondition(BCType.NEUMANN, value, boundary_id)
 
 
 class SystemFactory:
@@ -35,6 +32,12 @@ class SystemFactory:
         return self._bc_factory
 
     def les(
-        self, lhs: Operator, rhs: Expression, bcs: list[discr.bcs.BoundaryCondition]
-    ) -> LES:
-        return LES(self._bc_tool, lhs, rhs, bcs)
+        self,
+        lhs: Operator,
+        rhs: Expression,
+        bcs: list[BoundaryCondition],
+        *,
+        constraints: list[SystemConstraint]
+    ) -> LinearEquation:
+        system = LinearSystem(lhs, rhs)
+        return LinearEquation(self._bc_tool, system, bcs, constraints)

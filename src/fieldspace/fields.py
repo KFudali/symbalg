@@ -20,10 +20,12 @@ class FieldFactory:
         return self._field((), init_value)
 
     def vector(self, init_value: float = 0.0) -> Field:
-        return self._field((self._space.ndim,), init_value)
+        return self._field((self._discrete.space.ndim,), init_value)
 
     def tensor(self, init_value: float = 0.0) -> Field:
-        return self._field((self._space.ndim, self._space.ndim), init_value)
+        return self._field(
+            (self._discrete.space.ndim, self._discrete.space.ndim), init_value
+        )
 
     def custom(self, components: tuple[int, ...], init_value: float = 0.0) -> Field:
         return self._field(components, init_value)
