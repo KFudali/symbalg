@@ -4,7 +4,7 @@ from algebra.systems.bcs import BoundaryCondition, BCType
 from algebra.expression import Expression
 
 from algebra.operator import Operator
-from algebra.systems import LinearEquation, LinearSystem, SystemConstraint
+from algebra.systems import LinearEquation, SystemConstraint
 
 
 class BCFactory:
@@ -39,5 +39,4 @@ class SystemFactory:
         *,
         constraints: list[SystemConstraint]
     ) -> LinearEquation:
-        system = LinearSystem(lhs, rhs)
-        return LinearEquation(self._bc_tool, system, bcs, constraints)
+        return LinearEquation(self._bc_tool, lhs, rhs, bcs, constraints=constraints)
