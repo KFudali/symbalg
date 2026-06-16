@@ -1,4 +1,6 @@
+import numpy as np
 from fieldspace import FieldSpace
+from algebra.systems import solvers, constraints
 from tools.geometry import StructuredGridND
 from discrete import fd
 
@@ -15,17 +17,19 @@ left_bc = s.systems.bc.neumann(left, 0.0)
 right_bc = s.systems.bc.neumann(right, 0.0)
 bcs = [top_bc, bot_bc, left_bc, right_bc]
 
-
 F = s.fields.scalar()
 L = 1.0
 lap = s.dx.laplace()
 
 lhs = L * lap
 rhs = s.fields.scalar()
+x, y = grid.points()
+u = np.cos(x) ** 2 + np.sin(y) ** 2
+rhs._value_buffer.set(u)
+fix_mean = constraints.FixedMeanConstraint()
+equation = s.systems.les(lhs, rhs.value(), bcs, constraints=[fix_mean])
 
-equation = s.systems.les(lhs, rhs.value(), bcs)
-
-solution = equation.solve()
+solution = equation.solve(solvers.CGSolver())
 F.set_value(solution).perform()
 
 s.monitors.plot_field(F)

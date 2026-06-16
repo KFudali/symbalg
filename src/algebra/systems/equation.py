@@ -31,7 +31,7 @@ class LinearEquation:
         system = LinearSystem(self._lhs, self._rhs.eval())
         system = self._bc_tool.apply(self._bcs, system)
         for constraint in self._constraints:
-            constraint.apply(system)
+            system = constraint.apply(system)
         return system
 
     def solve(self, solver: LinearSolver) -> Expression:
