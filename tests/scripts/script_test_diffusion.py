@@ -1,4 +1,5 @@
 from fieldspace import FieldSpace
+from algebra.systems import solvers
 from tools.geometry import StructuredGridND
 from discrete import fd
 
@@ -27,6 +28,6 @@ rhs = s.fields.scalar()
 equation = s.systems.les(lhs, rhs.value(), bcs)
 
 for step in s.time.run(duration=1.0, init_dt=0.01):
-    solution = equation.solve()
+    solution = equation.solve(solvers.CGSolver())
     F.set_value(solution).perform()
 s.monitors.plot_field(F.past(1))

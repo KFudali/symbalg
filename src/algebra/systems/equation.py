@@ -1,6 +1,7 @@
 import numpy as np
 
 from algebra.operator import Operator
+from algebra.symbolic import SymbolicExpression, SymbolicOperator
 from algebra.expression import Expression, CallableExpression
 from .bcs import BoundaryCondition, BoundaryTool
 from .solvers import LinearSolver
@@ -25,8 +26,10 @@ class LinearEquation:
         self._constraints = constraints
 
     def _assemble(self) -> LinearSystem:
-        system = LinearSystem(self._lhs.copy(), self._rhs.eval().copy())
-        self._bc_tool.apply(self._bcs, system)
+        if isinstance(self._lhs, SymbolicOperator):
+            self._lhs = self._lhs.resolve()
+        system = LinearSystem(self._lhs, self._rhs.eval())
+        system = self._bc_tool.apply(self._bcs, system)
         for constraint in self._constraints:
             constraint.apply(system)
         return system
