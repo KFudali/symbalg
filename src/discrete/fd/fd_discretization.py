@@ -23,10 +23,6 @@ class FdDiscretization(Discretization[FDDomain]):
         return self.domain.grid.shape
 
     @property
-    def bcs(self) -> FDBCTool:
-        return self._bcs
-
-    @property
     def dt(self) -> FDDtOperators:
         return self._dt
 
