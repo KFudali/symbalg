@@ -3,6 +3,7 @@ from typing import Any, Self
 import numpy as np
 
 from algebra.expression import Expression, ScalarExpression, CallableExpression
+from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExpressionNode
@@ -24,8 +25,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if isinstance(other, float):
             expr = ScalarExpression(other)
         if isinstance(other, np.ndarray):
+
             def get_other() -> np.ndarray:
                 return other
+
             expr = CallableExpression(other.shape, get_other)
         return ExpressionNode(expr)
 
@@ -39,12 +42,12 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return self.__class__(node, self.shape)
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
-        if isinstance(other, Expression):
-            if self.shape == other.shape or other.shape == ():
-                return True
-        if isinstance(other, np.ndarray):
-            if self.shape == other.shape or other.shape == ():
-                return True
         if isinstance(other, float):
             return True
+        if isinstance(other, (Expression, np.ndarray)):
+            if self.shape == other.shape or other.shape == ():
+                return True
+            raise ShapeMismatchError(
+                f"Incompatible shapes: {self.shape} and {other.shape}"
+            )
         return False

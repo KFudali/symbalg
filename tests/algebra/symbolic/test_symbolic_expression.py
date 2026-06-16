@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from algebra.expression import CallableExpression, ScalarExpression, Expression
 from algebra.symbolic import SymbolicExpression
+from algebra.exceptions import ShapeMismatchError
 
 SHAPE = (10,)
 
@@ -122,6 +123,22 @@ def test_symbolic_expression_with_expression(ones, fives):
 
     combined = (sym_ones + sym_fives) * sym_fives - sym_ones
     assert_eval(combined, 29.0)
+
+
+def test_symbolic_expression_shape_mismatch_raises(ones):
+    sym_ones = SymbolicExpression.wrap(ones)
+    other_shape = (SHAPE[0] + 1,)
+    other_array = np.ones(shape=other_shape, dtype=float)
+    other_expr = CallableExpression(other_shape, lambda: other_array)
+
+    with pytest.raises(ShapeMismatchError):
+        sym_ones + other_array
+
+    with pytest.raises(ShapeMismatchError):
+        sym_ones + other_expr
+
+    with pytest.raises(ShapeMismatchError):
+        sym_ones * other_expr
 
 
 def test_symbolic_expression_is_immutable_on_combinations(ones, fives):

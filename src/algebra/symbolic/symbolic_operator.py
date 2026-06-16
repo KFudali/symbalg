@@ -5,6 +5,7 @@ import numpy as np
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
 from algebra.expression import Expression, ScalarExpression
+from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExprScaleNode
@@ -56,16 +57,24 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
         return self.__class__(node, self.space, self.shape_transform)
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
+        is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Operator):
             matches_space = self.space == other.space
             matches_shape_transform = self.shape_transform == other.shape_transform
             if matches_space and matches_shape_transform:
                 return True
-        is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
+            raise ShapeMismatchError(
+                f"Incompatible operators: space {self.space} vs {other.space}, "
+                f"shape_transform {self.shape_transform} vs {other.shape_transform}"
+            )
         if isinstance(other, Expression):
-            if other.shape == () and is_scale:
+            if not is_scale:
+                return False
+            if other.shape == ():
                 return True
+            raise ShapeMismatchError(
+                f"Expression must be scalar to scale operator, got shape {other.shape}"
+            )
         if isinstance(other, float):
-            if is_scale:
-                return True
+            return is_scale
         return False
