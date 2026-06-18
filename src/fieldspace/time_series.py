@@ -1,5 +1,5 @@
 from discrete.core import DiscreteTime
-from algebra.expression import ScalarExpression
+from algebra.expression import CallableScalarExpression
 from algebra.symbolic import SymbolicExpression
 
 
@@ -22,4 +22,4 @@ class TimeSeries:
         self._discrete_time.reset()
 
     def dt(self) -> SymbolicExpression:
-        return SymbolicExpression.wrap(ScalarExpression(self._discrete_time.dt))
+        return SymbolicExpression.wrap(CallableScalarExpression(self._discrete_time.dt))

@@ -69,7 +69,9 @@ class FDBCTool(BoundaryTool[FDOperator]):
             return fn(stencil, boundary, value, rhs)
         modified = stencil
         for comp in range(rhs.shape[0]):
-            modified = self._apply_rankwise(fn, stencil, boundary, value, rhs[comp])
+            modified = self._apply_rankwise(
+                fn, stencil, boundary, value, rhs[comp]
+            )
         return modified
 
     def _post_solve_rankwise(
@@ -83,4 +85,6 @@ class FDBCTool(BoundaryTool[FDOperator]):
             fn(boundary, value, field)
             return
         for comp in range(field.shape[0]):
-            self._post_solve_rankwise(fn, boundary, value, field[comp])
+            self._post_solve_rankwise(
+                fn, boundary, value, field[comp]
+            )
