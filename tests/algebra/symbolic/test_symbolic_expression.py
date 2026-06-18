@@ -141,6 +141,37 @@ def test_symbolic_expression_shape_mismatch_raises(ones):
         sym_ones * other_expr
 
 
+def test_symbolic_expression_combination_broadcasts_shape(ones):
+    """Combining a scalar-shape SymbolicExpression with an array-shape one
+    must yield a SymbolicExpression whose ``shape`` matches the array
+    operand, regardless of which side initiates the operation.
+    """
+    sym_ones = SymbolicExpression.wrap(ones)
+    sym_scalar = SymbolicExpression.wrap(ScalarExpression(3.0))
+
+    assert sym_scalar.shape == ()
+    assert sym_ones.shape == SHAPE
+
+    # scalar * array
+    combined = sym_scalar * sym_ones
+    assert combined.shape == SHAPE
+    assert combined.eval().shape == SHAPE
+
+    # array * scalar (rmul / mul from the array side)
+    combined = sym_ones * sym_scalar
+    assert combined.shape == SHAPE
+    assert combined.eval().shape == SHAPE
+
+    # float * array (via __rmul__)
+    combined = 2.0 * sym_ones
+    assert combined.shape == SHAPE
+
+    # scalar + array
+    combined = sym_scalar + sym_ones
+    assert combined.shape == SHAPE
+    assert combined.eval().shape == SHAPE
+
+
 def test_symbolic_expression_is_immutable_on_combinations(ones, fives):
     sym_ones = SymbolicExpression.wrap(ones)
     sym_fives = SymbolicExpression.wrap(fives)

@@ -41,6 +41,22 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _new(self, node: nodes.SymbolicNode[Expression]) -> Self:
         return self.__class__(node, self.shape)
 
+    def _combine_binary(self, other: Any, optype: BinaryOpType) -> Self:
+        if not self._compatible(other, optype):
+            return NotImplemented
+        other_node = self._ensure_node(other)
+        new_shape = self._combined_shape(other)
+        return self.__class__(
+            nodes.BinaryNode(optype, self.node, other_node), new_shape
+        )
+
+    def _combined_shape(self, other: Any) -> tuple[int, ...]:
+        if isinstance(other, (Expression, np.ndarray)):
+            if self.shape == ():
+                return other.shape
+            return self.shape
+        return self.shape
+
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
         if isinstance(other, float):
             return True
