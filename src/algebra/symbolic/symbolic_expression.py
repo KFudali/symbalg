@@ -45,7 +45,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if isinstance(other, float):
             return True
         if isinstance(other, (Expression, np.ndarray)):
-            if self.shape == other.shape or other.shape == ():
+            if self.shape in ((), other.shape) or other.shape == ():
                 return True
             raise ShapeMismatchError(
                 f"Incompatible shapes: {self.shape} and {other.shape}"
