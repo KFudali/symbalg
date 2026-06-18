@@ -33,11 +33,16 @@ class FDBCTool(BoundaryTool[FDOperator]):
     ) -> LinearSystem[FDOperator]:
         system = system.copy()
         lhs = system.lhs
+        
         for bc in bcs:
             boundary = self._domain.boundary(bc.id)
             stencil = lhs.stencils[boundary.ax]
-            modified_stencil = FDBCTool.APPLY[bc.bc_type](
-                stencil, boundary, bc.value, system.rhs
+            modified_stencil = self._apply_rankwise(
+                FDBCTool.APPLY[bc.bc_type],
+                stencil,
+                boundary,
+                bc.value,
+                system.rhs,
             )
             lhs = lhs.modify(boundary.ax, modified_stencil)
         return LinearSystem(lhs, system.rhs)
@@ -45,4 +50,41 @@ class FDBCTool(BoundaryTool[FDOperator]):
     def post_solve(self, bcs: list[BoundaryCondition], field: np.ndarray) -> None:
         for bc in bcs:
             boundary = self._domain.boundary(bc.id)
-            FDBCTool.POST_SOLVE[bc.bc_type](boundary, bc.value, field)
+            self._post_solve_rankwise(
+                FDBCTool.POST_SOLVE[bc.bc_type],
+                boundary,
+                bc.value,
+                field,
+            )
+
+    def _apply_rankwise(
+        self,
+        fn: BcApplyCallable,
+        stencil: AxStencil,
+        boundary: FDBoundary,
+        value: float,
+        rhs: np.ndarray,
+    ) -> AxStencil:
+        if rhs.ndim == self._domain.grid.ndim:
+            return fn(stencil, boundary, value, rhs)
+        modified = stencil
+        for comp in range(rhs.shape[0]):
+            modified = self._apply_rankwise(
+                fn, stencil, boundary, value, rhs[comp] self._domain.grid.ndim
+            )
+        return modified
+
+    def _post_solve_rankwise(
+        self,
+        fn: BcPostSolveCallable,
+        boundary: FDBoundary,
+        value: float,
+        field: np.ndarray,
+    ) -> None:
+        if field.ndim == self._domain.grid.ndim:
+            fn(boundary, value, field)
+            return
+        for comp in range(field.shape[0]):
+            self._post_solve_rankwise(
+                fn, boundary, value, field[comp], self._domain.grid.ndim
+            )
