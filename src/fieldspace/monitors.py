@@ -18,7 +18,7 @@ class MonitorFactory:
         for comp in range(comps):
             ax1 = fig.add_subplot(comps, 1, comp + 1, projection="3d")
             surf1 = ax1.plot_surface(
-                x, y, u, cmap="viridis", edgecolor="k", linewidth=0.5
+                x, y, u[comp], cmap="viridis", edgecolor="k", linewidth=0.5
             )
             ax1.set_title("Conjugate Gradient")
             ax1.set_xlabel("x")

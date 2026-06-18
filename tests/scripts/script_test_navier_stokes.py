@@ -49,3 +49,5 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
     u.set_value(step_1.solve(cg)).perform()
     fi.set_value(step_2.solve(cg)).perform()
     p.set_value(new_p).perform()
+s.monitors.plot_field(u.past(1))
+s.monitors.plot_field(p.past(1))
