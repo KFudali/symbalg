@@ -51,3 +51,4 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
     p.set_value(new_p).perform()
 s.monitors.plot_field_2d(u.past(1))
 s.monitors.plot_field_2d(p.past(1))
+s.monitors.show()

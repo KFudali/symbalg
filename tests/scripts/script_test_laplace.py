@@ -30,3 +30,4 @@ solution = equation.solve(solvers.CGSolver())
 F.set_value(solution).perform()
 
 s.monitors.plot_field_2d(F)
+s.monitors.show()

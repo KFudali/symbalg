@@ -8,7 +8,7 @@ class MonitorFactory:
     def __init__(self, discrete: Discretization):
         self._discrete = discrete
 
-    def plot_field_2d(self, field: Field):
+    def plot_field_2d(self, field: Field, name: str = "F"):
         assert (
             field.space.ndim == 2
         ), f"plot_field_2d requires a 2D space, got ndim={field.space.ndim}"
@@ -34,7 +34,7 @@ class MonitorFactory:
 
                 if len(components) == 0:
                     data = u
-                    title = "F"
+                    title = name
                 else:
                     sub_indices: tuple[int, ...] = ()
                     remaining = sub_idx
@@ -43,7 +43,7 @@ class MonitorFactory:
                         remaining //= dim
                     full_index = (fig_idx, *sub_indices)
                     data = u[full_index]
-                    title = "F" + "".join(f"[{i}]" for i in full_index)
+                    title = name + "".join(f"[{i}]" for i in full_index)
 
                 contour = ax.contourf(x, y, data, levels=50, cmap="viridis")
                 ax.set_aspect("equal")
@@ -52,6 +52,8 @@ class MonitorFactory:
                 ax.set_ylabel("y")
                 fig.colorbar(contour, ax=ax, shrink=0.8)
             plt.tight_layout()
+
+    def show(self):
         plt.show()
 
     def monitor(self, field: Field):
