@@ -33,13 +33,13 @@ cg = solvers.CGSolver()
 NU = 0.01
 step_1 = s.systems.les(
     lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
-    rhs=s.dx.grad().of(p) + f.value(),
+    rhs= -s.dx.grad().of(p) + f.value(),
     bcs=u_bcs,
 )
 # Step 2
 step_2 = s.systems.les(
     lhs=s.dx.laplace(),
-    rhs=(3.0 / 2.0 * s.time.dt()) * s.dx.div().of(u),
+    rhs=(3.0 / (2.0 * s.time.dt())) * s.dx.div().of(u),
     bcs=fi_bcs,
     constraints=[fi_cstr],
 )
@@ -49,6 +49,6 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
     u.set_value(step_1.solve(cg)).perform()
     fi.set_value(step_2.solve(cg)).perform()
     p.set_value(new_p).perform()
-s.monitors.plot_field_2d(u.past(1))
-s.monitors.plot_field_2d(p.past(1))
+s.monitors.plot_field_2d(u, "u")
+s.monitors.plot_field_2d(p, "p")
 s.monitors.show()
