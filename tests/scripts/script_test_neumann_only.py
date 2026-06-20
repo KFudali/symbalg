@@ -29,7 +29,7 @@ rhs._value_buffer.set(u)
 fix_mean = constraints.FixedMeanConstraint()
 equation = s.systems.les(lhs, rhs.value(), bcs, constraints=[fix_mean])
 
-solution = equation.solve(solvers.CGSolver())
+solution = equation.solve(solvers.CGSolver(rtol=1e-6))
 F.set_value(solution).perform()
 
 s.monitors.plot_field_2d(F)
