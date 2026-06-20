@@ -20,7 +20,7 @@ bcs = [top_bc, bot_bc, left_bc, right_bc]
 F = s.fields.scalar()
 L = 1.0
 f_dx = s.dx.laplace()
-f_dt = s.dt.explicit(F, order = 2)
+f_dt = s.dt.explicit(F, order=2)
 lhs = f_dt - f_dx
 op = lhs.operator.resolve()
 

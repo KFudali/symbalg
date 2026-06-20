@@ -1,2 +1,2 @@
-class ShapeMismatchError(Exception): 
+class ShapeMismatchError(Exception):
     pass

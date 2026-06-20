@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from algebra.operator import Operator
 from algebra.symbolic import SymbolicOperator
 
+
 class DxOperators(ABC):
     def laplace(self, order: int = 2) -> SymbolicOperator:
         return SymbolicOperator.wrap(self._laplace(order))

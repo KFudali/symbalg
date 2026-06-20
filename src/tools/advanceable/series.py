@@ -1,6 +1,7 @@
 from .advanceable import Advanceable
 
-class AdvanceableSeries():
+
+class AdvanceableSeries:
     def __init__(self):
         self._advanceables = set[Advanceable]()
 

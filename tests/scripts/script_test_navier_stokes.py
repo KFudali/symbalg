@@ -10,10 +10,10 @@ s = FieldSpace(discrete)
 top, bottom = discrete.domain.ax_boundaries(ax=0)
 left, right = discrete.domain.ax_boundaries(ax=1)
 
-top_bc = s.systems.bc.dirichlet(top, 10.0)
-bot_bc = s.systems.bc.dirichlet(top, 0.0)
-left_bc = s.systems.bc.dirichlet(left, 0.0)
-right_bc = s.systems.bc.dirichlet(right, 0.0)
+top_bc = s.systems.bc.dirichlet(top, [10.0, 0.0])
+bot_bc = s.systems.bc.dirichlet(bottom, [0.0, 0.0])
+left_bc = s.systems.bc.dirichlet(left, [0.0, 0.0])
+right_bc = s.systems.bc.dirichlet(right, [0.0, 0.0])
 u_bcs = [top_bc, bot_bc, left_bc, right_bc]
 
 top_bc = s.systems.bc.neumann(top, 0)
@@ -38,10 +38,10 @@ step_1 = s.systems.les(
 )
 # Step 2
 step_2 = s.systems.les(
-    lhs=s.dx.laplace(), 
-    rhs=(3.0 / 2.0 * s.time.dt()) * s.dx.div().of(u), 
+    lhs=s.dx.laplace(),
+    rhs=(3.0 / 2.0 * s.time.dt()) * s.dx.div().of(u),
     bcs=fi_bcs,
-    constraints=[fi_cstr]
+    constraints=[fi_cstr],
 )
 
 new_p = p.past(1).value() + fi.value() - NU * s.dx.div().of(u)

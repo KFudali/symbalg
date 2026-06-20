@@ -31,6 +31,7 @@ def test_symbolic_operator_with_floats():
     with pytest.raises(TypeError):
         result = symbolic - 10.0
 
+
 def test_symbolic_operator_with_scalar_expression():
     op_a = MockOperator("A")
     symbolic = SymbolicOperator[MockOperator].wrap(op_a)

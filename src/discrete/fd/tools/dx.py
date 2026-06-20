@@ -13,14 +13,14 @@ def central(order: int, h: float) -> Stencil:
 # Forward one-sided weights for the first derivative.
 # Index in the inner list corresponds to offset 0, 1, 2, ...
 _FDF = {
-    1: [-1.0, 1.0],                # 1st-order accurate (2-point)
-    2: [-1.5, 2.0, -0.5],          # 2nd-order accurate (3-point)
+    1: [-1.0, 1.0],  # 1st-order accurate (2-point)
+    2: [-1.5, 2.0, -0.5],  # 2nd-order accurate (3-point)
 }
 
 # Backward one-sided is the negative of forward applied at mirrored offsets.
 _BDF = {
-    1: [1.0, -1.0],                # f'(x) ~ (f[0] - f[-1]) / h
-    2: [1.5, -2.0, 0.5],           # 2nd-order accurate (3-point)
+    1: [1.0, -1.0],  # f'(x) ~ (f[0] - f[-1]) / h
+    2: [1.5, -2.0, 0.5],  # 2nd-order accurate (3-point)
 }
 
 

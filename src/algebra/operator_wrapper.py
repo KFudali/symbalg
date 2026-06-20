@@ -7,7 +7,6 @@ from tools.symbolic.optype import BinaryOpType
 
 from .operator import Operator
 
-
 ApplyHook = Callable[[np.ndarray, np.ndarray], None]
 
 
