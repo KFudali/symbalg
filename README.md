@@ -83,7 +83,7 @@ equation = s.systems.les(lhs, rhs.value(), bcs)
 solution = equation.solve(solvers.CGSolver())
 F.set_value(solution).perform()
 
-s.monitors.plot_field(F)
+s.monitors.plot_field_2d(F)
 ```
 
 ### Future plans
