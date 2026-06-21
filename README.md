@@ -7,6 +7,10 @@ The above target resulted in library that is based on two main concepts:
 
 For both of those core concepts Symbolic versions were implemented to simplify assembly of numerical methods and eliminate need for most for loops.
 
+Example solution of diffusion equation with 2 dirichlet and 2 neumann conditions:
+
+![alt text](doc/diffusion.png)
+
 ### Usage
 The core class exposed to the user is the FieldSpace(). it has to be initialzied with a discretization object. So far the only available discretization is simple FiniteDifference but FEM discretizaiton is currently being prototyped.
 
@@ -57,7 +61,9 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
         p_star.value() + fi.value() - (NU * s.dx.div().of(u))
     ).perform()
 ```
-
+![alt text](doc/ux.png)
+![alt text](doc/uy.png)
+![alt text](doc/p.png)
 ### Simple Poisson equation with dirichlet conditions
 ```python
 from fieldspace import FieldSpace
@@ -94,7 +100,7 @@ F.set_value(solution).perform()
 s.monitors.plot_field_2d(F)
 s.monitors.show()
 ```
-
+![alt text](doc/poisson.png)
 ### Future plans
 I plan to solve more problems with this library to learn about linear algebra edge cases and whether its concepts can really be programmatically abstracted. With time more script_test files should appear. I am also currently working on FEM discretization 
 implementation that will allow usage for complicated gemetries not only FiniteDifference structured grids.
