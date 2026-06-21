@@ -25,9 +25,7 @@ def fdf(order: int, h: float) -> Stencil:
     non-negative offsets.
     """
     if order in _ONE_SIDED:
-        return Stencil(
-            {i: w / (h**2) for i, w in enumerate(_ONE_SIDED[order])}
-        )
+        return Stencil({i: w / (h**2) for i, w in enumerate(_ONE_SIDED[order])})
     return NotImplemented
 
 
@@ -38,9 +36,7 @@ def bdf(order: int, h: float) -> Stencil:
     non-positive offsets.
     """
     if order in _ONE_SIDED:
-        return Stencil(
-            {-i: w / (h**2) for i, w in enumerate(_ONE_SIDED[order])}
-        )
+        return Stencil({-i: w / (h**2) for i, w in enumerate(_ONE_SIDED[order])})
     return NotImplemented
 
 

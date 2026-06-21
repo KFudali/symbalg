@@ -45,6 +45,12 @@ class Symbolic(SymbolicNode[TSymbolic]):
             return self._new(BinaryNode(optype, self.node, other_node))
         return NotImplemented
 
+    def _combine_binary_reverse(self, other: Any, optype: BinaryOpType) -> Self:
+        if self._compatible(other, optype):
+            other_node = self._ensure_node(other)
+            return self._new(BinaryNode(optype, other_node, self.node))
+        return NotImplemented
+
     # ---- operator overloads ----
     def __neg__(self) -> Self:
         return self._new(UnaryNode(UnaryOpType.NEG, self))
@@ -66,13 +72,13 @@ class Symbolic(SymbolicNode[TSymbolic]):
         return self.__add__(other)
 
     def __rsub__(self, other: Any) -> Self:
-        return self.__neg__().__add__(other)
+        return self._combine_binary_reverse(other, BinaryOpType.SUB)
 
     def __rmul__(self, other: Any) -> Self:
         return self.__mul__(other)
 
     def __rtruediv__(self, other: Any) -> Self:
-        return self._new(self._ensure_node(other)).__truediv__(self.node)
+        return self._combine_binary_reverse(other, BinaryOpType.DIV)
 
     def __repr__(self) -> str:
         return f"Symbolic({self.node})"

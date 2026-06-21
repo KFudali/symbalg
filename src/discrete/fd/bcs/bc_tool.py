@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, Union
 import numpy as np
 
 from algebra.systems.bcs import BoundaryTool, BoundaryCondition, BCType
@@ -9,8 +9,16 @@ from discrete.fd.operators import FDOperator
 from discrete.fd.tools.stencil import AxStencil
 from . import dirichlet, neumann
 
+BCValueLike = Union[float, np.ndarray]
 BcApplyCallable = Callable[[AxStencil, FDBoundary, float, np.ndarray], AxStencil]
 BcPostSolveCallable = Callable[[FDBoundary, float, np.ndarray], None]
+
+
+def _component_value(value: BCValueLike, comp: int) -> BCValueLike:
+    """Slice the leading axis of a per-component BC value, or broadcast scalars."""
+    if isinstance(value, np.ndarray) and value.ndim > 0:
+        return value[comp]
+    return value
 
 
 class FDBCTool(BoundaryTool[FDOperator]):
@@ -62,15 +70,15 @@ class FDBCTool(BoundaryTool[FDOperator]):
         fn: BcApplyCallable,
         stencil: AxStencil,
         boundary: FDBoundary,
-        value: float,
+        value: BCValueLike,
         rhs: np.ndarray,
     ) -> AxStencil:
         if rhs.ndim == self._domain.grid.ndim:
-            return fn(stencil, boundary, value, rhs)
+            return fn(stencil, boundary, float(value), rhs)
         modified = stencil
         for comp in range(rhs.shape[0]):
             modified = self._apply_rankwise(
-                fn, stencil, boundary, value, rhs[comp]
+                fn, stencil, boundary, _component_value(value, comp), rhs[comp]
             )
         return modified
 
@@ -78,13 +86,13 @@ class FDBCTool(BoundaryTool[FDOperator]):
         self,
         fn: BcPostSolveCallable,
         boundary: FDBoundary,
-        value: float,
+        value: BCValueLike,
         field: np.ndarray,
     ) -> None:
         if field.ndim == self._domain.grid.ndim:
-            fn(boundary, value, field)
+            fn(boundary, float(value), field)
             return
         for comp in range(field.shape[0]):
             self._post_solve_rankwise(
-                fn, boundary, value, field[comp]
+                fn, boundary, _component_value(value, comp), field[comp]
             )

@@ -20,7 +20,7 @@ bcs = [top_bc, bot_bc, left_bc, right_bc]
 F = s.fields.scalar()
 L = 1.0
 f_dx = s.dx.laplace()
-f_dt = s.dt.explicit(F, order = 2)
+f_dt = s.dt.explicit(F, order=2)
 lhs = f_dt - f_dx
 op = lhs.operator.resolve()
 
@@ -30,4 +30,5 @@ equation = s.systems.les(lhs, rhs.value(), bcs)
 for step in s.time.run(duration=1.0, init_dt=0.01):
     solution = equation.solve(solvers.CGSolver())
     F.set_value(solution).perform()
-s.monitors.plot_field(F.past(1))
+s.monitors.plot_field_2d(F)
+s.monitors.show()

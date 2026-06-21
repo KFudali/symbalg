@@ -1,5 +1,6 @@
 from typing import Protocol
 
+
 class Advanceable(Protocol):
     def advance(self):
         pass

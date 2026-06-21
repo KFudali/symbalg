@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 from algebra.operator import Operator
 from algebra.symbolic import SymbolicOperator
 
+
 class DxOperators(ABC):
+    def eye(self) -> SymbolicOperator:
+        return SymbolicOperator.wrap(self._eye())
+
     def laplace(self, order: int = 2) -> SymbolicOperator:
         return SymbolicOperator.wrap(self._laplace(order))
 
@@ -11,6 +15,10 @@ class DxOperators(ABC):
 
     def div(self, order: int = 2) -> SymbolicOperator:
         return SymbolicOperator.wrap(self._div(order))
+
+    @abstractmethod
+    def _eye(self) -> Operator:
+        pass
 
     @abstractmethod
     def _laplace(self, order: int) -> Operator:

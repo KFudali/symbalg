@@ -27,7 +27,11 @@ class ValueBuffer(ABC):
 
     def advance(self, value: np.ndarray | None = None):
         if value is None:
-            value = np.zeros(self.shape)
+            # Default: carry the current value forward so that, after advance,
+            # `value()` still reflects the most recently written state and
+            # `past(1)` becomes what was previously current. This gives a
+            # warm-start semantics for time-stepping loops.
+            value = self.get(0).copy()
         self._advance(value)
 
     @abstractmethod

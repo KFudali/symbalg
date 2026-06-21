@@ -81,18 +81,12 @@ def test_lap_magics():
     scaled = l_lap * 2.0
     assert isinstance(scaled, type(l_lap))
     for ax in range(l_lap.space.ndim):
-        assert (
-            scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 2.0
-        )
+        assert scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 2.0
 
     scaled = 2.0 * l_lap
     for ax in range(l_lap.space.ndim):
-        assert (
-            scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 2.0
-        )
+        assert scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 2.0
 
     scaled = l_lap / 2.0
     for ax in range(l_lap.space.ndim):
-        assert (
-            scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 0.5
-        )
+        assert scaled.stencils[ax].interior == l_lap.stencils[ax].interior * 0.5

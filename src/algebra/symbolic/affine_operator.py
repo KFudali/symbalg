@@ -64,6 +64,6 @@ class AffineOperator(Operator):
             binary_op(self.operator.copy(), other.operator.copy()),
             binary_op(self.expression.copy(), other.expression.copy()),
         )
-    
+
     def __neg__(self):
         return self.__class__(-self.operator.copy(), -self.expression.copy())

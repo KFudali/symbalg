@@ -29,25 +29,33 @@ discrete = fd.FdDiscretization(grid)
 s = FieldSpace(discrete)
 
 cg = solvers.CGSolver()
-# Step 1
 NU = 0.01
+
+# Step 1
 step_1 = s.systems.les(
-    lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
-    rhs=s.dx.grad().of(p) + f.value(),
+    lhs=s.dt.explicit(u, order = 2) - (NU * s.dx.laplace()),
+    rhs= -s.dx.grad().of(p_hat),
     bcs=u_bcs,
 )
 # Step 2
 step_2 = s.systems.les(
     lhs=s.dx.laplace(),
-    rhs=(3.0 / 2.0 * s.time.dt()) * s.dx.div().of(u),
+    rhs=(3.0 / (2.0 * s.time.dt())) * s.dx.div().of(u),
     bcs=fi_bcs,
     constraints=[fi_cstr],
 )
-new_p = p.past(1).value() + fi.value() - NU * s.dx.div().of(u)
 for time in s.time.run(duration=1.0, init_dt=0.01):
+    p_star.set_value(p.past(1).value()).perform
+    p_hat.set_value(
+        p_star.value()
+        + ((4.0 / 3.0) * fi.past(1).value())
+        - ((1.0 / 3.0) * fi.past(2).value())
+    ).perform()
     u.set_value(step_1.solve(cg)).perform()
     fi.set_value(step_2.solve(cg)).perform()
-    p.set_value(new_p).perform()
+    p.set_value(
+        p_star.value() + fi.value() - (NU * s.dx.div().of(u))
+    ).perform()
 ```
 
 ### Simple Poisson equation with dirichlet conditions
@@ -83,7 +91,8 @@ equation = s.systems.les(lhs, rhs.value(), bcs)
 solution = equation.solve(solvers.CGSolver())
 F.set_value(solution).perform()
 
-s.monitors.plot_field(F)
+s.monitors.plot_field_2d(F)
+s.monitors.show()
 ```
 
 ### Future plans

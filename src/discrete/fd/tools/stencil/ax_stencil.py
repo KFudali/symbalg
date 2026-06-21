@@ -64,11 +64,12 @@ class AxStencil:
         self._eval_to_boundary(ax, -1, field, out)
         self._eval_to_boundary(ax, 1, field, out)
         self._eval_to_interior(ax, field, out)
-    
-    def norm_offset(
-        first: tuple[Stencil, ...], append_first: Stencil,
-        second: tuple[Stencil, ...], append_second: Stencil
 
+    def norm_offset(
+        first: tuple[Stencil, ...],
+        append_first: Stencil,
+        second: tuple[Stencil, ...],
+        append_second: Stencil,
     ) -> tuple[tuple[Stencil, ...], tuple[Stencil, ...]]:
         if len(first) == len(second):
             return first, second
@@ -95,14 +96,12 @@ class AxStencil:
         self_rights, other_rights = AxStencil.norm_offset(
             self.rights, self.interior, other.rights, other.interior
         )
-        
+
         lefts = tuple(
-            binary_op(self_lefts[i], other_lefts[i])
-            for i in range(len(self_lefts))
+            binary_op(self_lefts[i], other_lefts[i]) for i in range(len(self_lefts))
         )
         rights = tuple(
-            binary_op(self_rights[i], other_rights[i])
-            for i in range(len(self_rights))
+            binary_op(self_rights[i], other_rights[i]) for i in range(len(self_rights))
         )
         return AxStencil(interior, lefts, rights)
 

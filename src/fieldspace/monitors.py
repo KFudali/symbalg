@@ -1,32 +1,60 @@
-from discrete.core.discretization import Discretization
 import matplotlib.pyplot as plt
 
 from algebra.field import Field
+from discrete.core.discretization import Discretization
 
 
 class MonitorFactory:
     def __init__(self, discrete: Discretization):
         self._discrete = discrete
 
-    def plot_field(self, field: Field):
+    def plot_field_2d(self, field: Field, name: str = "F"):
+        assert (
+            field.space.ndim == 2
+        ), f"plot_field_2d requires a 2D space, got ndim={field.space.ndim}"
         x, y = self._discrete.points()
         u = field.value().eval()
-        comps = 1
-        for ax_comps in field.fieldshape.components:
-            comps *= ax_comps
-        fig = plt.figure(figsize=(comps * 5, 5))
-        for comp in range(comps):
-            ax1 = fig.add_subplot(comps, 1, comp + 1, projection="3d")
-            surf1 = ax1.plot_surface(
-                x, y, u[comp], cmap="viridis", edgecolor="k", linewidth=0.5
-            )
-            ax1.set_title("Conjugate Gradient")
-            ax1.set_xlabel("x")
-            ax1.set_ylabel("y")
-            ax1.set_zlabel("u")
-            fig.colorbar(surf1, ax=ax1, shrink=0.6, aspect=10, label="u")
+        components = field.fieldshape.components
+
+        if len(components) == 0:
+            figures_count = 1
+            sub_shape: tuple[int, ...] = ()
+        else:
+            figures_count = components[0]
+            sub_shape = components[1:]
+
+        sub_count = 1
+        for c in sub_shape:
+            sub_count *= c
+
+        for fig_idx in range(figures_count):
+            fig = plt.figure(figsize=(sub_count * 5, 5))
+            for sub_idx in range(sub_count):
+                ax = fig.add_subplot(1, sub_count, sub_idx + 1)
+
+                if len(components) == 0:
+                    data = u
+                    title = name
+                else:
+                    sub_indices: tuple[int, ...] = ()
+                    remaining = sub_idx
+                    for dim in reversed(sub_shape):
+                        sub_indices = (remaining % dim,) + sub_indices
+                        remaining //= dim
+                    full_index = (fig_idx, *sub_indices)
+                    data = u[full_index]
+                    title = name + "".join(f"[{i}]" for i in full_index)
+
+                contour = ax.contourf(x, y, data, levels=50, cmap="viridis")
+                ax.set_aspect("equal")
+                ax.set_title(title)
+                ax.set_xlabel("x")
+                ax.set_ylabel("y")
+                fig.colorbar(contour, ax=ax, shrink=0.8)
             plt.tight_layout()
-            plt.show()
+
+    def show(self):
+        plt.show()
 
     def monitor(self, field: Field):
         pass

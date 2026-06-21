@@ -4,6 +4,7 @@ from types import MappingProxyType
 import numpy as np
 from tools import region
 
+
 @dataclass(frozen=True)
 class Stencil:
     _weights: dict[int, float]
