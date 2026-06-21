@@ -12,6 +12,9 @@ class FDDxOperators(DxOperators):
         self._space = space
         self._grid = grid
 
+    def _eye(self) -> Operator:
+        return dx.eye(self._space)
+
     def _laplace(self, order: int) -> Operator:
         return dx.laplace(self._space, order, self._grid.spacing[0])
 

@@ -3,8 +3,8 @@ from algebra.systems import solvers, constraints
 from tools.geometry import StructuredGridND
 from discrete import fd
 
-N = 20
-grid = StructuredGridND((N, N), (0.05, 0.05))
+N = 50
+grid = StructuredGridND((N, N), (0.01, 0.01))
 discrete = fd.FdDiscretization(grid)
 s = FieldSpace(discrete)
 top, bottom = discrete.domain.ax_boundaries(ax=0)
@@ -31,8 +31,10 @@ fi = s.fields.scalar(init_value=0.0)
 cg = solvers.CGSolver()
 # Step 1
 NU = 0.01
+
+lhs = (3.0 / (2.0 * s.time.dt())) * s.dx.eye() - (NU * s.dx.laplace())
 step_1 = s.systems.les(
-    lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
+    lhs=lhs,
     rhs= -s.dx.grad().of(p) + f.value(),
     bcs=u_bcs,
 )
@@ -44,11 +46,12 @@ step_2 = s.systems.les(
     constraints=[fi_cstr],
 )
 
-new_p = p.past(1).value() + fi.value() - NU * s.dx.div().of(u)
+new_p = p.value() + fi.value() - NU * s.dx.div().of(u)
 for time in s.time.run(duration=1.0, init_dt=0.01):
     u.set_value(step_1.solve(cg)).perform()
     fi.set_value(step_2.solve(cg)).perform()
     p.set_value(new_p).perform()
+
 s.monitors.plot_field_2d(u, "u")
 s.monitors.plot_field_2d(p, "p")
 s.monitors.show()
