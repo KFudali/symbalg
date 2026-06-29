@@ -6,6 +6,7 @@ from tools.action import LazyAction
 from .expression import Expression, CallableExpression
 from .space import FieldShaped, FieldShape
 from .symbolic import SymbolicExpression
+from . import field_utils as utils
 
 
 class AbstractField(FieldShaped, ABC):
@@ -44,7 +45,8 @@ class Field(AbstractField):
 
         return LazyAction(_set_value)
 
-    def component(self, components: tuple[slice, ...]) -> "Field":
-        buffer = ComponentProxyValueBuffer(self._value_buffer, components)
-        result_shape = FieldShape(self.space, buffer.shape[: self.space.ndim])
+    def component(self, comp_query: int | tuple[slice | int, ...]) -> "Field":
+        query = utils.pick_component(self.fieldshape, comp_query)
+        buffer = ComponentProxyValueBuffer(self._value_buffer, query)
+        result_shape = FieldShape(self.space, buffer.shape[: -self.space.ndim])
         return Field(result_shape, buffer)

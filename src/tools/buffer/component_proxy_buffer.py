@@ -3,16 +3,10 @@ from .value_buffer import ValueBuffer
 
 
 class ComponentProxyValueBuffer(ValueBuffer):
-    def __init__(self, source: ValueBuffer, source_shape: tuple[slice, ...]):
+    def __init__(self, source: ValueBuffer, comp_query: tuple[slice | int, ...]):
         self._source = source
-        self._source_shape = source_shape
-        sliced = source.get(0)[source_shape]
-        self._squeeze_axes = tuple(
-            i
-            for i, s in enumerate(source_shape)
-            if isinstance(s, slice) and sliced.shape[i] == 1
-        )
-        self._shape = np.squeeze(sliced, axis=self._squeeze_axes).shape
+        self._comp_query = comp_query
+        self._shape = source.get(0)[comp_query].shape
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -23,14 +17,7 @@ class ComponentProxyValueBuffer(ValueBuffer):
         return self._source.saved_steps
 
     def get(self, index: int = 0) -> np.ndarray:
-        if index < 0:
-            raise IndexError("index must be >= 0")
-        if index >= self.saved_steps:
-            raise IndexError(f"Requested index {index} exceeds available past history")
-        sliced = self._source.get(index)[self._source_shape]
-        if self._squeeze_axes:
-            return np.squeeze(sliced, axis=self._squeeze_axes)
-        return sliced
+        return self._source.get(index)[self._comp_query]
 
     def set(self, value: np.ndarray):
         raise RuntimeError("Cannot set value on a ProxyValueBuffer (read-only view)")

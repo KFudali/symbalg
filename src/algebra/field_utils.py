@@ -2,7 +2,7 @@ from algebra.space import FieldShape
 
 
 def pick_component(
-    source: FieldShape, comp: int | tuple[int, ...] | tuple[slice, ...]
+    source: FieldShape, comp: int | tuple[int | slice, ...]
 ) -> tuple[int | slice, ...]:
     if isinstance(comp, int):
         comps = source.components[0]
