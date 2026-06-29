@@ -1,6 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-from tools.buffer import ValueBuffer, ShiftProxyValueBuffer
+
+from tools.buffer import ValueBuffer, ShiftProxyValueBuffer, ComponentProxyValueBuffer
 from tools.action import LazyAction
 from .expression import Expression, CallableExpression
 from .space import FieldShaped, FieldShape
@@ -38,7 +39,12 @@ class Field(AbstractField):
     def set_value(self, value: Expression) -> LazyAction:
         assert value.shape == self.shape
 
-        def set():
+        def _set_value() -> None:
             self._value_buffer.set(value.eval())
 
-        return LazyAction(set)
+        return LazyAction(_set_value)
+
+    def component(self, components: tuple[slice, ...]) -> "Field":
+        buffer = ComponentProxyValueBuffer(self._value_buffer, components)
+        result_shape = FieldShape(self.space, buffer.shape[: self.space.ndim])
+        return Field(result_shape, buffer)
