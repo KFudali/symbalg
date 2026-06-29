@@ -20,9 +20,7 @@ def pick_component(
                     f"{source.components}, aksed for component: {comp}",
                 )
             )
-        if all(isinstance(c, int) for c in comp):
-            return (*comp, slice(None, None))
-        if all(isinstance(c, slice) for c in comp):
+        if all(isinstance(c, (int, slice)) for c in comp):
             return (*comp, slice(None, None))
     raise ValueError(
         "Can only pick component using int | tuple[int, ...] | tuple[slice, ...]"

@@ -53,14 +53,14 @@ def test_pick_component_slice_tuple():
         field.pick_component(fieldshape, (slice(0, 1), slice(0, 1), slice(0, 1)))
 
 
-# def test_pick_component_mixed_tuple():
-#     space = Space((10, 10))
-#     fieldshape = FieldShape(space, (3, 3))
-#     result = field.pick_component(fieldshape, (1, slice(0, 2)))
-#     arr = np.zeros(shape=fieldshape.shape, dtype=int)
-#     assert arr[result].shape == (2, *space.shape)
-#
-#     fieldshape = FieldShape(space, (3, 3, 3))
-#     result = field.pick_component(fieldshape, (slice(1, 3), 1, 2))
-#     arr = np.zeros(shape=fieldshape.shape, dtype=int)
-#     assert arr[result].shape == (2, *space.shape)
+def test_pick_component_mixed_tuple():
+    space = Space((10, 10))
+    fieldshape = FieldShape(space, (3, 3))
+    result = field.pick_component(fieldshape, (1, slice(0, 2)))
+    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    assert arr[result].shape == (2, *space.shape)
+
+    fieldshape = FieldShape(space, (3, 3, 3))
+    result = field.pick_component(fieldshape, (slice(1, 3), 1, 2))
+    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    assert arr[result].shape == (2, *space.shape)
