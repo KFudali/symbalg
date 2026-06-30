@@ -180,3 +180,19 @@ def test_symbolic_expression_is_immutable_on_combinations(ones, fives):
     mul = sym_ones * sym_fives
     assert_eval(sym_ones, 1.0)
     assert_eval(sym_fives, 5.0)
+
+
+def test_symbolic_matmul():
+    def get_ones():
+        return np.ones(shape=(2, 3), dtype=float)
+
+    def get_twos():
+        return 2.0 * np.ones(shape=(3, 2), dtype=float)
+
+    ones = CallableExpression((2, 3), get_ones)
+    twos = CallableExpression((3, 2), get_twos)
+
+    sym_ones = SymbolicExpression.wrap(ones)
+    sym_twos = SymbolicExpression.wrap(twos)
+
+    np.allclose((sym_ones @ sym_twos).eval(), 4.0)
