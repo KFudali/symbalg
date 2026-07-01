@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-import algebra.field_utils as field
+from algebra.space import shape_utils as field
 from algebra.space import Space, FieldShape
 
 

@@ -1,12 +1,18 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
-from tools.buffer import ValueBuffer, ShiftProxyValueBuffer, ComponentProxyValueBuffer
+from tools.buffer import (
+    ValueBuffer,
+    ShiftProxyValueBuffer,
+    ComponentProxyValueBuffer,
+    StackedProxyValueBuffer,
+)
 from tools.action import LazyAction
+
 from .expression import Expression, CallableExpression
 from .space import FieldShaped, FieldShape
 from .symbolic import SymbolicExpression
-from . import field_utils as utils
+from .space import shape_utils as utils
 
 
 class AbstractField(FieldShaped, ABC):
@@ -29,6 +35,10 @@ class Field(AbstractField):
         super().__init__(shape)
         self._value_buffer = value_buffer
 
+    @property
+    def buffer(self) -> ValueBuffer:
+        return self._value_buffer
+
     def past(self, step: int) -> "Field":
         return Field(self.fieldshape, ShiftProxyValueBuffer(self._value_buffer, step))
 
@@ -50,3 +60,13 @@ class Field(AbstractField):
         buffer = ComponentProxyValueBuffer(self._value_buffer, query)
         result_shape = FieldShape(self.space, buffer.shape[: -self.space.ndim])
         return Field(result_shape, buffer)
+
+
+def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
+    try:
+        buffer = StackedProxyValueBuffer(tuple(field.buffer for field in fields))
+    except Exception as e:
+        raise ValueError(f"Cannot stack fields over ax: {ax}") from e
+    space = fields[0].space
+    fieldshape = FieldShape(space, buffer.shape[: -space.ndim])
+    return Field(fieldshape, buffer)
