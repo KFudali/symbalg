@@ -1,4 +1,4 @@
-from algebra.space import FieldShape
+from .fieldshaped import FieldShape
 
 
 def pick_component(
