@@ -11,8 +11,16 @@ class FDLapLikeOperator(FDOperator):
     of the same shape .
     """
 
-    def __init__(self, space: Space, stencils: tuple[AxStencil, ...]):
-        super().__init__(space, ShapeTransform.NONE, stencils)
+    def __init__(
+        self,
+        space: Space,
+        shape_transform: ShapeTransform,
+        stencils: tuple[AxStencil, ...] | None = None,
+    ):
+        if not isinstance(shape_transform, ShapeTransform):
+            stencils = tuple(shape_transform)
+            shape_transform = ShapeTransform.NONE
+        super().__init__(space, shape_transform, stencils)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         field_rank = len(inp.shape[: -self.space.ndim])

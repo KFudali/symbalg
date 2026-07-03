@@ -1,31 +1,23 @@
 import pytest
 import numpy as np
-from algebra.expression import CallableExpression, ScalarExpression, Expression
+from algebra.expression import ConstExpression, Expression, CallableExpression
 from algebra.symbolic import SymbolicExpression
 from algebra.exceptions import ShapeMismatchError
+from algebra.space import Space
 
 SHAPE = (10,)
 
 
 @pytest.fixture
-def scalar():
-    return ScalarExpression(2.0)
+def ones() -> SymbolicExpression:
+    space = Space(SHAPE)
+    return SymbolicExpression.wrap(ConstExpression(space, np.ones(SHAPE)))
 
 
 @pytest.fixture
-def ones():
-    def return_ones():
-        return np.ones(shape=SHAPE, dtype=float)
-
-    return CallableExpression(SHAPE, return_ones)
-
-
-@pytest.fixture
-def fives():
-    def return_fives():
-        return 5 * np.ones(shape=SHAPE, dtype=float)
-
-    return CallableExpression(SHAPE, return_fives)
+def fives() -> SymbolicExpression:
+    space = Space(SHAPE)
+    return SymbolicExpression.wrap(ConstExpression(space, np.ones(SHAPE) * 5.0))
 
 
 def assert_eval(expression: Expression, value: float):
@@ -33,150 +25,148 @@ def assert_eval(expression: Expression, value: float):
     assert np.array_equal(result, value * np.ones_like(result))
 
 
-def test_symbolic_expression_with_floats(ones):
-    sym_ones = SymbolicExpression.wrap(ones)
-
-    add = sym_ones + 1.0
+def test_symbolic_expression_with_floats(ones: SymbolicExpression):
+    add = ones + 1.0
     assert_eval(add, 2.0)
     add += 3.0
     assert_eval(add, 5.0)
     add += 5.0
     assert_eval(add, 10.0)
 
-    sub = sym_ones - 1.0
+    sub = ones - 1.0
     assert_eval(sub, 0.0)
     sub -= 5.0
     assert_eval(sub, -5.0)
     sub -= -10.0
     assert_eval(sub, 5.0)
 
-    mul = sym_ones * 3.0
+    mul = ones * 3.0
     assert_eval(mul, 3.0)
     mul *= 3.0
     assert_eval(mul, 9.0)
     mul *= 5.0
     assert_eval(mul, 45.0)
 
-    eq = (((sym_ones * 3.0) + 7.0) / 5.0) - 5.0
+    eq = (((ones * 3.0) + 7.0) / 5.0) - 5.0
     assert_eval(eq, -3.0)
 
 
-def test_symbolic_expression_with_arrays(ones, fives):
-    sym_ones = SymbolicExpression.wrap(ones)
-    sym_fives = SymbolicExpression.wrap(fives)
+def test_symbolic_expression_with_arrays(
+    ones: SymbolicExpression, fives: SymbolicExpression
+):
+
     array = np.ones(shape=SHAPE, dtype=float) * 3.0
 
-    add = sym_ones + array
+    add = ones + array
     assert_eval(add, 4.0)
     add += array
     assert_eval(add, 7.0)
 
-    sub = sym_fives - array
+    sub = fives - array
     assert_eval(sub, 2.0)
     sub -= array
     assert_eval(sub, -1.0)
 
-    mul = sym_ones * array
+    mul = ones * array
     assert_eval(mul, 3.0)
     mul *= array
     assert_eval(mul, 9.0)
 
 
-def test_symbolic_expression_with_scalar_expression(ones, fives):
-    sym_ones = SymbolicExpression.wrap(ones)
-    sym_fives = SymbolicExpression.wrap(fives)
-    scalar = ScalarExpression(2.0)
+def test_symbolic_expression_with_scalar_expression(
+    ones: SymbolicExpression, fives: SymbolicExpression
+):
+    scalar = ConstExpression(ones.space, 2.0)
 
-    add = sym_ones + scalar
+    add = ones + scalar
     assert_eval(add, 3.0)
     add += scalar
     assert_eval(add, 5.0)
 
-    sub = sym_fives - scalar
+    sub = fives - scalar
     assert_eval(sub, 3.0)
     sub -= scalar
     assert_eval(sub, 1.0)
 
-    mul = sym_ones * scalar
+    mul = ones * scalar
     assert_eval(mul, 2.0)
     mul *= scalar
     assert_eval(mul, 4.0)
 
-    div = sym_fives / scalar
+    div = fives / scalar
     assert_eval(div, 2.5)
     div /= scalar
     assert_eval(div, 1.25)
 
 
-def test_symbolic_expression_with_expression(ones, fives):
-    sym_ones = SymbolicExpression.wrap(ones)
-    sym_fives = SymbolicExpression.wrap(fives)
-
-    add = sym_ones + sym_fives
+def test_symbolic_expression_with_expression(
+    ones: SymbolicExpression, fives: SymbolicExpression
+):
+    add = ones + fives
     assert_eval(add, 6.0)
 
-    sub = sym_fives - sym_ones
+    sub = fives - ones
     assert_eval(sub, 4.0)
 
-    mul = sym_ones * sym_fives
+    mul = ones * fives
     assert_eval(mul, 5.0)
 
-    combined = (sym_ones + sym_fives) * sym_fives - sym_ones
+    combined = (ones + fives) * fives - ones
     assert_eval(combined, 29.0)
 
 
-def test_symbolic_expression_shape_mismatch_raises(ones):
-    sym_ones = SymbolicExpression.wrap(ones)
-    other_shape = (SHAPE[0] + 1,)
-    other_array = np.ones(shape=other_shape, dtype=float)
-    other_expr = CallableExpression(other_shape, lambda: other_array)
+def test_symbolic_expression_shape_mismatch_raises(ones: SymbolicExpression):
+    ones = SymbolicExpression.wrap(ones)
+    other = ConstExpression(ones.space, np.ones(shape=(2, *SHAPE)))
 
     with pytest.raises(ShapeMismatchError):
-        sym_ones + other_array
+        ones + other
 
     with pytest.raises(ShapeMismatchError):
-        sym_ones + other_expr
+        ones - other
 
     with pytest.raises(ShapeMismatchError):
-        sym_ones * other_expr
+        ones * other
+
+    with pytest.raises(ShapeMismatchError):
+        ones / other
 
 
-def test_symbolic_expression_combination_broadcasts_shape(ones):
+def test_symbolic_expression_combination_broadcasts_shape(ones: SymbolicExpression):
     """Combining a scalar-shape SymbolicExpression with an array-shape one
     must yield a SymbolicExpression whose ``shape`` matches the array
     operand, regardless of which side initiates the operation.
     """
-    sym_ones = SymbolicExpression.wrap(ones)
-    sym_scalar = SymbolicExpression.wrap(ScalarExpression(3.0))
+    scalar = SymbolicExpression.wrap(ConstExpression(ones.space, 3.0))
 
-    assert sym_scalar.shape == ()
-    assert sym_ones.shape == SHAPE
+    assert scalar.shape == ()
+    assert ones.shape == SHAPE
 
     # scalar * array
-    combined = sym_scalar * sym_ones
+    combined = scalar * ones
     assert combined.shape == SHAPE
     assert combined.eval().shape == SHAPE
 
     # array * scalar (rmul / mul from the array side)
-    combined = sym_ones * sym_scalar
+    combined = ones * scalar
     assert combined.shape == SHAPE
     assert combined.eval().shape == SHAPE
 
     # float * array (via __rmul__)
-    combined = 2.0 * sym_ones
+    combined = 2.0 * ones
     assert combined.shape == SHAPE
 
     # scalar + array
-    combined = sym_scalar + sym_ones
+    combined = scalar + ones
     assert combined.shape == SHAPE
     assert combined.eval().shape == SHAPE
 
 
-def test_symbolic_expression_is_immutable_on_combinations(ones, fives):
-    sym_ones = SymbolicExpression.wrap(ones)
-    sym_fives = SymbolicExpression.wrap(fives)
-    add = sym_ones + sym_fives
-    sub = sym_fives - sym_ones
-    mul = sym_ones * sym_fives
-    assert_eval(sym_ones, 1.0)
-    assert_eval(sym_fives, 5.0)
+def test_symbolic_expression_is_immutable_on_combinations(
+    ones: SymbolicExpression, fives: SymbolicExpression
+):
+    add = ones + fives
+    sub = fives - ones
+    mul = ones * fives
+    assert_eval(ones, 1.0)
+    assert_eval(fives, 5.0)

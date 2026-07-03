@@ -41,4 +41,4 @@ class LinearEquation:
             self._bc_tool.post_solve(self._bcs, out)
             return out
 
-        return CallableExpression(self._rhs.shape, _solve)
+        return CallableExpression(self._rhs.fieldshape, _solve)

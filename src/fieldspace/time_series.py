@@ -1,11 +1,14 @@
-from discrete.core import DiscreteTime
-from algebra.expression import CallableScalarExpression
+import numpy as np
+from discrete.core import Discretization
+from algebra.expression import CallableExpression
 from algebra.symbolic import SymbolicExpression
+from algebra.space import FieldShape
 
 
 class TimeSeries:
-    def __init__(self, time: DiscreteTime):
-        self._discrete_time = time
+    def __init__(self, discretization: Discretization):
+        self._discrete_time = discretization.time
+        self._space = discretization.space
 
     def run(self, duration: float, init_dt: float = 0.01):
         to_go = duration
@@ -22,4 +25,9 @@ class TimeSeries:
         self._discrete_time.reset()
 
     def dt(self) -> SymbolicExpression:
-        return SymbolicExpression.wrap(CallableScalarExpression(self._discrete_time.dt))
+        return SymbolicExpression.wrap(
+            CallableExpression(
+                FieldShape.scalar(self._space),
+                lambda: np.array(self._discrete_time.dt()),
+            )
+        )

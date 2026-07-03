@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from typing import TypeVar, Self, TYPE_CHECKING
 import numpy as np
 from tools.symbolic.optype import BinaryOpType
-from .space import Space, ShapeTransform
+from .space import Space, ShapeTransform, FieldShape
 
 if TYPE_CHECKING:
     from .field import Field
@@ -31,7 +31,9 @@ class Operator(ABC):
             return self.apply_to(field.value().eval())
 
         out_shape = self.shape_transform.transform(self.space, field.shape)
-        return CallableExpression(out_shape, apply_to_field)
+        return CallableExpression(
+            FieldShape.from_shape(self.space, out_shape), apply_to_field
+        )
 
     @abstractmethod
     def copy(self) -> Self:

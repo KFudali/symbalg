@@ -8,14 +8,21 @@ class FieldShape:
     components: tuple[int, ...]
 
     def is_scalar(self) -> bool:
-        return len(self.components) == 0
+        return len(self.components) == 1 and self.components[0] == -1
 
     @classmethod
     def scalar(cls, space: Space) -> "FieldShape":
-        return cls(space, ())
+        return cls(space, (-1,))
+
+    @classmethod
+    def from_shape(cls, space: Space, shape: tuple[int, ...]) -> "FieldShape":
+        assert len(shape) >= space.ndim
+        return FieldShape(space, shape[: -space.ndim])
 
     @property
     def shape(self) -> tuple[int, ...]:
+        if self.is_scalar():
+            return ()
         return (*self.components, *self.space.shape)
 
 

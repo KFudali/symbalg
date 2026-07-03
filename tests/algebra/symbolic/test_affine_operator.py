@@ -3,8 +3,11 @@ import numpy as np
 
 
 from algebra.symbolic import AffineOperator
-from algebra.expression import CallableExpression, ScalarExpression
+from algebra.expression import CallableExpression
+from algebra.space import FieldShape, Space
 from conftest import MockOperator
+
+ones_space = Space((10, 10))
 
 
 @pytest.fixture
@@ -17,9 +20,9 @@ def double_add_one():
     double_op.set_apply(double)
 
     def return_ones():
-        return np.ones(shape=(10,), dtype=float)
+        return np.ones(shape=ones_space.shape, dtype=float)
 
-    ones = CallableExpression((10,), return_ones)
+    ones = CallableExpression(FieldShape(ones_space, ()), return_ones)
     operator = AffineOperator(double_op, ones)
     return operator
 
@@ -34,22 +37,22 @@ def triple_sub_three():
     tiple_op.set_apply(triple)
 
     def return_threes():
-        return -3.0 * np.ones(shape=(10,), dtype=float)
+        return -3.0 * np.ones(shape=ones_space.shape, dtype=float)
 
-    threes = CallableExpression((10,), return_threes)
+    threes = CallableExpression(FieldShape(ones_space, ()), return_threes)
     operator = AffineOperator(tiple_op, threes)
     return operator
 
 
 def test_affine_operator_double_apply(double_add_one):
-    input_field = np.ones(shape=(10,), dtype=float)
-    output_field = np.zeros(shape=(10,), dtype=float)
+    input_field = np.ones(shape=ones_space.shape, dtype=float)
+    output_field = np.zeros(shape=ones_space.shape, dtype=float)
 
     double_add_one.apply(input_field, output_field)
     assert np.allclose(output_field, 3.0)
 
-    input_field = 5 * np.ones(shape=(10,), dtype=float)
-    output_field = np.zeros(shape=(10,), dtype=float)
+    input_field = 5 * np.ones(shape=ones_space.shape, dtype=float)
+    output_field = np.zeros(shape=ones_space.shape, dtype=float)
 
     double_add_one.apply(input_field, output_field)
     assert np.allclose(output_field, 11.0)
