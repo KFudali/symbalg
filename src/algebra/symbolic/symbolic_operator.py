@@ -5,6 +5,7 @@ import numpy as np
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
 from algebra.expression import Expression
+from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExpressionNode
@@ -58,16 +59,23 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
         if isinstance(other, Operator):
-            matches_space = self.space == other.space
-            matches_shape_transform = self.shape_transform == other.shape_transform
-            if matches_space and matches_shape_transform:
-                return True
-            return False
+            if self.space != other.space:
+                raise ShapeMismatchError(
+                    f"Incompatible space: {self.space} and {other.space}"
+                )
+            if self.shape_transform != other.shape_transform:
+                raise ShapeMismatchError(
+                    f"Incompatible shape_transform: {self.shape_transform} "
+                    f"and {other.shape_transform}"
+                )
+            return True
         is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Expression):
-            if other.shape == () and is_scale:
+            if not is_scale:
+                return False
+            if other.shape == ():
                 return True
-            return False
+            raise ShapeMismatchError(f"Incompatible expression shape: {other.shape}")
         if isinstance(other, float):
             if is_scale:
                 return True

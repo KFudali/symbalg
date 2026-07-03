@@ -117,7 +117,7 @@ def test_symbolic_expression_with_expression(
 
 def test_symbolic_expression_shape_mismatch_raises(ones: SymbolicExpression):
     ones = SymbolicExpression.wrap(ones)
-    other = ConstExpression(ones.space, np.ones(shape=(SHAPE[0] + 1,)))
+    other = ConstExpression(ones.space, np.ones(shape=(2, *SHAPE)))
 
     with pytest.raises(ShapeMismatchError):
         ones + other

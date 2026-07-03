@@ -16,7 +16,7 @@ class FieldShape:
 
     @classmethod
     def from_shape(cls, space: Space, shape: tuple[int, ...]) -> "FieldShape":
-        assert space.ndim >= len(shape)
+        assert len(shape) >= space.ndim
         return FieldShape(space, shape[: -space.ndim])
 
     @property

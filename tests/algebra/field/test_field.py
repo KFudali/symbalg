@@ -16,7 +16,7 @@ def test_field_component():
     assert np.allclose(field.component(0).value().eval(), 1.0)
     assert np.allclose(field.component(1).value().eval(), 2.0)
 
-    zero = CallableExpression(fieldshape.shape, lambda: np.zeros(fieldshape.shape))
+    zero = CallableExpression(fieldshape, lambda: np.zeros(fieldshape.shape))
     field.set_value(zero).perform()
 
     assert np.allclose(field.component(0).value().eval(), 0.0)

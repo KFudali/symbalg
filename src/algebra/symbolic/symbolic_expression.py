@@ -22,14 +22,27 @@ class SymbolicExpression(Symbolic[Expression], Expression):
 
     @classmethod
     def _make_value(cls, other: Expression) -> nodes.ValueNode[Expression]:
-        expr = other
-        if isinstance(other, np.ndarray):
-            expr = CallableExpression(other.fieldshape, lambda: other)
+        return ExpressionNode(other)
+
+    def _ensure_node(self, other: Any) -> nodes.SymbolicNode[Expression]:
+        if isinstance(other, Symbolic):
+            return other.node
+        if isinstance(other, nodes.SymbolicNode):
+            return other
         if isinstance(other, float):
-            expr = CallableExpression(
-                FieldShape.scalar(self.space), lambda: np.array(other)
+            return ExpressionNode(
+                CallableExpression(
+                    FieldShape.scalar(self.space), lambda: np.array(other)
+                )
             )
-        return ExpressionNode(expr)
+        if isinstance(other, np.ndarray):
+            return ExpressionNode(
+                CallableExpression(
+                    FieldShape.from_shape(self.space, other.shape),
+                    lambda: other,
+                )
+            )
+        return ExpressionNode(other)
 
     def eval(self) -> np.ndarray:
         return self.resolve()
@@ -52,7 +65,11 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _combined_shape(self, other: Any, optype: BinaryOpType) -> FieldShape:
         if isinstance(other, (Expression, np.ndarray)):
             if self.shape == ():
-                return other.shape
+                return (
+                    other.fieldshape
+                    if isinstance(other, Expression)
+                    else FieldShape.from_shape(self.space, other.shape)
+                )
             return self.fieldshape
         return self.fieldshape
 
@@ -60,9 +77,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if isinstance(other, float):
             return True
         if isinstance(other, (Expression, np.ndarray)):
-            if self.shape in ((), other.shape) or other.shape == ():
+            other_shape = other.shape if isinstance(other, Expression) else other.shape
+            if self.shape in ((), other_shape) or other_shape == ():
                 return True
             raise ShapeMismatchError(
-                f"Incompatible shape is: {self.shape} and {other.shape}"
+                f"Incompatible shape is: {self.shape} and {other_shape}"
             )
         return False

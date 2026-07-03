@@ -1,8 +1,8 @@
 import numpy as np
 from discrete.fd.operators.dt import explicit
-from algebra.expression import ScalarExpression
-from algebra.space import Space
-from algebra.field import Field, FieldShape
+from algebra.expression import CallableExpression
+from algebra.space import FieldShape, Space
+from algebra.field import Field
 from tools.buffer import DequeValueBuffer
 
 space = Space((10, 10))
@@ -15,7 +15,7 @@ def field_buffer() -> tuple[Field, DequeValueBuffer]:
 
 
 def test_first_order_with_const_field():
-    time_step = ScalarExpression(0.01)
+    time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
     values.set(np.ones(shape=field.shape, dtype=float))
     dt = explicit.bfd(field, time_step, order=1)
@@ -26,7 +26,7 @@ def test_first_order_with_const_field():
 
 
 def test_second_order_with_const_field():
-    time_step = ScalarExpression(0.01)
+    time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
     values.set_saved_steps(2)
     values.advance(np.ones(shape=field.shape, dtype=float))
@@ -39,7 +39,7 @@ def test_second_order_with_const_field():
 
 
 def test_first_order_with_linear_field():
-    time_step = ScalarExpression(0.01)
+    time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
     dt = explicit.bfd(field, time_step, order=1)
     for t in range(10):
@@ -50,7 +50,7 @@ def test_first_order_with_linear_field():
 
 
 def test_second_order_with_linear_field():
-    time_step = ScalarExpression(0.01)
+    time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
     dt = explicit.bfd(field, time_step, order=2)
     for t in range(10):
@@ -62,7 +62,7 @@ def test_second_order_with_linear_field():
 
 def test_second_order_with_square_field():
     dt_value = 0.01
-    time_step = ScalarExpression(dt_value)
+    time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(dt_value))
     field, values = field_buffer()
     dt = explicit.bfd(field, time_step, order=2)
     for t in range(10):
