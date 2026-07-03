@@ -14,7 +14,7 @@ class FDDtOperators(DtOperators):
 
     def explicit(self, field: Field, order: int = 1) -> AffineOperator:
         dt = CallableExpression(
-            FieldShape.scalar(self._space), lambda: np.array(self._time.dt)
+            FieldShape.scalar(self._space), lambda: np.array(self._time.dt())
         )
         return explicit.bfd(field, dt, order)
 

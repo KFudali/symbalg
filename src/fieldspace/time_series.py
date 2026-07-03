@@ -27,6 +27,7 @@ class TimeSeries:
     def dt(self) -> SymbolicExpression:
         return SymbolicExpression.wrap(
             CallableExpression(
-                FieldShape.scalar(self._space), lambda: np.array(self._discrete_time.dt)
+                FieldShape.scalar(self._space),
+                lambda: np.array(self._discrete_time.dt()),
             )
         )
