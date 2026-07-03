@@ -5,10 +5,9 @@ import numpy as np
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
 from algebra.expression import Expression, ScalarExpression
-from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
-from .nodes import ExprScaleNode
+from .nodes import ExpressionNode
 
 if TYPE_CHECKING:
     from algebra.field import Field
@@ -49,32 +48,28 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
 
     @classmethod
     def _make_value(cls, other: Any) -> nodes.ValueNode:
-        if isinstance(other, ScalarExpression):
-            return ExprScaleNode(other)
+        if isinstance(other, Expression):
+            if other.fieldshape.is_scalar():
+                return ExpressionNode(other)
         return super()._make_value(other)
 
     def _new(self, node: nodes.SymbolicNode[TOperator]) -> Self:
         return self.__class__(node, self.space, self.shape_transform)
 
     def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
-        is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Operator):
             matches_space = self.space == other.space
             matches_shape_transform = self.shape_transform == other.shape_transform
             if matches_space and matches_shape_transform:
                 return True
-            raise ShapeMismatchError(
-                f"Incompatible operators: space {self.space} vs {other.space}, "
-                f"shape_transform {self.shape_transform} vs {other.shape_transform}"
-            )
+            return False
+        is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Expression):
-            if not is_scale:
-                return False
-            if other.shape == ():
+            if other.shape == () and is_scale:
                 return True
-            raise ShapeMismatchError(
-                f"Expression must be scalar to scale operator, got shape {other.shape}"
-            )
+            return False
         if isinstance(other, float):
-            return is_scale
+            if is_scale:
+                return True
+            return False
         return False
