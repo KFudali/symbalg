@@ -23,15 +23,15 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     @classmethod
     def _make_value(cls, other: Expression) -> nodes.ValueNode[Expression]:
         expr = other
-        if isinstance(other, (np.ndarray, float)):
-
-            def get_other() -> np.ndarray | float:
-                return other
-
-            expr = CallableExpression(other.fieldshape, get_other)
+        if isinstance(other, np.ndarray):
+            expr = CallableExpression(other.fieldshape, lambda: other)
+        if isinstance(other, float):
+            expr = CallableExpression(
+                FieldShape.scalar(self.space), lambda: np.array(other)
+            )
         return ExpressionNode(expr)
 
-    def eval(self) -> np.ndarray | float:
+    def eval(self) -> np.ndarray:
         return self.resolve()
 
     def copy(self) -> Self:

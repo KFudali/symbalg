@@ -13,7 +13,7 @@ class FieldSpace:
         self._systems = SystemFactory(discretization)
         self._fields = FieldFactory(discretization)
         self._monitors = MonitorFactory(discretization)
-        self._time_series = TimeSeries(discretization.time)
+        self._time_series = TimeSeries(discretization)
 
     @property
     def dx(self) -> DxOperators:

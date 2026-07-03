@@ -4,7 +4,7 @@ import numpy as np
 
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
-from algebra.expression import Expression, ScalarExpression
+from algebra.expression import Expression
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import ExpressionNode

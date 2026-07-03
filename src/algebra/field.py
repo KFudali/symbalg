@@ -44,7 +44,7 @@ class Field(AbstractField):
 
     def value(self) -> SymbolicExpression:
         return SymbolicExpression.wrap(
-            CallableExpression(self.shape, self._value_buffer.get)
+            CallableExpression(self.fieldshape, self._value_buffer.get)
         )
 
     def set_value(self, value: Expression) -> LazyAction:

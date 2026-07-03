@@ -19,5 +19,5 @@ class ExpressionNode(nodes.ValueNode[Expression]):
     def space(self) -> Space:
         return self.value.space
 
-    def resolve(self) -> np.ndarray | float:
+    def resolve(self) -> np.ndarray:
         return self.value.eval()

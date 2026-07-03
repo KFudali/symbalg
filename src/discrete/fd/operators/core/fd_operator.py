@@ -24,26 +24,29 @@ class FDOperator(Operator):
 
     def copy(self) -> Self:
         stencils = tuple(stencil.copy() for stencil in self.stencils)
-        return self.__class__(self.space, stencils)
+        return self.__class__(self.space, self.shape_transform, stencils)
 
     def modify(self, ax: int, new_stencil: AxStencil) -> Self:
         stencils = [stencil.copy() for stencil in self.stencils]
         stencils[ax] = new_stencil
-        return self.__class__(self.space, tuple(stencils))
+        return self.__class__(self.space, self.shape_transform, tuple(stencils))
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
         if not isinstance(other, type(self)):
             raise ValueError("FDOperator can obly be combined with other FDOperator")
+        if other.shape_transform != self.shape_transform:
+            raise ValueError("To combine operatros shape transforms have to match")
+
         stencils = []
         binary_op = BINARY_OPS[optype]
         for ax, stencil in enumerate(self.stencils):
             stencils.append(binary_op(stencil, other.stencils[ax]))
-        return self.__class__(self.space, tuple(stencils))
+        return self.__class__(self.space, self.shape_transform, tuple(stencils))
 
     def _scale(self, other: float | int) -> Self:
         stencils = tuple(stencil * other for stencil in self.stencils)
-        return self.__class__(self.space, stencils)
+        return self.__class__(self.space, self.shape_transform, stencils)
 
     def __neg__(self) -> Self:
         stencils = tuple(-stencil for stencil in self.stencils)
-        return self.__class__(self.space, stencils)
+        return self.__class__(self.space, self.shape_transform, stencils)
