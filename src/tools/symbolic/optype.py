@@ -20,4 +20,7 @@ BINARY_OPS = {
     BinaryOpType.SUB: lambda a, b: a - b,
     BinaryOpType.MUL: lambda a, b: a * b,
     BinaryOpType.DIV: lambda a, b: a / b,
+    BinaryOpType.DOT: lambda a, b: a * b,   # fallback; real impl via TensorOpNode
+    BinaryOpType.INNER: lambda a, b: a * b, # fallback
+    BinaryOpType.OUTER: lambda a, b: a * b, # fallback
 }
