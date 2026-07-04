@@ -84,3 +84,12 @@ class SymbolicExpression(Symbolic[Expression], Expression):
                 f"Incompatible shape is: {self.shape} and {other_shape}"
             )
         return False
+
+    def dot(self, other: Expression) -> SymbolicExpression:
+        pass
+
+    def inner(self, other: Expression) -> SymbolicExpression:
+        pass
+
+    def outer(self, other: Expression) -> SymbolicExpression:
+        pass

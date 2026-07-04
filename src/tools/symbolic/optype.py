@@ -10,6 +10,9 @@ class BinaryOpType(Enum):
     SUB = auto()
     MUL = auto()
     DIV = auto()
+    INNER = auto()
+    OUTER = auto()
+    DOT = auto()
 
 
 BINARY_OPS = {
