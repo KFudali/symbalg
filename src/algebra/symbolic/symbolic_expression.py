@@ -61,7 +61,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if not self._compatible(other, optype, reverse):
             return NotImplemented
         other_node = self._ensure_node(other)
-        return self._new(nodes.BinaryNode(optype, self.node, other_node))
+        node = nodes.BinaryNode(optype, self.node, other_node)
+        if self.fieldshape.is_scalar() and isinstance(other, Expression):
+            return self.__class__(node, other.fieldshape)
+        return self._new(node)
 
     def _compatible(
         self, other: Any, optype: BinaryOpType, reverse: bool = False
