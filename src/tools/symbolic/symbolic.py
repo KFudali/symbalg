@@ -19,15 +19,14 @@ class Symbolic(SymbolicNode[TSymbolic]):
     def wrap(cls, value: TSymbolic) -> Self:
         return cls(cls._make_value((value)))
 
-    @classmethod
     def _ensure_node(
-        cls, other: Symbolic | SymbolicNode | TSymbolic
+        self, other: Symbolic | SymbolicNode | TSymbolic
     ) -> SymbolicNode[TSymbolic]:
         if isinstance(other, Symbolic):
             return other.node
         if isinstance(other, SymbolicNode):
             return other
-        return cls._make_value(other)
+        return self._make_value(other)
 
     @classmethod
     def _make_value(cls, other: TSymbolic) -> ValueNode[TSymbolic]:
@@ -36,20 +35,18 @@ class Symbolic(SymbolicNode[TSymbolic]):
     def _new(self, node: SymbolicNode[TSymbolic]) -> Self:
         return self.__class__(node)
 
-    def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
-        return True
-
-    def _combine_binary(self, other: Any, optype: BinaryOpType) -> Self:
-        if self._compatible(other, optype):
+    def _combine_binary(
+        self, other: Any, optype: BinaryOpType, reverse: bool = False
+    ) -> Self:
+        if self._compatible(other, optype, reverse):
             other_node = self._ensure_node(other)
             return self._new(BinaryNode(optype, self.node, other_node))
         return NotImplemented
 
-    def _combine_binary_reverse(self, other: Any, optype: BinaryOpType) -> Self:
-        if self._compatible(other, optype):
-            other_node = self._ensure_node(other)
-            return self._new(BinaryNode(optype, other_node, self.node))
-        return NotImplemented
+    def _compatible(
+        self, other: Any, optype: BinaryOpType, reverse: bool = False
+    ) -> bool:
+        return True
 
     # ---- operator overloads ----
     def __neg__(self) -> Self:
@@ -72,13 +69,13 @@ class Symbolic(SymbolicNode[TSymbolic]):
         return self.__add__(other)
 
     def __rsub__(self, other: Any) -> Self:
-        return self._combine_binary_reverse(other, BinaryOpType.SUB)
+        return self._combine_binary(other, BinaryOpType.SUB, reverse=True)
 
     def __rmul__(self, other: Any) -> Self:
         return self.__mul__(other)
 
     def __rtruediv__(self, other: Any) -> Self:
-        return self._combine_binary_reverse(other, BinaryOpType.DIV)
+        return self._combine_binary(other, BinaryOpType.DIV, reverse=True)
 
     def __repr__(self) -> str:
         return f"Symbolic({self.node})"

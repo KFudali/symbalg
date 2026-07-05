@@ -57,7 +57,9 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     def _new(self, node: nodes.SymbolicNode[TOperator]) -> Self:
         return self.__class__(node, self.space, self.shape_transform)
 
-    def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
+    def _compatible(
+        self, other: Any, optype: BinaryOpType, reverse: bool = False
+    ) -> bool:
         if isinstance(other, Operator):
             if self.space != other.space:
                 raise ShapeMismatchError(
@@ -69,15 +71,15 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
                     f"and {other.shape_transform}"
                 )
             return True
+        if reverse and optype == BinaryOpType.DIV:
+            # cannot divide by operator
+            return False
         is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Expression):
-            if not is_scale:
-                return False
-            if other.shape == ():
+            if other.shape == () and is_scale:
                 return True
             raise ShapeMismatchError(f"Incompatible expression shape: {other.shape}")
         if isinstance(other, float):
             if is_scale:
                 return True
-            return False
         return False

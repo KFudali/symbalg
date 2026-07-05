@@ -6,10 +6,6 @@ from .space import Space
 class FieldShape:
     space: Space
     components: tuple[int, ...]
-    transposed: bool = False
-
-    def T(self) -> "FieldShape":
-        return FieldShape(self.space, self.components, not self.transposed)
 
     def is_scalar(self) -> bool:
         return len(self.components) == 1 and self.components[0] == -1
@@ -27,8 +23,6 @@ class FieldShape:
     def shape(self) -> tuple[int, ...]:
         if self.is_scalar():
             return ()
-        if self.transposed:
-            return (*reversed(self.components), *self.space.shape)
         return (*self.components, *self.space.shape)
 
 

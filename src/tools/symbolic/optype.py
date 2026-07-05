@@ -1,18 +1,26 @@
 from enum import Enum, auto
 
 
-class UnaryOpType(Enum):
+class OpType(Enum):
+    pass
+
+
+class UnaryOpType(OpType):
     NEG = auto()
 
 
-class BinaryOpType(Enum):
+class BinaryOpType(OpType):
     ADD = auto()
     SUB = auto()
     MUL = auto()
     DIV = auto()
+
+
+class MatOpType(OpType):
+    DOT = auto()
     INNER = auto()
     OUTER = auto()
-    DOT = auto()
+    TRACE = auto()
 
 
 BINARY_OPS = {
@@ -20,7 +28,4 @@ BINARY_OPS = {
     BinaryOpType.SUB: lambda a, b: a - b,
     BinaryOpType.MUL: lambda a, b: a * b,
     BinaryOpType.DIV: lambda a, b: a / b,
-    BinaryOpType.DOT: lambda a, b: a * b,   # fallback; real impl via TensorOpNode
-    BinaryOpType.INNER: lambda a, b: a * b, # fallback
-    BinaryOpType.OUTER: lambda a, b: a * b, # fallback
 }
