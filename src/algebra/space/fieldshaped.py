@@ -31,6 +31,10 @@ class FieldShaped:
         self._shape = shape
 
     @property
+    def comps(self) -> tuple[int, ...]:
+        return self.fieldshape.components
+
+    @property
     def fieldshape(self) -> FieldShape:
         return self._shape
 

@@ -1,13 +1,15 @@
 from __future__ import annotations
+
 from typing import Any, Self
 import numpy as np
 
-from algebra.space import FieldShape
-from algebra.expression import Expression, CallableExpression
+from algebra.space import FieldShape, utils
+from algebra.expression import Expression, ConstExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
-from .nodes import ExpressionNode
+from tools.symbolic.optype import MatBinOpType, MatUnOpType
+from .nodes import ExpressionNode, TensorOpNode, TensorUnaryOpNode
 
 
 class SymbolicExpression(Symbolic[Expression], Expression):
@@ -21,28 +23,17 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return cls(node, value.fieldshape)
 
     @classmethod
-    def _make_value(cls, other: Expression) -> nodes.ValueNode[Expression]:
+    def _make_value(cls, other: Expression) -> ExpressionNode:
         return ExpressionNode(other)
 
-    def _ensure_node(self, other: Any) -> nodes.SymbolicNode[Expression]:
+    def _ensure_node(self, other: Any) -> ExpressionNode:
         if isinstance(other, Symbolic):
             return other.node
         if isinstance(other, nodes.SymbolicNode):
             return other
-        if isinstance(other, float):
-            return ExpressionNode(
-                CallableExpression(
-                    FieldShape.scalar(self.space), lambda: np.array(other)
-                )
-            )
-        if isinstance(other, np.ndarray):
-            return ExpressionNode(
-                CallableExpression(
-                    FieldShape.from_shape(self.space, other.shape),
-                    lambda: other,
-                )
-            )
-        return ExpressionNode(other)
+        if isinstance(other, (np.ndarray, float)):
+            return ExpressionNode(ConstExpression(self.space, other))
+        return self._make_value(other)
 
     def eval(self) -> np.ndarray:
         return self.resolve()
@@ -53,27 +44,31 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _new(self, node: nodes.SymbolicNode[Expression]) -> Self:
         return self.__class__(node, self.fieldshape)
 
-    def _combine_binary(self, other: Any, optype: BinaryOpType) -> Self:
-        if not self._compatible(other, optype):
+    def _combine_mat(self, other: Any, optype: MatBinOpType) -> Self:
+        if not self._compatible_mat(other, optype):
             return NotImplemented
         other_node = self._ensure_node(other)
-        new_shape = self._combined_shape(other, optype)
-        return self.__class__(
-            nodes.BinaryNode(optype, self.node, other_node), new_shape
+        new_shape = utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
+        subscripts = utils.project_einsum(
+            self.fieldshape, other_node.fieldshape, optype
         )
+        node = TensorOpNode(self.node, other_node, subscripts)
+        return self.__class__(node, new_shape)
 
-    def _combined_shape(self, other: Any, optype: BinaryOpType) -> FieldShape:
-        if isinstance(other, (Expression, np.ndarray)):
-            if self.shape == ():
-                return (
-                    other.fieldshape
-                    if isinstance(other, Expression)
-                    else FieldShape.from_shape(self.space, other.shape)
-                )
-            return self.fieldshape
-        return self.fieldshape
+    def _combine_binary(
+        self, other: Any, optype: BinaryOpType, reverse: bool = False
+    ) -> Self:
+        if not self._compatible(other, optype, reverse):
+            return NotImplemented
+        other_node = self._ensure_node(other)
+        node = nodes.BinaryNode(optype, self.node, other_node)
+        if self.fieldshape.is_scalar() and isinstance(other, Expression):
+            return self.__class__(node, other.fieldshape)
+        return self._new(node)
 
-    def _compatible(self, other: Any, optype: BinaryOpType) -> bool:
+    def _compatible(
+        self, other: Any, optype: BinaryOpType, reverse: bool = False
+    ) -> bool:
         if isinstance(other, float):
             return True
         if isinstance(other, (Expression, np.ndarray)):
@@ -84,3 +79,44 @@ class SymbolicExpression(Symbolic[Expression], Expression):
                 f"Incompatible shape is: {self.shape} and {other_shape}"
             )
         return False
+
+    def _compatible_mat(self, other: Any, optype: MatBinOpType) -> bool:
+        if isinstance(other, float):
+            return True
+        if isinstance(other, (Expression, np.ndarray)):
+            try:
+                other_node = self._ensure_node(other)
+                utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
+                return True
+            except ShapeMismatchError:
+                return False
+        return False
+
+    def _unary_mat(self, optype: MatUnOpType) -> Self:
+        if optype == MatUnOpType.TRACE:
+            comps = self.comps
+            if len(comps) != 2:
+                raise ShapeMismatchError(
+                    f"Cannot trace a tensor with components {comps}"
+                )
+            if comps[0] != comps[1]:
+                raise ShapeMismatchError(
+                    f"Cannot trace a non-square tensor with components {comps}"
+                )
+            subscripts = "aa...->..."
+            new_shape = FieldShape(self.space, ())
+            node = TensorUnaryOpNode(self.node, subscripts)
+            return self.__class__(node, new_shape)
+        return NotImplemented
+
+    def dot(self, other: Expression) -> SymbolicExpression:
+        return self._combine_mat(other, MatBinOpType.DOT)
+
+    def inner(self, other: Expression) -> SymbolicExpression:
+        return self._combine_mat(other, MatBinOpType.INNER)
+
+    def outer(self, other: Expression) -> SymbolicExpression:
+        return self._combine_mat(other, MatBinOpType.OUTER)
+
+    def trace(self) -> SymbolicExpression:
+        return self._unary_mat(MatUnOpType.TRACE)

@@ -1,15 +1,29 @@
 from enum import Enum, auto
 
 
-class UnaryOpType(Enum):
+class OpType(Enum):
+    pass
+
+
+class UnaryOpType(OpType):
     NEG = auto()
 
 
-class BinaryOpType(Enum):
+class BinaryOpType(OpType):
     ADD = auto()
     SUB = auto()
     MUL = auto()
     DIV = auto()
+
+
+class MatBinOpType(OpType):
+    DOT = auto()
+    INNER = auto()
+    OUTER = auto()
+
+
+class MatUnOpType(OpType):
+    TRACE = auto()
 
 
 BINARY_OPS = {
