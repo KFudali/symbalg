@@ -4,6 +4,7 @@ from typing import Any
 import numpy as np
 
 from tools.symbolic.optype import BinaryOpType, MatOpType
+from algebra.exceptions import ShapeMismatchError
 from .fieldshaped import FieldShape, FieldShaped
 
 
@@ -35,15 +36,28 @@ def pick_component(
 
 def project_shape(left: FieldShape, right: FieldShape, optype: MatOpType) -> FieldShape:
     """Returns resulting shape of optype operation betweend fieldshapes right, left"""
+    if left.space != right.space:
+        raise ShapeMismatchError(
+            f"Cannot operate on fields from different spaces: {left.space} and {right.space}"
+        )
+
     left_comps = left.components
     right_comps = right.components
 
     if optype == MatOpType.DOT:
+        if left_comps and right_comps and left_comps[-1] != right_comps[0]:
+            raise ShapeMismatchError(
+                f"Incompatible shapes for dot: {left_comps} and {right_comps}"
+            )
         if not left_comps or not right_comps:
             return FieldShape(left.space, left_comps or right_comps)
         return FieldShape(left.space, left_comps[:-1] + right_comps[1:])
 
     if optype == MatOpType.INNER:
+        if left_comps and right_comps and left_comps != right_comps:
+            raise ShapeMismatchError(
+                f"Incompatible shapes for inner: {left_comps} and {right_comps}"
+            )
         if not left_comps or not right_comps:
             return FieldShape(left.space, left_comps or right_comps)
         return FieldShape(left.space, ())
@@ -56,6 +70,7 @@ def project_shape(left: FieldShape, right: FieldShape, optype: MatOpType) -> Fie
 def project_einsum(left: FieldShape, right: FieldShape, optype: MatOpType) -> str:
     """Returns str subscripts that need to be passed to np.einsum to perform optype
     operation between left and right fieldshapes"""
+    project_shape(left, right, optype)
     left_comps = left.components
     right_comps = right.components
     letters = "abcdefghijklmnopqrstuvwxyz"

@@ -1,3 +1,4 @@
+from algebra.exceptions import ShapeMismatchError
 import pytest
 import numpy as np
 
@@ -128,6 +129,22 @@ class TestDot:
         expected = np.sum(a[:, :, None, ...] * b[None, :, :, ...], axis=1)
         assert np.allclose(result, expected)
 
+    @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
+    @pytest.mark.parametrize(
+        "left_comps, right_comps",
+        [
+            ((3, 4), (2, 5)),
+            ((3,), (4,)),
+            ((3, 4), (5,)),
+        ],
+    )
+    def test_invalid_shapes(self, space_shape, left_comps, right_comps):
+        space = Space(space_shape)
+        left = FieldShape(space, left_comps)
+        right = FieldShape(space, right_comps)
+        with pytest.raises(ShapeMismatchError):
+            utils.project_einsum(left, right, MatOpType.DOT)
+
 
 class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -193,6 +210,22 @@ class TestInner:
         result = np.einsum(subs, a, b)
         expected = np.sum(a * b, axis=(0, 1))
         assert np.allclose(result, expected)
+
+    @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
+    @pytest.mark.parametrize(
+        "left_comps, right_comps",
+        [
+            ((3,), (4,)),
+            ((3, 4), (5, 6)),
+            ((3,), (3, 4)),
+        ],
+    )
+    def test_invalid_shapes(self, space_shape, left_comps, right_comps):
+        space = Space(space_shape)
+        left = FieldShape(space, left_comps)
+        right = FieldShape(space, right_comps)
+        with pytest.raises(ShapeMismatchError):
+            utils.project_einsum(left, right, MatOpType.INNER)
 
 
 class TestOuter:
