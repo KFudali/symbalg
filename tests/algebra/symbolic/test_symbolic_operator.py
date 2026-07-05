@@ -43,10 +43,10 @@ def test_symbolic_operator_with_scalar_expression():
     result = (symbolic / exp).resolve()
     assert result.name == "[A * 0.1]"
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ShapeMismatchError):
         symbolic + exp
 
-    with pytest.raises(TypeError):
+    with pytest.raises(ShapeMismatchError):
         symbolic - exp
 
 
