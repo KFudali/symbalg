@@ -4,7 +4,7 @@ from typing import Any, Self
 import numpy as np
 
 from algebra.space import FieldShape, utils
-from algebra.expression import Expression, CallableExpression, ConstExpression
+from algebra.expression import Expression, ConstExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
@@ -23,10 +23,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return cls(node, value.fieldshape)
 
     @classmethod
-    def _make_value(cls, other: Expression) -> nodes.ValueNode[Expression]:
+    def _make_value(cls, other: Expression) -> ExpressionNode:
         return ExpressionNode(other)
 
-    def _ensure_node(self, other: Any) -> nodes.SymbolicNode[Expression]:
+    def _ensure_node(self, other: Any) -> ExpressionNode:
         if isinstance(other, Symbolic):
             return other.node
         if isinstance(other, nodes.SymbolicNode):
@@ -47,6 +47,13 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _combine_mat(self, other: Any, optype: MatOpType) -> Self:
         if not self._compatible_mat(other, optype):
             return NotImplemented
+        other_node = self._ensure_node(other)
+        new_shape = utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
+        subscripts = utils.project_einsum(
+            self.fieldshape, other_node.fieldshape, optype
+        )
+        node = TensorOpNode(self.node, other_node, subscripts)
+        return self.__class__(node, new_shape)
 
     def _combine_binary(
         self, other: Any, optype: BinaryOpType, reverse: bool = False
@@ -71,7 +78,16 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return False
 
     def _compatible_mat(self, other: Any, optype: MatOpType) -> bool:
-        pass
+        if isinstance(other, float):
+            return True
+        if isinstance(other, (Expression, np.ndarray)):
+            try:
+                other_node = self._ensure_node(other)
+                utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
+                return True
+            except ShapeMismatchError:
+                return False
+        return False
 
     def dot(self, other: Expression) -> SymbolicExpression:
         return self._combine_mat(other, MatOpType.DOT)
