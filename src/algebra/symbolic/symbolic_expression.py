@@ -8,7 +8,7 @@ from algebra.expression import Expression, ConstExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
-from tools.symbolic.optype import MatOpType
+from tools.symbolic.optype import MatBinOpType, MatUnOpType
 from .nodes import ExpressionNode, TensorOpNode
 
 
@@ -44,7 +44,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     def _new(self, node: nodes.SymbolicNode[Expression]) -> Self:
         return self.__class__(node, self.fieldshape)
 
-    def _combine_mat(self, other: Any, optype: MatOpType) -> Self:
+    def _combine_mat(self, other: Any, optype: MatBinOpType) -> Self:
         if not self._compatible_mat(other, optype):
             return NotImplemented
         other_node = self._ensure_node(other)
@@ -80,7 +80,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
             )
         return False
 
-    def _compatible_mat(self, other: Any, optype: MatOpType) -> bool:
+    def _compatible_mat(self, other: Any, optype: MatBinOpType) -> bool:
         if isinstance(other, float):
             return True
         if isinstance(other, (Expression, np.ndarray)):
@@ -92,11 +92,17 @@ class SymbolicExpression(Symbolic[Expression], Expression):
                 return False
         return False
 
+    def _unary_mat(self, optype: MatUnOpType) -> Self:
+        pass
+
     def dot(self, other: Expression) -> SymbolicExpression:
-        return self._combine_mat(other, MatOpType.DOT)
+        return self._combine_mat(other, MatBinOpType.DOT)
 
     def inner(self, other: Expression) -> SymbolicExpression:
-        return self._combine_mat(other, MatOpType.INNER)
+        return self._combine_mat(other, MatBinOpType.INNER)
 
     def outer(self, other: Expression) -> SymbolicExpression:
-        return self._combine_mat(other, MatOpType.OUTER)
+        return self._combine_mat(other, MatBinOpType.OUTER)
+
+    def trace(self) -> SymbolicExpression:
+        return self._unary_mat(MatBinOpType.OUTER)

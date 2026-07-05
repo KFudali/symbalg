@@ -20,6 +20,7 @@ def expr(
 
 
 SPACES = [
+    Space((10,)),
     Space((10, 10)),
     Space((10, 10, 10)),
 ]

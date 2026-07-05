@@ -4,7 +4,7 @@ import numpy as np
 
 from algebra.space import utils
 from algebra.space import Space, FieldShape
-from tools.symbolic import MatOpType
+from tools.symbolic import MatBinOpType
 
 SPACE_SHAPES = [(10,), (10, 10), (10, 10, 10)]
 
@@ -19,7 +19,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -27,7 +27,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         a = np.ones(left.shape)
         b = 2.0 * np.ones(right.shape)
         result = np.einsum(subs, a, b)
@@ -38,7 +38,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -46,7 +46,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -54,7 +54,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "a...,a...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -62,7 +62,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -74,7 +74,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4,))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "ab...,b...->a..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -82,7 +82,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4,))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -94,7 +94,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3, 4))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "a...,ab...->b..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -102,7 +102,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3, 4))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -114,7 +114,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4, 5))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         assert subs == "ab...,bc...->ac..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -122,7 +122,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4, 5))
-        subs = utils.project_einsum(left, right, MatOpType.DOT)
+        subs = utils.project_einsum(left, right, MatBinOpType.DOT)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -143,7 +143,7 @@ class TestDot:
         left = FieldShape(space, left_comps)
         right = FieldShape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
-            utils.project_einsum(left, right, MatOpType.DOT)
+            utils.project_einsum(left, right, MatBinOpType.DOT)
 
 
 class TestInner:
@@ -152,7 +152,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -160,7 +160,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -168,7 +168,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -176,7 +176,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         assert subs == "a...,a...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -184,7 +184,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -196,7 +196,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (3, 4))
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         assert subs == "ab...,ab...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -204,7 +204,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (3, 4))
-        subs = utils.project_einsum(left, right, MatOpType.INNER)
+        subs = utils.project_einsum(left, right, MatBinOpType.INNER)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -225,7 +225,7 @@ class TestInner:
         left = FieldShape(space, left_comps)
         right = FieldShape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
-            utils.project_einsum(left, right, MatOpType.INNER)
+            utils.project_einsum(left, right, MatBinOpType.INNER)
 
 
 class TestOuter:
@@ -234,7 +234,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -242,7 +242,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -250,7 +250,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "...,...->..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -258,7 +258,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4,))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "a...,b...->ab..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -266,7 +266,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4,))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -278,7 +278,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (5,))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "ab...,c...->abc..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -286,7 +286,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (5,))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)
@@ -298,7 +298,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4, 5))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         assert subs == "a...,bc...->abc..."
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -306,7 +306,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4, 5))
-        subs = utils.project_einsum(left, right, MatOpType.OUTER)
+        subs = utils.project_einsum(left, right, MatBinOpType.OUTER)
         a = _arange(left.shape)
         b = _arange(right.shape)
         result = np.einsum(subs, a, b)

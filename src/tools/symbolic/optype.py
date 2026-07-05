@@ -16,10 +16,13 @@ class BinaryOpType(OpType):
     DIV = auto()
 
 
-class MatOpType(OpType):
+class MatBinOpType(OpType):
     DOT = auto()
     INNER = auto()
     OUTER = auto()
+
+
+class MatUnOpType(OpType):
     TRACE = auto()
 
 

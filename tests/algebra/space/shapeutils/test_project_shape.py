@@ -4,7 +4,7 @@ import numpy as np
 
 from algebra.space import utils
 from algebra.space import Space, FieldShape
-from tools.symbolic import MatOpType
+from tools.symbolic import MatBinOpType
 
 SPACE_SHAPES = [(10,), (10, 10), (10, 10, 10)]
 
@@ -15,7 +15,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == ()
         assert result.space is left.space
 
@@ -24,7 +24,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -32,7 +32,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -40,7 +40,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == ()
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -48,7 +48,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4,))
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -56,7 +56,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3, 4))
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (4,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -64,7 +64,7 @@ class TestDot:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (4, 5))
-        result = utils.project_shape(left, right, MatOpType.DOT)
+        result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3, 5)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
@@ -81,7 +81,7 @@ class TestDot:
         left = FieldShape(space, left_comps)
         right = FieldShape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
-            utils.project_shape(left, right, MatOpType.DOT)
+            utils.project_shape(left, right, MatBinOpType.DOT)
 
 
 class TestInner:
@@ -90,7 +90,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.INNER)
+        result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
 
@@ -99,7 +99,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        result = utils.project_shape(left, right, MatOpType.INNER)
+        result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == (3,)
         assert result.space is left.space
 
@@ -108,7 +108,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.INNER)
+        result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == (3,)
         assert result.space is left.space
 
@@ -117,7 +117,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (3,))
-        result = utils.project_shape(left, right, MatOpType.INNER)
+        result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
 
@@ -126,7 +126,7 @@ class TestInner:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (3, 4))
-        result = utils.project_shape(left, right, MatOpType.INNER)
+        result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
 
@@ -144,7 +144,7 @@ class TestInner:
         left = FieldShape(space, left_comps)
         right = FieldShape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
-            utils.project_shape(left, right, MatOpType.INNER)
+            utils.project_shape(left, right, MatBinOpType.INNER)
 
 
 class TestOuter:
@@ -153,7 +153,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == ()
         assert result.space is left.space
 
@@ -162,7 +162,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, ())
         right = FieldShape(space, (3,))
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3,)
         assert result.space is left.space
 
@@ -171,7 +171,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, ())
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3,)
         assert result.space is left.space
 
@@ -180,7 +180,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4,))
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4)
         assert result.space is left.space
 
@@ -189,7 +189,7 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3, 4))
         right = FieldShape(space, (5,))
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4, 5)
         assert result.space is left.space
 
@@ -198,6 +198,6 @@ class TestOuter:
         space = Space(space_shape)
         left = FieldShape(space, (3,))
         right = FieldShape(space, (4, 5))
-        result = utils.project_shape(left, right, MatOpType.OUTER)
+        result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4, 5)
         assert result.space is left.space
