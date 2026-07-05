@@ -40,6 +40,6 @@ def test_symbolic_expression_trace(space: Space):
     with pytest.raises(ShapeMismatchError):
         ones.trace()
 
-    ones = expr(space, (space.ndim, space.ndim, space.ndimb), 10.0)
+    ones = expr(space, (space.ndim, space.ndim, space.ndim), 10.0)
     with pytest.raises(ShapeMismatchError):
         ones.trace()
