@@ -29,9 +29,17 @@ SPACES = [
 
 @pytest.mark.parametrize("space", SPACES)
 def test_symbolic_expression_trace(space: Space):
-    ones = expr(space, (space.ndim,), 10.0)
+    ones = expr(space, (space.ndim, space.ndim), 10.0)
     assert np.allclose(ones.trace().eval(), space.ndim * 10.0)
 
     ones = expr(space, (), 10.0)
+    with pytest.raises(ShapeMismatchError):
+        ones.trace()
+
+    ones = expr(space, (space.ndim,), 10.0)
+    with pytest.raises(ShapeMismatchError):
+        ones.trace()
+
+    ones = expr(space, (space.ndim, space.ndim, space.ndimb), 10.0)
     with pytest.raises(ShapeMismatchError):
         ones.trace()

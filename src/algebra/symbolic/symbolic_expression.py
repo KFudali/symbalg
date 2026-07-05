@@ -9,7 +9,7 @@ from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from tools.symbolic.optype import MatBinOpType, MatUnOpType
-from .nodes import ExpressionNode, TensorOpNode
+from .nodes import ExpressionNode, TensorOpNode, TensorUnaryOpNode
 
 
 class SymbolicExpression(Symbolic[Expression], Expression):
@@ -93,7 +93,21 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return False
 
     def _unary_mat(self, optype: MatUnOpType) -> Self:
-        pass
+        if optype == MatUnOpType.TRACE:
+            comps = self.comps
+            if len(comps) != 2:
+                raise ShapeMismatchError(
+                    f"Cannot trace a tensor with components {comps}"
+                )
+            if comps[0] != comps[1]:
+                raise ShapeMismatchError(
+                    f"Cannot trace a non-square tensor with components {comps}"
+                )
+            subscripts = "aa...->..."
+            new_shape = FieldShape(self.space, ())
+            node = TensorUnaryOpNode(self.node, subscripts)
+            return self.__class__(node, new_shape)
+        return NotImplemented
 
     def dot(self, other: Expression) -> SymbolicExpression:
         return self._combine_mat(other, MatBinOpType.DOT)
@@ -105,4 +119,4 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         return self._combine_mat(other, MatBinOpType.OUTER)
 
     def trace(self) -> SymbolicExpression:
-        return self._unary_mat(MatBinOpType.OUTER)
+        return self._unary_mat(MatUnOpType.TRACE)
