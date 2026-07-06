@@ -21,15 +21,8 @@ class ArrayOperator(Operator):
     def copy(self) -> Self:
         return self.__class__(self.space, self.shape_transform, self._expr.copy())
 
-    def apply(self, inp: np.ndarray, out: np.ndarray):
-
-        out[:] = self._expr.eval() * inp
-
-    def apply_to(self, inp: np.ndarray) -> np.ndarray:
-        out_shape = self._shape_transform.transform(self._space, inp.shape)
-        out = np.zeros(out_shape, dtype=inp.dtype)
-        self.apply(inp, out)
-        return out
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        out[:] += self._expr.eval() * inp
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
         if isinstance(other, ArrayOperator):
@@ -42,3 +35,6 @@ class ArrayOperator(Operator):
 
     def _scale(self, other: float) -> Self:
         return self.__class__(self.space, self.shape_transform, other * self._expr)
+
+    def __neg__(self) -> Self:
+        return self.__class__(self.space, self.shape_transform, -self._expr)
