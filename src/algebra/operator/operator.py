@@ -3,18 +3,20 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TypeVar, Self, TYPE_CHECKING
 import numpy as np
-from tools.symbolic.optype import BinaryOpType
-from .space import Space, ShapeTransform, FieldShape
+from tools.symbolic import BinaryOpType
+from algebra.space import Space, ShapeTransform, FieldShape
+from .apply import APPLY
 
 if TYPE_CHECKING:
-    from .field import Field
-    from .expression import Expression
+    from algebra.field import Field
+    from algebra.expression import Expression
 
 
 class Operator(ABC):
     def __init__(self, space: Space, shape_transform: ShapeTransform):
         self._space = space
         self._shape_transform = shape_transform
+        self._apply_callable = APPLY[shape_transform]
 
     @property
     def shape_transform(self) -> ShapeTransform:
@@ -25,7 +27,7 @@ class Operator(ABC):
         return self._space
 
     def of(self, field: "Field") -> "Expression":
-        from .expression import CallableExpression
+        from ..expression import CallableExpression
 
         def apply_to_field():
             return self.apply_to(field.value().eval())
@@ -39,8 +41,11 @@ class Operator(ABC):
     def copy(self) -> Self:
         pass
 
-    @abstractmethod
     def apply(self, inp: np.ndarray, out: np.ndarray):
+        self._apply_callable(self.space, self._apply, inp, out)
+
+    @abstractmethod
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
         pass
 
     def apply_to(self, inp: np.ndarray) -> np.ndarray:

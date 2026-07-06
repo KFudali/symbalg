@@ -1,3 +1,4 @@
+import numpy as np
 from tools.geometry import StructuredGridND
 from discrete.core.dx_operators import DxOperators
 from algebra.operator import Operator
@@ -23,3 +24,6 @@ class FDDxOperators(DxOperators):
 
     def _div(self, order: int) -> Operator:
         return dx.div(self._space, order, self._grid.spacing[0])
+
+    def _array(self, weights: np.ndarray) -> Operator:
+        pass

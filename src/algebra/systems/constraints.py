@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 from algebra.systems.systems import LinearSystem
-from algebra.operator_wrapper import OperatorWrapper
+from algebra.operator import OperatorWrapper
 
 
 class SystemConstraint(ABC):

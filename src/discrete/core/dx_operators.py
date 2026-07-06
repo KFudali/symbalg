@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import numpy as np
 from algebra.operator import Operator
 from algebra.symbolic import SymbolicOperator
 
@@ -16,6 +17,9 @@ class DxOperators(ABC):
     def div(self, order: int = 2) -> SymbolicOperator:
         return SymbolicOperator.wrap(self._div(order))
 
+    def array(self, weights: np.ndarray) -> SymbolicOperator:
+        return SymbolicOperator.wrap(self._array(weights))
+
     @abstractmethod
     def _eye(self) -> Operator:
         pass
@@ -30,4 +34,8 @@ class DxOperators(ABC):
 
     @abstractmethod
     def _div(self, order: int) -> Operator:
+        pass
+
+    @abstractmethod
+    def _array(self, weights: np.ndarray) -> Operator:
         pass
