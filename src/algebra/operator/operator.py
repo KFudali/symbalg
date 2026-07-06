@@ -44,9 +44,8 @@ class Operator(ABC):
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self._apply_callable(self.space, self._apply, inp, out)
 
-    @abstractmethod
     def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
-        pass
+        raise NotImplementedError
 
     def apply_to(self, inp: np.ndarray) -> np.ndarray:
         out_shape = self._shape_transform.transform(self._space, inp.shape)

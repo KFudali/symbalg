@@ -102,7 +102,7 @@ def div_apply(space: Space, apply: FieldApply, inp: np.ndarray, out: np.ndarray)
 
 
 def grad_apply(space: Space, apply: FieldApply, inp: np.ndarray, out: np.ndarray):
-    field_rank = len(inp.shape[: space.ndim])
+    field_rank = len(inp.shape[: -space.ndim])
     if field_rank == 0:
         for ax in range(space.ndim):
             apply(ax, inp, out[ax])

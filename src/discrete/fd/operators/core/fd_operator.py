@@ -1,4 +1,5 @@
 from typing import Self
+import numpy as np
 
 from tools.symbolic.optype import BinaryOpType, BINARY_OPS
 from discrete.fd.tools.stencil import AxStencil
@@ -30,6 +31,9 @@ class FDOperator(Operator):
         stencils = [stencil.copy() for stencil in self.stencils]
         stencils[ax] = new_stencil
         return self.__class__(self.space, self.shape_transform, tuple(stencils))
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        self.stencils[ax].eval_to(ax, inp, out)
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
         if not isinstance(other, type(self)):

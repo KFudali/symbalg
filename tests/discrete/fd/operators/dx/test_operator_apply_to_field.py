@@ -1,8 +1,8 @@
 import pytest
 import numpy as np
 from discrete.fd.tools.stencil import AxStencil, Stencil
-from discrete.fd.operators import dx
-from algebra.space import Space
+from discrete.fd.operators.core import FDOperator
+from algebra.space import Space, ShapeTransform
 from algebra.field import Field, FieldShape
 from tools.buffer import DequeValueBuffer
 
@@ -13,7 +13,7 @@ two = Stencil({0: 2.0})
 
 def test_lap_apply_to_field():
     ax = AxStencil(two.copy(), (), ())
-    op = dx.FDLapLikeOperator(space, (ax, ax.copy()))
+    op = FDOperator(space, ShapeTransform.NONE, (ax, ax.copy()))
 
     fieldshape = FieldShape(space, (1,))
     buffer = DequeValueBuffer(fieldshape.shape)

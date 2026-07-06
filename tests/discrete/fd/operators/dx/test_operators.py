@@ -1,29 +1,29 @@
 import numpy as np
-from discrete.fd.operators.dx import FDLapLikeOperator
+from discrete.fd.operators.core import FDOperator
 from discrete.fd.tools.stencil import AxStencil, Stencil
-from algebra.space import Space
+from algebra.space import Space, ShapeTransform
 from algebra.symbolic import SymbolicOperator
 
 
-def laplike() -> FDLapLikeOperator:
+def laplike() -> FDOperator:
     space = Space((10,))
     interior = Stencil({-1: 1.0, 0: 1.0, 1: 1.0})
     left = Stencil({0: -10.0})
     right = Stencil({0: 10.0})
     stencil = AxStencil(interior, (left,), (right,))
-    return FDLapLikeOperator(space, (stencil,))
+    return FDOperator(space, ShapeTransform.NONE, (stencil,))
 
 
-def interior_only() -> FDLapLikeOperator:
+def interior_only() -> FDOperator:
     space = Space((10,))
     interior = Stencil({0: 1.0})
     stencil = AxStencil(interior, (), ())
-    return FDLapLikeOperator(space, (stencil,))
+    return FDOperator(space, ShapeTransform.NONE, (stencil,))
 
 
 def test_wrapped_subtraction():
-    first = SymbolicOperator[FDLapLikeOperator].wrap(laplike())
-    second = SymbolicOperator[FDLapLikeOperator].wrap(laplike())
+    first = SymbolicOperator[FDOperator].wrap(laplike())
+    second = SymbolicOperator[FDOperator].wrap(laplike())
 
     sub = (first - second).resolve()
     ax_stencil = sub.stencils[0]
@@ -35,8 +35,8 @@ def test_wrapped_subtraction():
 
 
 def test_wrapped_subtraction_diff_lefts_rights():
-    first = SymbolicOperator[FDLapLikeOperator].wrap(laplike())
-    second = SymbolicOperator[FDLapLikeOperator].wrap(interior_only())
+    first = SymbolicOperator[FDOperator].wrap(laplike())
+    second = SymbolicOperator[FDOperator].wrap(interior_only())
     sub = (first - second).resolve()
     ax_stencil = sub.stencils[0]
     assert len(ax_stencil.lefts) == 1
