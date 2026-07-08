@@ -1,4 +1,5 @@
 from tools.geometry import StructuredGridND
+from algebra.space import Space
 from discrete.core.domain import Domain, BoundaryId
 from .fd_boundary import FDBoundary
 
@@ -7,9 +8,14 @@ class FDDomain(Domain):
     def __init__(self, grid: StructuredGridND):
         super().__init__()
         self._grid = grid
+        self._space = Space(grid.shape)
         self._boundaries = dict[BoundaryId, FDBoundary]()
         self._boundaries_by_ax = dict[int, tuple[BoundaryId, BoundaryId]]()
         self._mark_boundaries()
+
+    @property
+    def space(self) -> Space:
+        return self._space
 
     @property
     def grid(self) -> StructuredGridND:

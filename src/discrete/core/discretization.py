@@ -13,14 +13,13 @@ from algebra.systems.bcs import BoundaryTool
 
 
 class Discretization(ABC, Generic[TDomain]):
-    def __init__(self, space: Space, domain: TDomain):
-        self._space = space
+    def __init__(self, domain: TDomain):
         self._domain = domain
         self._time = DiscreteTime(dt=0.01)
 
     @property
     def space(self) -> Space:
-        return self._space
+        return self._domain.space
 
     @property
     def domain(self) -> TDomain:

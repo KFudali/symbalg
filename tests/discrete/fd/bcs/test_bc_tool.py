@@ -1,5 +1,6 @@
 import numpy as np
 
+from algebra.space import Space
 from algebra.systems.bcs import BoundaryCondition, BCType
 from algebra.systems.systems import LinearSystem
 from discrete.fd.domain.fd_domain import FDDomain
@@ -10,18 +11,12 @@ from tools.geometry import StructuredGridND
 
 def _make_setup(field_shape: tuple[int, ...]):
     grid = StructuredGridND((10, 10), (0.1, 0.1))
-    domain = FDDomain(grid)
+    domain = FDDomain(grid, Space(grid.shape))
     bc_tool = FDBCTool(domain)
-    lap = dx.laplace(lap_space(grid), order=2, h=0.1)
+    lap = dx.laplace(domain.space, order=2, h=0.1)
     rhs = np.zeros(field_shape, dtype=float)
     system = LinearSystem(lap, rhs)
     return domain, bc_tool, system
-
-
-def lap_space(grid):
-    from algebra.space import Space
-
-    return Space(grid.shape)
 
 
 def test_post_solve_dirichlet_scalar():

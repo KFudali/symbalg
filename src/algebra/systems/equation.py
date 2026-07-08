@@ -3,7 +3,7 @@ import numpy as np
 from algebra.operator import Operator
 from algebra.symbolic import SymbolicExpression, SymbolicOperator
 from algebra.expression import Expression, CallableExpression
-from .bcs import BoundaryCondition, BoundaryTool
+from algebra.bcs import BoundaryCondition, BoundaryTool
 from .solvers import LinearSolver
 from .constraints import SystemConstraint
 from .systems import LinearSystem

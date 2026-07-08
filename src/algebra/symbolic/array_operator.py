@@ -2,7 +2,7 @@ from typing import Self
 import numpy as np
 
 from tools.symbolic import BINARY_OPS, BinaryOpType
-from algebra.expression import Expression
+from algebra.expression import Expression, ConstExpression
 from algebra.operator import Operator
 from algebra.space import ShapeTransform, Space
 
@@ -13,6 +13,18 @@ class ArrayOperator(Operator):
     def __init__(self, space: Space, shape_transform: ShapeTransform, expr: Expression):
         super().__init__(space, shape_transform)
         self._expr = SymbolicExpression.wrap(expr)
+
+    @classmethod
+    def from_array(
+        self, space: Space, shape_transform: ShapeTransform, array: np.ndarray
+    ):
+        return ArrayOperator(space, shape_transform, ConstExpression(space, array))
+
+    def as_array(self) -> "ArrayOperator":
+        return self
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        pass
 
     @property
     def expression(self) -> SymbolicExpression:

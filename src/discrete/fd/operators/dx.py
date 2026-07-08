@@ -1,6 +1,6 @@
 from algebra.space import Space, ShapeTransform
 from discrete.fd.tools import dx, ddx, stencil
-from .core import FDOperator
+from .fd_operator import FDOperator
 
 
 def laplace(space: Space, order: int, h: float) -> FDOperator:

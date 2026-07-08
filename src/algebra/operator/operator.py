@@ -5,11 +5,13 @@ from typing import TypeVar, Self, TYPE_CHECKING
 import numpy as np
 from tools.symbolic import BinaryOpType
 from algebra.space import Space, ShapeTransform, FieldShape
+from algebra.bcs import BoundaryCondition
 from .apply import APPLY
 
 if TYPE_CHECKING:
     from algebra.field import Field
     from algebra.expression import Expression
+    from algebra.symbolic.array_operator import ArrayOperator
 
 
 class Operator(ABC):
@@ -37,15 +39,8 @@ class Operator(ABC):
             FieldShape.from_shape(self.space, out_shape), apply_to_field
         )
 
-    @abstractmethod
-    def copy(self) -> Self:
-        pass
-
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self._apply_callable(self.space, self._apply, inp, out)
-
-    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
-        raise NotImplementedError
 
     def apply_to(self, inp: np.ndarray) -> np.ndarray:
         out_shape = self._shape_transform.transform(self._space, inp.shape)
@@ -63,16 +58,25 @@ class Operator(ABC):
         return self._combine(other, optype)
 
     @abstractmethod
-    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
-        pass
+    def as_array(self) -> "ArrayOperator": ...
 
     @abstractmethod
-    def _scale(self, other: float) -> Self:
-        pass
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self: ...
 
     @abstractmethod
-    def __neg__(self) -> Self:
-        return NotImplemented
+    def copy(self) -> Self: ...
+
+    @abstractmethod
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray): ...
+
+    @abstractmethod
+    def _combine(self, other: Self, optype: BinaryOpType) -> Self: ...
+
+    @abstractmethod
+    def _scale(self, other: float) -> Self: ...
+
+    @abstractmethod
+    def __neg__(self) -> Self: ...
 
     def __add__(self, other) -> Self:
         if isinstance(other, Operator):
@@ -100,6 +104,16 @@ class Operator(ABC):
 
     def __rmul__(self, other: float) -> Self:
         return self.__mul__(other)
+
+    def __radd__(self, other) -> Self:
+        if isinstance(other, Operator):
+            return self.combine(other, BinaryOpType.ADD)
+        return NotImplemented
+
+    def __rsub__(self, other) -> Self:
+        if isinstance(other, Operator):
+            return (self.__neg__()).combine(other, BinaryOpType.ADD)
+        return NotImplemented
 
 
 TOperator = TypeVar("TOperator", bound=Operator)
