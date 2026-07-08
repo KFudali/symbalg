@@ -1,9 +1,13 @@
+from __future__ import annotations
+
 from typing import Self, Callable
 import numpy as np
 
 from tools.symbolic.optype import BinaryOpType
 from algebra.operator import Operator
 from algebra.space import Space, ShapeTransform
+from algebra.bcs import BoundaryCondition
+from algebra.symbolic import ArrayOperator
 
 
 class MockOperator(Operator):
@@ -16,8 +20,18 @@ class MockOperator(Operator):
     def copy(self) -> Self:
         return self.__class__(self.name)
 
+    def as_array(self) -> ArrayOperator:
+        raise NotImplementedError
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        return self
+
     def set_apply(self, apply: Callable[[np.ndarray, np.ndarray], None]):
         self._apply_callable = apply
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        if self._apply_callable:
+            self._apply_callable(inp, out)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         if self._apply_callable:

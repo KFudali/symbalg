@@ -40,18 +40,18 @@ def _apply_rankwise(
 
 
 def _post_solve_rankwise(
-    self,
+    domain: FDDomain,
     fn: BcPostSolveCallable,
     boundary: FDBoundary,
     value: BCValueLike,
     field: np.ndarray,
 ) -> None:
-    if field.ndim == self._domain.grid.ndim:
+    if field.ndim == domain.grid.ndim:
         fn(boundary, float(value), field)
         return
     for comp in range(field.shape[0]):
-        self._post_solve_rankwise(
-            fn, boundary, _component_value(value, comp), field[comp]
+        _post_solve_rankwise(
+            domain, fn, boundary, _component_value(value, comp), field[comp]
         )
 
 

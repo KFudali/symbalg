@@ -1,11 +1,15 @@
 from __future__ import annotations
 
-from typing import Callable, Self
+from typing import Callable, Self, TYPE_CHECKING
 import numpy as np
 
 from tools.symbolic.optype import BinaryOpType
 
 from .operator import Operator
+
+if TYPE_CHECKING:
+    from algebra.bcs import BoundaryCondition
+    from algebra.symbolic.array_operator import ArrayOperator
 
 ApplyHook = Callable[[np.ndarray, np.ndarray], None]
 
@@ -39,6 +43,15 @@ class OperatorWrapper(Operator):
     def apply(self, inp: np.ndarray, out: np.ndarray) -> None:
         self._inner.apply(inp, out)
         self._hook(inp, out)
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray) -> None:
+        self._inner._apply(ax, inp, out)
+
+    def as_array(self) -> ArrayOperator:
+        return self._inner.as_array()
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        return self._inner.apply_bcs(bcs, rhs)
 
     def copy(self) -> Self:
         return self._wrap(self._inner.copy())

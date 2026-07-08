@@ -11,7 +11,7 @@ from tools.geometry import StructuredGridND
 
 def _make_setup(field_shape: tuple[int, ...]):
     grid = StructuredGridND((10, 10), (0.1, 0.1))
-    domain = FDDomain(grid, Space(grid.shape))
+    domain = FDDomain(grid)
     bc_tool = FDBCTool(domain)
     lap = dx.laplace(domain.space, order=2, h=0.1)
     rhs = np.zeros(field_shape, dtype=float)

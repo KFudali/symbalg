@@ -12,7 +12,9 @@ from .nodes import ExpressionNode
 
 if TYPE_CHECKING:
     from algebra.field import Field
+    from algebra.bcs import BoundaryCondition
     from .symbolic_expression import SymbolicExpression
+    from .array_operator import ArrayOperator
 
 
 class SymbolicOperator(Symbolic[TOperator], Operator):
@@ -32,6 +34,15 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self.resolve().apply(inp, out)
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        self.resolve()._apply(ax, inp, out)
+
+    def as_array(self) -> ArrayOperator:
+        return self.resolve().as_array()
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        return self.resolve().apply_bcs(bcs, rhs)
 
     def _scale(self, other: float) -> Self:
         raise ValueError("SymbolicOperator should not use _scale method")

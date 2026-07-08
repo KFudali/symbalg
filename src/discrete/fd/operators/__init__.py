@@ -1,2 +1,2 @@
 from . import dt, dx
-from .core import FDOperator
+from .fd_operator import FDOperator

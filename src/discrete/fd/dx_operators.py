@@ -15,13 +15,13 @@ class FDDxOperators(DxOperators):
         return dx.eye(self._domain)
 
     def _laplace(self, order: int) -> Operator:
-        return dx.laplace(self._domain, order)
+        return dx.laplace(self._domain, order, self._domain.grid.spacing[0])
 
     def _grad(self, order: int) -> Operator:
-        return dx.grad(self._domain, order)
+        return dx.grad(self._domain, order, self._domain.grid.spacing[0])
 
     def _div(self, order: int) -> Operator:
-        return dx.div(self._domain, order)
+        return dx.div(self._domain, order, self._domain.grid.spacing[0])
 
     def _array(self, weights: np.ndarray) -> Operator:
         pass

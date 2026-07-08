@@ -5,11 +5,11 @@ from typing import TypeVar, Self, TYPE_CHECKING
 import numpy as np
 from tools.symbolic import BinaryOpType
 from algebra.space import Space, ShapeTransform, FieldShape
-from algebra.bcs import BoundaryCondition
 from .apply import APPLY
 
 if TYPE_CHECKING:
     from algebra.field import Field
+    from algebra.bcs import BoundaryCondition
     from algebra.expression import Expression
     from algebra.symbolic.array_operator import ArrayOperator
 

@@ -9,7 +9,7 @@ from .domain import TDomain
 from .dx_operators import DxOperators
 from .dt_operators import DtOperators
 from .discrete_time import DiscreteTime
-from algebra.systems.bcs import BoundaryTool
+from algebra.bcs import BoundaryTool
 
 
 class Discretization(ABC, Generic[TDomain]):

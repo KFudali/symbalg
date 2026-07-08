@@ -1,12 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 import numpy as np
 
 from algebra.operator import Operator
 from algebra.symbolic import SymbolicExpression, SymbolicOperator
 from algebra.expression import Expression, CallableExpression
-from algebra.bcs import BoundaryCondition, BoundaryTool
 from .solvers import LinearSolver
 from .constraints import SystemConstraint
 from .systems import LinearSystem
+
+if TYPE_CHECKING:
+    from algebra.bcs import BoundaryCondition, BoundaryTool
 
 
 class LinearEquation:

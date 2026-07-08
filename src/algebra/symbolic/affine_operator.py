@@ -1,12 +1,16 @@
 from __future__ import annotations
-from typing import Callable, Any, Self
+from typing import Callable, Any, Self, TYPE_CHECKING
 import numpy as np
 
 from tools.symbolic import BinaryOpType, BINARY_OPS
 from algebra.operator import Operator
 from algebra.expression import Expression
+from .array_operator import ArrayOperator
 from .symbolic_expression import SymbolicExpression
 from .symbolic_operator import SymbolicOperator
+
+if TYPE_CHECKING:
+    from algebra.bcs import BoundaryCondition
 
 
 class AffineOperator(Operator):
@@ -33,6 +37,15 @@ class AffineOperator(Operator):
 
     def copy(self) -> Self:
         return self.__class__(self.operator, self.expression)
+
+    def as_array(self) -> ArrayOperator:
+        return self.operator.as_array()
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        return self.operator.apply_bcs(bcs, rhs)
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        self.operator._apply(ax, inp, out)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         assert out.shape == self.expression.shape

@@ -1,10 +1,15 @@
-from typing import Self
+from __future__ import annotations
+
+from typing import Self, TYPE_CHECKING
 import numpy as np
 
 from tools.symbolic import BINARY_OPS, BinaryOpType
 from algebra.expression import Expression, ConstExpression
 from algebra.operator import Operator
 from algebra.space import ShapeTransform, Space
+
+if TYPE_CHECKING:
+    from algebra.bcs import BoundaryCondition
 
 from .symbolic_expression import SymbolicExpression
 
@@ -24,7 +29,7 @@ class ArrayOperator(Operator):
         return self
 
     def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
-        pass
+        return self
 
     @property
     def expression(self) -> SymbolicExpression:

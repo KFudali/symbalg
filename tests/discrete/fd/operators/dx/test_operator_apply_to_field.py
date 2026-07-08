@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from discrete.fd.tools.stencil import AxStencil, Stencil
-from discrete.fd.operators.core import FDOperator
+from discrete.fd.operators.fd_operator import FDOperator
 from algebra.space import Space, ShapeTransform
 from algebra.field import Field, FieldShape
 from tools.buffer import DequeValueBuffer
