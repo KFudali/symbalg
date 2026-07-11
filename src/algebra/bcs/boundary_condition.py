@@ -2,7 +2,7 @@ import enum
 from dataclasses import dataclass
 from typing import Union
 import numpy as np
-from .boundary_id import BoundaryId
+from .boundary_id import Boundary
 
 
 class BCType(enum.IntEnum):
@@ -17,4 +17,4 @@ BCValue = Union[float, np.ndarray]
 class BoundaryCondition:
     bc_type: BCType
     value: BCValue
-    boundary: BoundaryId
+    boundary: Boundary

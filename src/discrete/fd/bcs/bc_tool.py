@@ -43,7 +43,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
         lhs = system.lhs
 
         for bc in bcs:
-            boundary = self._domain.boundary(bc.boundary)
+            boundary = bc.boundary
             stencil = lhs.stencils[boundary.ax]
             modified_stencil = self._apply_rankwise(
                 FDBCTool.APPLY[bc.bc_type],
@@ -57,7 +57,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
 
     def post_solve(self, bcs: list[BoundaryCondition], field: np.ndarray) -> None:
         for bc in bcs:
-            boundary = self._domain.boundary(bc.boundary)
+            boundary = bc.boundary
             self._post_solve_rankwise(
                 FDBCTool.POST_SOLVE[bc.bc_type],
                 boundary,
