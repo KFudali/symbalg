@@ -1,13 +1,17 @@
 import pytest
 import numpy as np
 from discrete.fd.operators import dx
-from algebra.space import Space
+from discrete.fd.domain import FDDomain
+from tools.geometry import StructuredGridND
+
+
+def _domain(shape: tuple[int, ...]) -> FDDomain:
+    return FDDomain(StructuredGridND(shape, (0.01,) * len(shape)))
 
 
 def test_div_shapes():
     shape = (10,)
-    space = Space(shape)
-    d = dx.div(space, order=2, h=0.01)
+    d = dx.div(_domain(shape), order=2, h=0.01)
 
     # Vector field, 1D space (1 component) -> scalar field
     arr = np.ones(shape=(1, *shape))
@@ -16,8 +20,7 @@ def test_div_shapes():
 
     # Vector field, 2D space (2 components) -> scalar field
     shape = (10, 10)
-    space = Space(shape)
-    d = dx.div(space, order=2, h=0.01)
+    d = dx.div(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=(2, *shape))
     out = d.apply_to(arr)
     assert out.shape == shape
@@ -47,8 +50,7 @@ def test_div_shapes():
 
 def test_div_values():
     shape = (10, 10)
-    space = Space(shape)
-    d = dx.div(space, order=2, h=0.01)
+    d = dx.div(_domain(shape), order=2, h=0.01)
 
     # Constant vector field -> divergence is 0
     arr = np.ones(shape=(2, *shape), dtype=float)
@@ -57,8 +59,7 @@ def test_div_values():
 
     # Linear 1D vector field v(x) = x  ->  div(v) = dv/dx = 1
     x = np.arange(0.0, 10.01, 0.01)
-    space = Space(x.shape)
-    d = dx.div(space, order=2, h=0.01)
+    d = dx.div(_domain(x.shape), order=2, h=0.01)
     arr = x[np.newaxis, :].copy()  # shape (1, N)
     out = d.apply_to(arr)
     assert np.allclose(out, 1.0, atol=1e-6)

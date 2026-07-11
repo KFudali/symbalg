@@ -1,11 +1,14 @@
 import numpy as np
 from discrete.fd.operators.dt import explicit
+from discrete.fd.domain import FDDomain
 from algebra.expression import CallableExpression
 from algebra.space import FieldShape, Space
 from algebra.field import Field
 from tools.buffer import DequeValueBuffer
+from tools.geometry import StructuredGridND
 
 space = Space((10, 10))
+domain = FDDomain(StructuredGridND((10, 10), (1.0, 1.0)))
 
 
 def field_buffer() -> tuple[Field, DequeValueBuffer]:
@@ -18,7 +21,7 @@ def test_first_order_with_const_field():
     time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
     values.set(np.ones(shape=field.shape, dtype=float))
-    dt = explicit.bfd(field, time_step, order=1)
+    dt = explicit.bfd(field, domain, time_step, order=1)
     for _ in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float))
         vals = dt.of(field).eval()
@@ -31,7 +34,7 @@ def test_second_order_with_const_field():
     values.set_saved_steps(2)
     values.advance(np.ones(shape=field.shape, dtype=float))
     values.advance(np.ones(shape=field.shape, dtype=float))
-    dt = explicit.bfd(field, time_step, order=2)
+    dt = explicit.bfd(field, domain, time_step, order=2)
     for _ in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float))
         vals = dt.of(field).eval()
@@ -41,7 +44,7 @@ def test_second_order_with_const_field():
 def test_first_order_with_linear_field():
     time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
-    dt = explicit.bfd(field, time_step, order=1)
+    dt = explicit.bfd(field, domain, time_step, order=1)
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
         if t > 0:
@@ -52,7 +55,7 @@ def test_first_order_with_linear_field():
 def test_second_order_with_linear_field():
     time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(0.01))
     field, values = field_buffer()
-    dt = explicit.bfd(field, time_step, order=2)
+    dt = explicit.bfd(field, domain, time_step, order=2)
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
         if t > 1:
@@ -64,7 +67,7 @@ def test_second_order_with_square_field():
     dt_value = 0.01
     time_step = CallableExpression(FieldShape.scalar(space), lambda: np.array(dt_value))
     field, values = field_buffer()
-    dt = explicit.bfd(field, time_step, order=2)
+    dt = explicit.bfd(field, domain, time_step, order=2)
     for t in range(10):
         time = t * dt_value
         values.advance(np.ones(shape=field.shape, dtype=float) * time**2)

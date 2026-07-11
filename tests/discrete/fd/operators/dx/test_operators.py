@@ -1,24 +1,28 @@
 import numpy as np
 from discrete.fd.operators.fd_operator import FDOperator
+from discrete.fd.domain import FDDomain
 from discrete.fd.tools.stencil import AxStencil, Stencil
-from algebra.space import Space, ShapeTransform
+from algebra.space import ShapeTransform
 from algebra.symbolic import SymbolicOperator
+from tools.geometry import StructuredGridND
+
+
+def _domain(shape: tuple[int, ...]) -> FDDomain:
+    return FDDomain(StructuredGridND(shape, (1.0,) * len(shape)))
 
 
 def laplike() -> FDOperator:
-    space = Space((10,))
     interior = Stencil({-1: 1.0, 0: 1.0, 1: 1.0})
     left = Stencil({0: -10.0})
     right = Stencil({0: 10.0})
     stencil = AxStencil(interior, (left,), (right,))
-    return FDOperator(space, ShapeTransform.NONE, (stencil,))
+    return FDOperator(_domain((10,)), ShapeTransform.NONE, (stencil,))
 
 
 def interior_only() -> FDOperator:
-    space = Space((10,))
     interior = Stencil({0: 1.0})
     stencil = AxStencil(interior, (), ())
-    return FDOperator(space, ShapeTransform.NONE, (stencil,))
+    return FDOperator(_domain((10,)), ShapeTransform.NONE, (stencil,))
 
 
 def test_wrapped_subtraction():

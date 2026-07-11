@@ -13,7 +13,7 @@ def _make_setup(field_shape: tuple[int, ...]):
     grid = StructuredGridND((10, 10), (0.1, 0.1))
     domain = FDDomain(grid)
     bc_tool = FDBCTool(domain)
-    lap = dx.laplace(domain.space, order=2, h=0.1)
+    lap = dx.laplace(domain, order=2, h=0.1)
     rhs = np.zeros(field_shape, dtype=float)
     system = LinearSystem(lap, rhs)
     return domain, bc_tool, system

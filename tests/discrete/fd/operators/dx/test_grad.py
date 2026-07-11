@@ -1,22 +1,25 @@
 import pytest
 import numpy as np
 from discrete.fd.operators import dx
-from algebra.space import Space
+from discrete.fd.domain import FDDomain
+from tools.geometry import StructuredGridND
+
+
+def _domain(shape: tuple[int, ...]) -> FDDomain:
+    return FDDomain(StructuredGridND(shape, (0.01,) * len(shape)))
 
 
 def test_grad_shapes():
     # Scalar field, 1D space -> vector field with 1 component
     shape = (10,)
-    space = Space(shape)
-    g = dx.grad(space, order=2, h=0.01)
+    g = dx.grad(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape)
     out = g.apply_to(arr)
     assert out.shape == (1, 10)
 
     # Scalar field, 2D space -> vector field with 2 components
     shape = (10, 10)
-    space = Space(shape)
-    g = dx.grad(space, order=2, h=0.01)
+    g = dx.grad(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape)
     out = g.apply_to(arr)
     assert out.shape == (2, 10, 10)
@@ -41,16 +44,14 @@ def test_grad_shapes():
 def test_grad_values():
     # Constant field -> gradient should be 0
     shape = (10, 10)
-    space = Space(shape)
-    g = dx.grad(space, order=2, h=0.01)
+    g = dx.grad(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape, dtype=float)
     out = g.apply_to(arr)
     assert np.allclose(out, 0.0, atol=1e-6)
 
     # Linear 1D field f(x) = x  ->  df/dx = 1
     x = np.arange(0.0, 10.01, 0.01)
-    space = Space(x.shape)
-    g = dx.grad(space, order=2, h=0.01)
+    g = dx.grad(_domain(x.shape), order=2, h=0.01)
     out = g.apply_to(x.copy())
     # out shape (1, N)
     assert np.allclose(out[0], 1.0, atol=1e-6)

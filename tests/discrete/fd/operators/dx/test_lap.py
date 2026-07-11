@@ -1,20 +1,23 @@
 import pytest
 import numpy as np
 from discrete.fd.operators import dx
-from algebra.space import Space
+from discrete.fd.domain import FDDomain
+from tools.geometry import StructuredGridND
+
+
+def _domain(shape: tuple[int, ...]) -> FDDomain:
+    return FDDomain(StructuredGridND(shape, (0.01,) * len(shape)))
 
 
 def test_lap_shapes():
     shape = (10,)
-    space = Space(shape)
-    lap = dx.laplace(space, order=2, h=0.01)
+    lap = dx.laplace(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape)
     out = lap.apply_to(arr)
     assert out.shape == arr.shape
 
     shape = (10, 10)
-    space = Space(shape)
-    lap = dx.laplace(space, order=2, h=0.01)
+    lap = dx.laplace(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape)
     out = lap.apply_to(arr)
     assert out.shape == arr.shape
@@ -36,16 +39,14 @@ def test_lap_shapes():
 def test_lap_values():
     # Constant field
     shape = (10, 10)
-    space = Space(shape)
-    lap = dx.laplace(space, order=2, h=0.01)
+    lap = dx.laplace(_domain(shape), order=2, h=0.01)
     arr = np.ones(shape=shape, dtype=float)
     out = lap.apply_to(arr)
     assert np.allclose(out, 0.0, atol=1e-6)
 
     # Linear field
     x = np.arange(0.0, 10.01, 0.01)
-    space = Space(x.shape)
-    lap = dx.laplace(space, order=2, h=0.01)
+    lap = dx.laplace(_domain(x.shape), order=2, h=0.01)
     out = lap.apply_to(x.copy())
     assert np.allclose(out, 0.0, atol=1e-6)
 
@@ -57,9 +58,9 @@ def test_lap_values():
 
 def test_lap_magics():
     shape = (10, 10)
-    space = Space(shape)
-    l_lap = dx.laplace(space, order=2, h=0.01)
-    r_lap = dx.laplace(space, order=2, h=0.02)
+    d = _domain(shape)
+    l_lap = dx.laplace(d, order=2, h=0.01)
+    r_lap = dx.laplace(d, order=2, h=0.02)
 
     binary_ops = [
         lambda a, b: a + b,
