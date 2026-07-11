@@ -65,5 +65,8 @@ class AffineOperator(Operator):
             binary_op(self.expression.copy(), other.expression.copy()),
         )
 
+    def as_array(self) -> np.ndarray:
+        return self.operator.as_array()
+
     def __neg__(self):
         return self.__class__(-self.operator.copy(), -self.expression.copy())

@@ -36,5 +36,9 @@ class ArrayOperator(Operator):
     def _scale(self, other: float) -> Self:
         return self.__class__(self.space, self.shape_transform, other * self._expr)
 
+    def as_array(self) -> np.ndarray:
+        expr_vals = self._expr.eval()
+        return np.diag(expr_vals.ravel())
+
     def __neg__(self) -> Self:
         return self.__class__(self.space, self.shape_transform, -self._expr)

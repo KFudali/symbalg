@@ -36,6 +36,9 @@ class MockOperator(Operator):
     def _scale(self, other: float) -> Self:
         return self.__class__(f"[{self.name} * {other}]")
 
+    def as_array(self) -> np.ndarray:
+        return np.zeros(self.space.shape)
+
     def __neg__(self) -> Self:
         return self.__class__(f"[-{self.name}]")
 

@@ -41,6 +41,22 @@ class Operator(ABC):
     def copy(self) -> Self:
         pass
 
+    @abstractmethod
+    def as_array(self) -> np.ndarray:
+        pass
+
+    @abstractmethod
+    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
+        pass
+
+    @abstractmethod
+    def _scale(self, other: float) -> Self:
+        pass
+
+    @abstractmethod
+    def __neg__(self) -> Self:
+        return NotImplemented
+
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self._apply_callable(self.space, self._apply, inp, out)
 
@@ -61,18 +77,6 @@ class Operator(ABC):
             other.shape_transform == self.shape_transform
         ), "Cannot combine operators with different shape transformations"
         return self._combine(other, optype)
-
-    @abstractmethod
-    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
-        pass
-
-    @abstractmethod
-    def _scale(self, other: float) -> Self:
-        pass
-
-    @abstractmethod
-    def __neg__(self) -> Self:
-        return NotImplemented
 
     def __add__(self, other) -> Self:
         if isinstance(other, Operator):

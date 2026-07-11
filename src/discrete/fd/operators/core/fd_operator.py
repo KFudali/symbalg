@@ -51,6 +51,9 @@ class FDOperator(Operator):
         stencils = tuple(stencil * other for stencil in self.stencils)
         return self.__class__(self.space, self.shape_transform, stencils)
 
+    def as_array(self) -> np.ndarray:
+        return np.zeros(self.space.shape)
+
     def __neg__(self) -> Self:
         stencils = tuple(-stencil for stencil in self.stencils)
         return self.__class__(self.space, self.shape_transform, stencils)

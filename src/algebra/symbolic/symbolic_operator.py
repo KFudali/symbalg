@@ -57,6 +57,9 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     def _new(self, node: nodes.SymbolicNode[TOperator]) -> Self:
         return self.__class__(node, self.space, self.shape_transform)
 
+    def as_array(self) -> np.ndarray:
+        return self.resolve().as_array()
+
     def _compatible(
         self, other: Any, optype: BinaryOpType, reverse: bool = False
     ) -> bool:

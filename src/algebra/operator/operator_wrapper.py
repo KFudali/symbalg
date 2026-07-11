@@ -33,8 +33,8 @@ class OperatorWrapper(Operator):
     def hook(self) -> ApplyHook:
         return self._hook
 
-    def _wrap(self, op: Operator) -> "OperatorWrapper":
-        return OperatorWrapper(op, self._hook)
+    def _wrap(self, op: Operator) -> Self:
+        return self.__class__(op, self._hook)
 
     def apply(self, inp: np.ndarray, out: np.ndarray) -> None:
         self._inner.apply(inp, out)
@@ -42,6 +42,9 @@ class OperatorWrapper(Operator):
 
     def copy(self) -> Self:
         return self._wrap(self._inner.copy())
+
+    def as_array(self) -> np.ndarray:
+        return self._inner.as_array()
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
         other_inner = other.inner if isinstance(other, OperatorWrapper) else other
