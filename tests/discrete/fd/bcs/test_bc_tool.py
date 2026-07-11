@@ -1,6 +1,6 @@
 import numpy as np
 
-from algebra.systems.bcs import BoundaryCondition, BCType
+from algebra.bcs import BoundaryCondition, BCType
 from algebra.systems.systems import LinearSystem
 from discrete.fd.domain.fd_domain import FDDomain
 from discrete.fd.bcs import FDBCTool
@@ -27,7 +27,7 @@ def lap_space(grid):
 def test_post_solve_dirichlet_scalar():
     domain, bc_tool, _ = _make_setup((10, 10))
     left_id, _ = domain.ax_boundaries(ax=0)
-    bc = BoundaryCondition(BCType.DIRICHLET, value=3.0, id=left_id)
+    bc = BoundaryCondition(BCType.DIRICHLET, value=3.0, boundary=left_id)
 
     field = np.zeros((10, 10))
     bc_tool.post_solve([bc], field)
@@ -43,7 +43,7 @@ def test_post_solve_dirichlet_vector_field():
     """
     domain, bc_tool, _ = _make_setup((10, 10))
     left_id, _ = domain.ax_boundaries(ax=0)
-    bc = BoundaryCondition(BCType.DIRICHLET, value=7.0, id=left_id)
+    bc = BoundaryCondition(BCType.DIRICHLET, value=7.0, boundary=left_id)
 
     field = np.zeros((2, 10, 10))
     bc_tool.post_solve([bc], field)
@@ -56,7 +56,7 @@ def test_post_solve_dirichlet_vector_field():
 def test_post_solve_dirichlet_tensor_field():
     domain, bc_tool, _ = _make_setup((10, 10))
     _, right_id = domain.ax_boundaries(ax=1)
-    bc = BoundaryCondition(BCType.DIRICHLET, value=2.0, id=right_id)
+    bc = BoundaryCondition(BCType.DIRICHLET, value=2.0, boundary=right_id)
 
     field = np.zeros((3, 2, 10, 10))
     bc_tool.post_solve([bc], field)
@@ -73,7 +73,7 @@ def test_apply_dirichlet_vector_rhs_zeroes_space_boundary_per_component():
     """
     domain, bc_tool, system = _make_setup((2, 10, 10))
     left_id, _ = domain.ax_boundaries(ax=0)
-    bc = BoundaryCondition(BCType.DIRICHLET, value=1.0, id=left_id)
+    bc = BoundaryCondition(BCType.DIRICHLET, value=1.0, boundary=left_id)
 
     # Pre-populate rhs with a known non-zero pattern so we can inspect what
     # was overwritten.
@@ -96,7 +96,7 @@ def test_apply_dirichlet_modifies_lhs_stencil_consistently():
     """
     domain, bc_tool, scalar_system = _make_setup((10, 10))
     _, right_id = domain.ax_boundaries(ax=1)
-    bc = BoundaryCondition(BCType.DIRICHLET, value=4.0, id=right_id)
+    bc = BoundaryCondition(BCType.DIRICHLET, value=4.0, boundary=right_id)
 
     scalar_out = bc_tool.apply([bc], scalar_system)
 
@@ -117,7 +117,7 @@ def test_apply_neumann_vector_rhs():
     """
     domain, bc_tool, system = _make_setup((2, 10, 10))
     left_id, _ = domain.ax_boundaries(ax=0)
-    bc = BoundaryCondition(BCType.NEUMANN, value=1.0, id=left_id)
+    bc = BoundaryCondition(BCType.NEUMANN, value=1.0, boundary=left_id)
 
     new_system = bc_tool.apply([bc], system)
 

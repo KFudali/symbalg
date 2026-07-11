@@ -1,11 +1,18 @@
 from dataclasses import dataclass
 from typing import TypeVar
-from algebra.systems.bcs import BoundaryId
+
+
+@dataclass(frozen=True)
+class BoundaryId:
+    key: int
+
+    def is_valid(self) -> bool:
+        return self.key >= 0
 
 
 @dataclass(frozen=True)
 class Boundary:
-    id: BoundaryId
+    boundary: BoundaryId
 
 
 TBoundary = TypeVar("TBoundary", bound=Boundary)

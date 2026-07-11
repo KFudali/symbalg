@@ -1,7 +1,7 @@
 from typing import Callable, Union
 import numpy as np
 
-from algebra.systems.bcs import BoundaryTool, BoundaryCondition, BCType
+from algebra.bcs import BoundaryTool, BoundaryCondition, BCType
 from algebra.systems.systems import LinearSystem
 from discrete.fd.domain import FDBoundary
 from discrete.fd.domain.fd_domain import FDDomain
@@ -43,7 +43,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
         lhs = system.lhs
 
         for bc in bcs:
-            boundary = self._domain.boundary(bc.id)
+            boundary = self._domain.boundary(bc.boundary)
             stencil = lhs.stencils[boundary.ax]
             modified_stencil = self._apply_rankwise(
                 FDBCTool.APPLY[bc.bc_type],
@@ -57,7 +57,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
 
     def post_solve(self, bcs: list[BoundaryCondition], field: np.ndarray) -> None:
         for bc in bcs:
-            boundary = self._domain.boundary(bc.id)
+            boundary = self._domain.boundary(bc.boundary)
             self._post_solve_rankwise(
                 FDBCTool.POST_SOLVE[bc.bc_type],
                 boundary,

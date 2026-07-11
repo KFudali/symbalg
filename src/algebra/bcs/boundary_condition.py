@@ -17,4 +17,4 @@ BCValue = Union[float, np.ndarray]
 class BoundaryCondition:
     bc_type: BCType
     value: BCValue
-    id: BoundaryId
+    boundary: BoundaryId

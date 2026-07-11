@@ -2,9 +2,8 @@ from typing import Sequence, Union
 
 import numpy as np
 
-import discrete.core as discr
-
-from algebra.systems.bcs import BoundaryCondition, BCType
+from algebra.bcs import BoundaryCondition, BCType, Domain, BoundaryId
+from discrete.core import Discretization
 from algebra.expression import Expression
 
 from algebra.operator import Operator
@@ -24,18 +23,18 @@ def _normalize_bc_value(value: BCValueInput) -> Union[float, np.ndarray]:
 
 
 class BCFactory:
-    def __init__(self, domain: discr.domain.Domain):
+    def __init__(self, domain: Domain):
         self._domain = domain
 
     def dirichlet(
-        self, boundary_id: discr.domain.BoundaryId, value: BCValueInput
+        self, boundary_id: BoundaryId, value: BCValueInput
     ) -> BoundaryCondition:
         return BoundaryCondition(
             BCType.DIRICHLET, _normalize_bc_value(value), boundary_id
         )
 
     def neumann(
-        self, boundary_id: discr.domain.BoundaryId, value: BCValueInput
+        self, boundary_id: BoundaryId, value: BCValueInput
     ) -> BoundaryCondition:
         return BoundaryCondition(
             BCType.NEUMANN, _normalize_bc_value(value), boundary_id
@@ -43,7 +42,7 @@ class BCFactory:
 
 
 class SystemFactory:
-    def __init__(self, discrete: discr.Discretization):
+    def __init__(self, discrete: Discretization):
         self._bc_tool = discrete.bc_tool
         self._bc_factory = BCFactory(discrete.domain)
 

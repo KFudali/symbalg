@@ -1,5 +1,5 @@
 from tools.geometry import StructuredGridND
-from discrete.core.domain import Domain, BoundaryId
+from algebra.bcs import Domain, BoundaryId
 from .fd_boundary import FDBoundary
 
 
