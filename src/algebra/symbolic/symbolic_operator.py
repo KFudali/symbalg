@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Any, Self, TYPE_CHECKING
 import numpy as np
+import scipy.sparse as sp
 
 from algebra.space import Space, ShapeTransform
 from algebra.operator import Operator, TOperator
@@ -57,7 +58,7 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     def _new(self, node: nodes.SymbolicNode[TOperator]) -> Self:
         return self.__class__(node, self.space, self.shape_transform)
 
-    def as_array(self) -> np.ndarray:
+    def as_array(self) -> sp.spmatrix:
         return self.resolve().as_array()
 
     def _compatible(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import Callable, Any, Self
 import numpy as np
+import scipy.sparse as sp
 
 from tools.symbolic import BinaryOpType, BINARY_OPS
 from algebra.operator import Operator
@@ -65,7 +66,7 @@ class AffineOperator(Operator):
             binary_op(self.expression.copy(), other.expression.copy()),
         )
 
-    def as_array(self) -> np.ndarray:
+    def as_array(self) -> sp.spmatrix:
         return self.operator.as_array()
 
     def __neg__(self):

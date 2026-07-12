@@ -1,5 +1,6 @@
 from typing import Self, Callable
 import numpy as np
+import scipy.sparse as sp
 
 from tools.symbolic.optype import BinaryOpType
 from algebra.operator import Operator
@@ -36,8 +37,8 @@ class MockOperator(Operator):
     def _scale(self, other: float) -> Self:
         return self.__class__(f"[{self.name} * {other}]")
 
-    def as_array(self) -> np.ndarray:
-        return np.zeros(self.space.shape)
+    def as_array(self) -> sp.spmatrix:
+        return sp.csr_matrix(np.zeros(self.space.shape))
 
     def __neg__(self) -> Self:
         return self.__class__(f"[-{self.name}]")

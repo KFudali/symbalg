@@ -10,6 +10,7 @@ from .apply import APPLY
 if TYPE_CHECKING:
     from algebra.field import Field
     from algebra.expression import Expression
+    import scipy.sparse as sp
 
 
 class Operator(ABC):
@@ -42,7 +43,7 @@ class Operator(ABC):
         pass
 
     @abstractmethod
-    def as_array(self) -> np.ndarray:
+    def as_array(self) -> sp.spmatrix:
         pass
 
     @abstractmethod

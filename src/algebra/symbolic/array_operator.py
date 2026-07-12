@@ -1,5 +1,6 @@
 from typing import Self
 import numpy as np
+import scipy.sparse as sp
 
 from tools.symbolic import BINARY_OPS, BinaryOpType
 from algebra.expression import Expression
@@ -36,9 +37,9 @@ class ArrayOperator(Operator):
     def _scale(self, other: float) -> Self:
         return self.__class__(self.space, self.shape_transform, other * self._expr)
 
-    def as_array(self) -> np.ndarray:
+    def as_array(self) -> sp.spmatrix:
         expr_vals = self._expr.eval()
-        return np.diag(expr_vals.ravel())
+        return sp.diags(expr_vals.ravel(), 0, format="csr")
 
     def __neg__(self) -> Self:
         return self.__class__(self.space, self.shape_transform, -self._expr)

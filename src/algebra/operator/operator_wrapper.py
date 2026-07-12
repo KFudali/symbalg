@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Callable, Self
 import numpy as np
+import scipy.sparse as sp
 
 from tools.symbolic.optype import BinaryOpType
 
@@ -43,7 +44,7 @@ class OperatorWrapper(Operator):
     def copy(self) -> Self:
         return self._wrap(self._inner.copy())
 
-    def as_array(self) -> np.ndarray:
+    def as_array(self) -> sp.spmatrix:
         return self._inner.as_array()
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
