@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TypeVar
 
-from .boundary_id import Boundary, BoundaryId
+from .bcs.boundary_id import Boundary, BoundaryId
 
 
 class Domain(ABC):

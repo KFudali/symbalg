@@ -1,7 +1,7 @@
 from typing import Callable, Union
 import numpy as np
 
-from algebra.bcs import BoundaryTool, BoundaryCondition, BCType
+from algebra.domain import bcs
 from algebra.systems.systems import LinearSystem
 from discrete.fd.domain import FDBoundary
 from discrete.fd.domain.fd_domain import FDDomain
@@ -21,14 +21,14 @@ def _component_value(value: BCValueLike, comp: int) -> BCValueLike:
     return value
 
 
-class FDBCTool(BoundaryTool[FDOperator]):
-    APPLY: dict[BCType, BcApplyCallable] = {
-        BCType.DIRICHLET: dirichlet.apply,
-        BCType.NEUMANN: neumann.apply,
+class FDBCTool(bcs.BoundaryTool[FDOperator]):
+    APPLY: dict[bcs.BCType, BcApplyCallable] = {
+        bcs.BCType.DIRICHLET: dirichlet.apply,
+        bcs.BCType.NEUMANN: neumann.apply,
     }
-    POST_SOLVE: dict[BCType, BcPostSolveCallable] = {
-        BCType.DIRICHLET: dirichlet.post_solve,
-        BCType.NEUMANN: neumann.post_solve,
+    POST_SOLVE: dict[bcs.BCType, BcPostSolveCallable] = {
+        bcs.BCType.DIRICHLET: dirichlet.post_solve,
+        bcs.BCType.NEUMANN: neumann.post_solve,
     }
 
     def __init__(self, domain: FDDomain):
@@ -36,7 +36,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
 
     def apply(
         self,
-        bcs: list[BoundaryCondition],
+        bcs: list[bcs.BoundaryCondition],
         system: LinearSystem[FDOperator],
     ) -> LinearSystem[FDOperator]:
         system = system.copy()
@@ -55,7 +55,7 @@ class FDBCTool(BoundaryTool[FDOperator]):
             lhs = lhs.modify(boundary.ax, modified_stencil)
         return LinearSystem(lhs, system.rhs)
 
-    def post_solve(self, bcs: list[BoundaryCondition], field: np.ndarray) -> None:
+    def post_solve(self, bcs: list[bcs.BoundaryCondition], field: np.ndarray) -> None:
         for bc in bcs:
             boundary = bc.boundary
             self._post_solve_rankwise(

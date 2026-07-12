@@ -2,7 +2,7 @@ from typing import Sequence, Union
 
 import numpy as np
 
-from algebra.bcs import BoundaryCondition, BCType, Domain, Boundary, BoundaryId
+from algebra.domain import Domain, bcs
 from discrete.core import Discretization
 from algebra.expression import Expression
 
@@ -27,18 +27,18 @@ class BCFactory:
         self._domain = domain
 
     def dirichlet(
-        self, boundary_id: BoundaryId, value: BCValueInput
-    ) -> BoundaryCondition:
-        return BoundaryCondition(
-            BCType.DIRICHLET, _normalize_bc_value(value),
+        self, boundary_id: bcs.BoundaryId, value: BCValueInput
+    ) -> bcs.BoundaryCondition:
+        return bcs.BoundaryCondition(
+            bcs.BCType.DIRICHLET, _normalize_bc_value(value),
             self._domain.boundary(boundary_id),
         )
 
     def neumann(
-        self, boundary_id: BoundaryId, value: BCValueInput
-    ) -> BoundaryCondition:
-        return BoundaryCondition(
-            BCType.NEUMANN, _normalize_bc_value(value),
+        self, boundary_id: bcs.BoundaryId, value: BCValueInput
+    ) -> bcs.BoundaryCondition:
+        return bcs.BoundaryCondition(
+            bcs.BCType.NEUMANN, _normalize_bc_value(value),
             self._domain.boundary(boundary_id),
         )
 
@@ -56,7 +56,7 @@ class SystemFactory:
         self,
         lhs: Operator,
         rhs: Expression,
-        bcs: list[BoundaryCondition],
+        bcs: list[bcs.BoundaryCondition],
         *,
         constraints: list[SystemConstraint] = []
     ) -> LinearEquation:

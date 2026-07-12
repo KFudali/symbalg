@@ -52,6 +52,8 @@ class FDOperator(Operator):
         return self.__class__(self.space, self.shape_transform, stencils)
 
     def as_array(self) -> np.ndarray:
+        np.linalg.sparse
+
         return np.zeros(self.space.shape)
 
     def __neg__(self) -> Self:

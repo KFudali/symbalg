@@ -7,7 +7,7 @@ from algebra.space import Space
 from .dx_operators import DxOperators
 from .dt_operators import DtOperators
 from .discrete_time import DiscreteTime
-from algebra.bcs import TDomain, BoundaryTool
+from algebra.domain import TDomain, bcs
 
 
 class Discretization(ABC, Generic[TDomain]):
@@ -40,7 +40,7 @@ class Discretization(ABC, Generic[TDomain]):
 
     @property
     @abstractmethod
-    def bc_tool(self) -> BoundaryTool:
+    def bc_tool(self) -> bcs.BoundaryTool:
         pass
 
     @abstractmethod

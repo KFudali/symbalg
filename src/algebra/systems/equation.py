@@ -10,16 +10,16 @@ from .constraints import SystemConstraint
 from .systems import LinearSystem
 
 if TYPE_CHECKING:
-    from algebra.bcs import BoundaryCondition, BoundaryTool
+    from algebra.domain import bcs
 
 
 class LinearEquation:
     def __init__(
         self,
-        bc_tool: BoundaryTool,
+        bc_tool: bcs.BoundaryTool,
         lhs: Operator,
         rhs: Expression,
-        bcs: list[BoundaryCondition],
+        bcs: list[bcs.BoundaryCondition],
         *,
         constraints: list[SystemConstraint],
     ):

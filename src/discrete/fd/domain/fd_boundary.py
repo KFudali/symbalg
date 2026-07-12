@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
-from algebra.bcs import Boundary
+from algebra.domain import bcs
 
 
 @dataclass(frozen=True)
-class FDBoundary(Boundary):
+class FDBoundary(bcs.Boundary):
     ax: int
     side: int
     exclude_corners: bool
