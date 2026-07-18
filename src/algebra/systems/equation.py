@@ -1,48 +1,48 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 import numpy as np
 
-from algebra.operator import Operator
-from algebra.symbolic import SymbolicExpression, SymbolicOperator
+from algebra.space import FieldShape
 from algebra.expression import Expression, CallableExpression
+from algebra.domain.bcs import BoundaryCondition
+from algebra.domain import DomainOperator
+
 from .solvers import LinearSolver
 from .constraints import SystemConstraint
 from .systems import LinearSystem
-
-if TYPE_CHECKING:
-    from algebra.domain import bcs
 
 
 class LinearEquation:
     def __init__(
         self,
-        bc_tool: bcs.BoundaryTool,
-        lhs: Operator,
-        rhs: Expression,
-        bcs: list[bcs.BoundaryCondition],
+        system: LinearSystem[DomainOperator],
+        bcs: list[BoundaryCondition],
         *,
         constraints: list[SystemConstraint],
     ):
-        self._bc_tool = bc_tool
-        self._lhs = lhs
-        self._rhs = rhs
+        self._system = system
         self._bcs = bcs
         self._constraints = constraints
 
     def _assemble(self) -> LinearSystem:
-        if isinstance(self._lhs, SymbolicOperator):
-            self._lhs = self._lhs.resolve()
-        system = LinearSystem(self._lhs, self._rhs.eval())
-        system = self._bc_tool.apply(self._bcs, system)
+        rhs = self._system.rhs
+        lhs = self._system.lhs.apply_bcs(self._bcs, rhs)
+        system = LinearSystem(lhs, rhs)
         for constraint in self._constraints:
             system = constraint.apply(system)
         return system
+
+    def _normalize(self, result: np.ndarray):
+        for bc in self._bcs:
+            self._system.lhs.domain.normalize_bc(bc, result)
 
     def solve(self, solver: LinearSolver) -> Expression:
         def _solve() -> np.ndarray:
             system = self._assemble()
             out = solver.solve(system)
-            self._bc_tool.post_solve(self._bcs, out)
+            self._normalize(out)
             return out
 
-        return CallableExpression(self._rhs.fieldshape, _solve)
+        result_shape = FieldShape.from_shape(
+            self._system.lhs.space, self._system.rhs.shape
+        )
+        return CallableExpression(result_shape, _solve)

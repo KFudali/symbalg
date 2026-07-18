@@ -10,8 +10,8 @@ from tools.buffer import (
 from tools.action import LazyAction
 
 from .expression import Expression, CallableExpression
+from .expression.symbolic import SymbolicExpression
 from .space import FieldShaped, FieldShape
-from .symbolic import SymbolicExpression
 from .space import shape_utils as utils
 
 

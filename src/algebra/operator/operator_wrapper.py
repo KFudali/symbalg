@@ -2,16 +2,35 @@ from __future__ import annotations
 
 from typing import Callable, Self
 import numpy as np
-import scipy.sparse as sp
 
 from tools.symbolic.optype import BinaryOpType
-
-from .operator import Operator
+from algebra.operator import Operator
 
 ApplyHook = Callable[[np.ndarray, np.ndarray], None]
 
 
 class OperatorWrapper(Operator):
+    def __init__(self, operator: Operator):
+        super().__init__(operator.space, operator.shape_transform)
+        self._operator = operator
+
+    def apply(self, inp: np.ndarray, out: np.ndarray) -> None:
+        return self._operator.apply(inp, out)
+
+    def copy(self) -> Self:
+        return self.__class__(self._operator)
+
+    def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
+        return self.__class__(self._operator._combine(other, optype))
+
+    def _scale(self, other: float) -> Self:
+        return self.__class__(self._operator._scale(other))
+
+    def __neg__(self) -> Self:
+        return self.__class__(self._operator.__neg__())
+
+
+class ApplyHookOperator(OperatorWrapper):
     """Wraps an :class:`Operator` and augments its ``apply`` with an extra hook.
 
     All other behaviour (space, shape transform, algebraic magics, ``copy``,
@@ -21,43 +40,14 @@ class OperatorWrapper(Operator):
     keeps being applied after the wrapper participates in expressions.
     """
 
-    def __init__(self, inner: Operator, hook: ApplyHook):
-        super().__init__(inner.space, inner.shape_transform)
-        self._inner = inner
+    def __init__(self, operator: Operator, hook: ApplyHook):
+        super().__init__(operator)
         self._hook = hook
-
-    @property
-    def inner(self) -> Operator:
-        return self._inner
 
     @property
     def hook(self) -> ApplyHook:
         return self._hook
 
-    def _wrap(self, op: Operator) -> Self:
-        return self.__class__(op, self._hook)
-
     def apply(self, inp: np.ndarray, out: np.ndarray) -> None:
-        self._inner.apply(inp, out)
+        self._operator.apply(inp, out)
         self._hook(inp, out)
-
-    def copy(self) -> Self:
-        return self._wrap(self._inner.copy())
-
-    def as_array(self) -> sp.spmatrix:
-        return self._inner.as_array()
-
-    def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
-        other_inner = other.inner if isinstance(other, OperatorWrapper) else other
-        return self._wrap(self._inner._combine(other_inner, optype))
-
-    def _scale(self, other: float) -> Self:
-        return self._wrap(self._inner._scale(other))
-
-    def __neg__(self) -> Self:
-        return self._wrap(-self._inner)
-
-    def __getattr__(self, name: str):
-        # Called only when normal attribute lookup fails — delegates everything
-        # else (e.g. discretization-specific helpers) to the wrapped operator.
-        return getattr(self._inner, name)

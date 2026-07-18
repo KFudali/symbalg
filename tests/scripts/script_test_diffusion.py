@@ -30,5 +30,6 @@ equation = s.systems.les(lhs, rhs.value(), bcs)
 for step in s.time.run(duration=1.0, init_dt=0.01):
     solution = equation.solve(solvers.CGSolver())
     F.set_value(solution).perform()
+
 s.monitors.plot_field_2d(F)
 s.monitors.show()

@@ -1,5 +1,5 @@
 from tools.geometry import StructuredGridND
-from algebra.domain import Domain, bcs
+from algebra.space.domain import Domain, BoundaryId
 from .fd_boundary import FDBoundary
 
 
@@ -7,8 +7,8 @@ class FDDomain(Domain):
     def __init__(self, grid: StructuredGridND):
         super().__init__()
         self._grid = grid
-        self._boundaries = dict[bcs.BoundaryId, FDBoundary]()
-        self._boundaries_by_ax = dict[int, tuple[bcs.BoundaryId, bcs.BoundaryId]]()
+        self._boundaries = dict[BoundaryId, FDBoundary]()
+        self._boundaries_by_ax = dict[int, tuple[BoundaryId, BoundaryId]]()
         self._mark_boundaries()
 
     @property
@@ -16,20 +16,20 @@ class FDDomain(Domain):
         return self._grid
 
     @property
-    def boundaries(self) -> dict[bcs.BoundaryId, FDBoundary]:
+    def boundaries(self) -> dict[BoundaryId, FDBoundary]:
         return self._boundaries.copy()
 
-    def boundary(self, boundary_id: bcs.BoundaryId) -> FDBoundary:
+    def boundary(self, boundary_id: BoundaryId) -> FDBoundary:
         return self._boundaries[boundary_id]
 
-    def ax_boundaries(self, ax: int) -> tuple[bcs.BoundaryId, bcs.BoundaryId]:
+    def ax_boundaries(self, ax: int) -> tuple[BoundaryId, BoundaryId]:
         return self._boundaries_by_ax[ax]
 
     def _mark_boundaries(self):
         next_id = 0
         for ax in range(self.grid.ndim):
-            left_id = bcs.BoundaryId(next_id)
-            right_id = bcs.BoundaryId(next_id + 1)
+            left_id = BoundaryId(next_id)
+            right_id = BoundaryId(next_id + 1)
             exclude_conrers = ax % 2 != 0
             dh = self._grid.ax_spacing(ax)
             left = FDBoundary(left_id, ax, -1, exclude_conrers, dh)

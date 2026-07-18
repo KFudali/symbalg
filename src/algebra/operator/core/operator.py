@@ -1,16 +1,12 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TypeVar, Self, TYPE_CHECKING
+from typing import TypeVar, Self
 import numpy as np
-from tools.symbolic import BinaryOpType
-from algebra.space import Space, ShapeTransform, FieldShape
-from .apply import APPLY
 
-if TYPE_CHECKING:
-    from algebra.field import Field
-    from algebra.expression import Expression
-    import scipy.sparse as sp
+from tools.symbolic import BinaryOpType
+from algebra.space import Space, ShapeTransform
+from .apply import APPLY
 
 
 class Operator(ABC):
@@ -27,23 +23,8 @@ class Operator(ABC):
     def space(self) -> Space:
         return self._space
 
-    def of(self, field: "Field") -> "Expression":
-        from ..expression import CallableExpression
-
-        def apply_to_field():
-            return self.apply_to(field.value().eval())
-
-        out_shape = self.shape_transform.transform(self.space, field.shape)
-        return CallableExpression(
-            FieldShape.from_shape(self.space, out_shape), apply_to_field
-        )
-
     @abstractmethod
     def copy(self) -> Self:
-        pass
-
-    @abstractmethod
-    def as_array(self) -> sp.spmatrix:
         pass
 
     @abstractmethod

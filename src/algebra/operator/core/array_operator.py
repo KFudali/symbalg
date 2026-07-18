@@ -1,22 +1,21 @@
 from typing import Self
 import numpy as np
-import scipy.sparse as sp
 
 from tools.symbolic import BINARY_OPS, BinaryOpType
-from algebra.expression import Expression
+from algebra.expression import Expression, symbolic
 from algebra.operator import Operator
 from algebra.space import ShapeTransform, Space
 
-from .symbolic_expression import SymbolicExpression
-
 
 class ArrayOperator(Operator):
-    def __init__(self, space: Space, shape_transform: ShapeTransform, expr: Expression):
+    def __init__(
+        self, space: Space, shape_transform: ShapeTransform, coeffs: Expression
+    ):
         super().__init__(space, shape_transform)
-        self._expr = SymbolicExpression.wrap(expr)
+        self._expr = symbolic.SymbolicExpression.wrap(coeffs)
 
     @property
-    def expression(self) -> SymbolicExpression:
+    def expression(self) -> symbolic.SymbolicExpression:
         return self._expr
 
     def copy(self) -> Self:
@@ -36,10 +35,6 @@ class ArrayOperator(Operator):
 
     def _scale(self, other: float) -> Self:
         return self.__class__(self.space, self.shape_transform, other * self._expr)
-
-    def as_array(self) -> sp.spmatrix:
-        expr_vals = self._expr.eval()
-        return sp.diags(expr_vals.ravel(), 0, format="csr")
 
     def __neg__(self) -> Self:
         return self.__class__(self.space, self.shape_transform, -self._expr)

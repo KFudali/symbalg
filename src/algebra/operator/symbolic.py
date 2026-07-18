@@ -1,19 +1,20 @@
 from __future__ import annotations
 from typing import Any, Self, TYPE_CHECKING
 import numpy as np
-import scipy.sparse as sp
 
 from algebra.space import Space, ShapeTransform
-from algebra.operator import Operator, TOperator
-from algebra.expression import Expression
 from algebra.exceptions import ShapeMismatchError
 
+from algebra.expression import Expression
+from algebra.expression.symbolic import SymbolicExpression
+from algebra.expression.symbolic.nodes import ExpressionNode
+
 from tools.symbolic import Symbolic, BinaryOpType, nodes
-from .nodes import ExpressionNode
+
+from .core import Operator, TOperator, ArrayOperator
 
 if TYPE_CHECKING:
     from algebra.field import Field
-    from .symbolic_expression import SymbolicExpression
 
 
 class SymbolicOperator(Symbolic[TOperator], Operator):
@@ -25,11 +26,6 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     ):
         Symbolic.__init__(self, node)
         Operator.__init__(self, space, shape_transform)
-
-    def of(self, field: "Field") -> "SymbolicExpression":
-        from .symbolic_expression import SymbolicExpression
-
-        return SymbolicExpression.wrap(Operator.of(self, field))
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self.resolve().apply(inp, out)
@@ -57,9 +53,6 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
 
     def _new(self, node: nodes.SymbolicNode[TOperator]) -> Self:
         return self.__class__(node, self.space, self.shape_transform)
-
-    def as_array(self) -> sp.spmatrix:
-        return self.resolve().as_array()
 
     def _compatible(
         self, other: Any, optype: BinaryOpType, reverse: bool = False

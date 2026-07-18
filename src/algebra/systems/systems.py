@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Generic
 import numpy as np
 from algebra.operator import TOperator
@@ -14,9 +14,3 @@ class LinearSystem(Generic[TOperator]):
 
     def copy(self) -> "LinearSystem":
         return LinearSystem(self.lhs.copy(), self.rhs.copy())
-
-
-@dataclass(frozen=True)
-class LazyLinearSystem(Generic[TOperator]):
-    lhs: TOperator
-    rhs: Expression

@@ -6,8 +6,7 @@ import scipy.sparse as sp
 from tools.symbolic import BinaryOpType, BINARY_OPS
 from algebra.operator import Operator
 from algebra.expression import Expression
-from .symbolic_expression import SymbolicExpression
-from .symbolic_operator import SymbolicOperator
+from .symbolic import SymbolicOperator, SymbolicExpression
 
 
 class AffineOperator(Operator):
@@ -65,9 +64,6 @@ class AffineOperator(Operator):
             binary_op(self.operator.copy(), other.operator.copy()),
             binary_op(self.expression.copy(), other.expression.copy()),
         )
-
-    def as_array(self) -> sp.spmatrix:
-        return self.operator.as_array()
 
     def __neg__(self):
         return self.__class__(-self.operator.copy(), -self.expression.copy())

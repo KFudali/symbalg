@@ -3,8 +3,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from algebra.systems.systems import LinearSystem
-from algebra.operator import OperatorWrapper
-from algebra.domain.bcs import BoundaryCondition
+from algebra.operator import ApplyHookOperator
 
 
 class SystemConstraint(ABC):
@@ -18,12 +17,6 @@ class FixedMeanConstraint(SystemConstraint):
         def _force_fixed_mean(inp: np.ndarray, out: np.ndarray):
             out[:] -= out.mean()
 
-        mean_wrapper = OperatorWrapper(system.lhs, _force_fixed_mean)
+        mean_wrapper = ApplyHookOperator(system.lhs, _force_fixed_mean)
         rhs = system.rhs - system.rhs.mean()
         return LinearSystem(mean_wrapper, rhs)
-
-
-@dataclass(frozen=True)
-class SystemConstraints:
-    constraints: list[SystemConstraint] = field(default_factory=[])
-    bcs: list[BoundaryCondition] = field(default_factory=[])
