@@ -1,6 +1,9 @@
 from tools.geometry import StructuredGridND
-from algebra.space.domain import Domain, BoundaryId
+from algebra.space import Space
+from algebra.domain import Domain
+from algebra.domain.boundary import BoundaryId
 from .fd_boundary import FDBoundary
+from .bcs import FDBCTool
 
 
 class FDDomain(Domain):
@@ -10,6 +13,12 @@ class FDDomain(Domain):
         self._boundaries = dict[BoundaryId, FDBoundary]()
         self._boundaries_by_ax = dict[int, tuple[BoundaryId, BoundaryId]]()
         self._mark_boundaries()
+        self._space = Space(self._grid.shape)
+        self._bc_tool = FDBCTool(self._space, self._boundaries)
+
+    @property
+    def space(self) -> Space:
+        return self._space
 
     @property
     def grid(self) -> StructuredGridND:
@@ -24,6 +33,10 @@ class FDDomain(Domain):
 
     def ax_boundaries(self, ax: int) -> tuple[BoundaryId, BoundaryId]:
         return self._boundaries_by_ax[ax]
+
+    @property
+    def bounary_tool(self) -> FDBCTool:
+        return self._bc_tool
 
     def _mark_boundaries(self):
         next_id = 0

@@ -1,63 +1,59 @@
-from typing import Callable, Union
+from typing import Callable
 import numpy as np
 
-from algebra.domain import bcs
-from algebra.systems.systems import LinearSystem
+from algebra.space import Space
+from algebra.domain import BoundaryId
+from algebra.domain.bcs import BoundaryTool, BoundaryCondition, BCType, BCValue
 from discrete.fd.domain import FDBoundary
-from discrete.fd.domain.fd_domain import FDDomain
-from discrete.fd.operators import FDOperator
-from discrete.fd.tools.stencil import AxStencil
+from discrete.fd.operator import FDStencilOperator
+from discrete.fd.operator.stencil import AxStencil
+
 from . import dirichlet, neumann
 
-BCValueLike = Union[float, np.ndarray]
 BcApplyCallable = Callable[[AxStencil, FDBoundary, float, np.ndarray], AxStencil]
 BcPostSolveCallable = Callable[[FDBoundary, float, np.ndarray], None]
 
 
-def _component_value(value: BCValueLike, comp: int) -> BCValueLike:
+def _component_value(value: BCValue, comp: int) -> BCValue:
     """Slice the leading axis of a per-component BC value, or broadcast scalars."""
     if isinstance(value, np.ndarray) and value.ndim > 0:
         return value[comp]
     return value
 
 
-class FDBCTool(bcs.BoundaryTool[FDOperator]):
-    APPLY: dict[bcs.BCType, BcApplyCallable] = {
-        bcs.BCType.DIRICHLET: dirichlet.apply,
-        bcs.BCType.NEUMANN: neumann.apply,
+class FDBCTool(BoundaryTool[FDStencilOperator]):
+    APPLY: dict[BCType, BcApplyCallable] = {
+        BCType.DIRICHLET: dirichlet.apply,
+        BCType.NEUMANN: neumann.apply,
     }
-    POST_SOLVE: dict[bcs.BCType, BcPostSolveCallable] = {
-        bcs.BCType.DIRICHLET: dirichlet.post_solve,
-        bcs.BCType.NEUMANN: neumann.post_solve,
+    POST_SOLVE: dict[BCType, BcPostSolveCallable] = {
+        BCType.DIRICHLET: dirichlet.post_solve,
+        BCType.NEUMANN: neumann.post_solve,
     }
 
-    def __init__(self, domain: FDDomain):
-        self._domain = domain
+    def __init__(self, space: Space, boundaries: dict[BoundaryId, FDBoundary]):
+        self._space = space
+        self._boundaries = boundaries
 
-    def apply(
-        self,
-        bcs: list[bcs.BoundaryCondition],
-        system: LinearSystem[FDOperator],
-    ) -> LinearSystem[FDOperator]:
-        system = system.copy()
-        lhs = system.lhs
-
+    def apply_bcs(
+        self, bcs: list[BoundaryCondition], lhs: FDStencilOperator, rhs: np.ndarray
+    ) -> FDStencilOperator:
         for bc in bcs:
-            boundary = bc.boundary
+            boundary = self._boundaries[bc.boundary]
             stencil = lhs.stencils[boundary.ax]
             modified_stencil = self._apply_rankwise(
                 FDBCTool.APPLY[bc.bc_type],
                 stencil,
                 boundary,
                 bc.value,
-                system.rhs,
+                rhs,
             )
             lhs = lhs.modify(boundary.ax, modified_stencil)
-        return LinearSystem(lhs, system.rhs)
+        return lhs
 
-    def post_solve(self, bcs: list[bcs.BoundaryCondition], field: np.ndarray) -> None:
+    def normalize(self, bcs: list[BoundaryCondition], field: np.ndarray) -> None:
         for bc in bcs:
-            boundary = bc.boundary
+            boundary = self._boundaries[bc.boundary]
             self._post_solve_rankwise(
                 FDBCTool.POST_SOLVE[bc.bc_type],
                 boundary,
@@ -70,10 +66,10 @@ class FDBCTool(bcs.BoundaryTool[FDOperator]):
         fn: BcApplyCallable,
         stencil: AxStencil,
         boundary: FDBoundary,
-        value: BCValueLike,
+        value: BCValue,
         rhs: np.ndarray,
     ) -> AxStencil:
-        if rhs.ndim == self._domain.grid.ndim:
+        if rhs.ndim == self.space.ndim:
             return fn(stencil, boundary, float(value), rhs)
         modified = stencil
         for comp in range(rhs.shape[0]):
@@ -86,10 +82,10 @@ class FDBCTool(bcs.BoundaryTool[FDOperator]):
         self,
         fn: BcPostSolveCallable,
         boundary: FDBoundary,
-        value: BCValueLike,
+        value: BCValue,
         field: np.ndarray,
     ) -> None:
-        if field.ndim == self._domain.grid.ndim:
+        if field.ndim == self._space.ndim:
             fn(boundary, float(value), field)
             return
         for comp in range(field.shape[0]):

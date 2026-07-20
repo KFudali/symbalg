@@ -1,6 +1,6 @@
 import numpy as np
 
-from discrete.fd.tools.stencil import AxStencil, Stencil
+from discrete.fd.operator.stencil import AxStencil, Stencil
 from discrete.fd.domain import FDBoundary
 from tools import region
 

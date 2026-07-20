@@ -3,7 +3,9 @@ from typing import Union
 import enum
 import numpy as np
 
-from .boundary import BoundaryId
+from algebra.domain.boundary import BoundaryId
+
+BCValue = Union[float, np.ndarray]
 
 
 class BCType(enum.IntEnum):
@@ -11,11 +13,8 @@ class BCType(enum.IntEnum):
     NEUMANN = enum.auto()
 
 
-BCValue = Union[float, np.ndarray]
-
-
 @dataclass(frozen=True)
 class BoundaryCondition:
-    bc_type: BCType
     value: BCValue
+    bc_type: BCType
     boundary: BoundaryId

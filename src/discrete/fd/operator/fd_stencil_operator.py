@@ -5,15 +5,12 @@ from typing import Self
 import numpy as np
 
 from tools.symbolic.optype import BinaryOpType, BINARY_OPS
-
 from algebra.operator import Operator
 from algebra.space import Space, ShapeTransform
-
-from discrete.fd.tools.stencil import AxStencil
-from discrete.fd.operators.core.to_array import to_array
+from .stencil import AxStencil
 
 
-class FDOperator(Operator):
+class FDStencilOperator(Operator):
     def __init__(
         self,
         space: Space,
@@ -30,6 +27,7 @@ class FDOperator(Operator):
 
     def copy(self) -> Self:
         stencils = tuple(stencil.copy() for stencil in self.stencils)
+
         return self.__class__(self.space, self.shape_transform, stencils)
 
     def modify(self, ax: int, new_stencil: AxStencil) -> Self:
@@ -54,11 +52,4 @@ class FDOperator(Operator):
 
     def _scale(self, other: float | int) -> Self:
         stencils = tuple(stencil * other for stencil in self.stencils)
-        return self.__class__(self.space, self.shape_transform, stencils)
-
-    def as_array(self):
-        return to_array(self.stencils, self.space, self.shape_transform)
-
-    def __neg__(self) -> Self:
-        stencils = tuple(-stencil for stencil in self.stencils)
         return self.__class__(self.space, self.shape_transform, stencils)

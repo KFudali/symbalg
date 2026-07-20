@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from algebra.space.domain import Boundary
+from algebra.domain.boundary import Boundary
 
 
 @dataclass(frozen=True)

@@ -24,26 +24,22 @@ class Operator(ABC):
         return self._space
 
     @abstractmethod
-    def copy(self) -> Self:
-        pass
+    def copy(self) -> Self: ...
 
     @abstractmethod
-    def _combine(self, other: Self, optype: BinaryOpType) -> Self:
-        pass
+    def _combine(self, other: Self, optype: BinaryOpType) -> Self: ...
 
     @abstractmethod
-    def _scale(self, other: float) -> Self:
-        pass
+    def _scale(self, other: float) -> Self: ...
 
     @abstractmethod
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray): ...
+
     def __neg__(self) -> Self:
-        return NotImplemented
+        return self._scale(-1.0)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self._apply_callable(self.space, self._apply, inp, out)
-
-    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
-        raise NotImplementedError
 
     def apply_to(self, inp: np.ndarray) -> np.ndarray:
         out_shape = self._shape_transform.transform(self._space, inp.shape)

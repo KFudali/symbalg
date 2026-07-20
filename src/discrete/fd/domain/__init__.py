@@ -1,3 +1,3 @@
 from .fd_boundary import FDBoundary
 from .fd_domain import FDDomain
-from . import bcs
+from .bcs import FDBCTool

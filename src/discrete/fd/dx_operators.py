@@ -1,29 +1,39 @@
 import numpy as np
-from tools.geometry import StructuredGridND
-from discrete.core.dx_operators import DxOperators
-from algebra.operator import Operator
-from algebra.space import Space
 
-from .operators import dx
+from algebra.domain import SymbolicDomainOperator
+from discrete.core.dx_operators import DxOperators
+
+from .domain import FDDomain
+from .operator import dx, FDStencilOperator
+from .fd_domain_operator import FDDomainOperator
 
 
 class FDDxOperators(DxOperators):
-    def __init__(self, space: Space, grid: StructuredGridND):
+    def __init__(self, domain: FDDomain):
         super().__init__()
-        self._space = space
-        self._grid = grid
+        self._domain = domain
 
-    def _eye(self) -> Operator:
-        return dx.eye(self._space)
+    def _make_symbolic(self, operator: FDStencilOperator) -> SymbolicDomainOperator:
+        domain_operator = FDDomainOperator(self._domain, operator)
+        return SymbolicDomainOperator.wrap(domain_operator)
 
-    def _laplace(self, order: int) -> Operator:
-        return dx.laplace(self._space, order, self._grid.spacing[0])
+    def eye(self) -> SymbolicDomainOperator:
+        return self._make_symbolic(dx.eye(self._domain.space))
 
-    def _grad(self, order: int) -> Operator:
-        return dx.grad(self._space, order, self._grid.spacing[0])
+    def laplace(self, order: int) -> SymbolicDomainOperator:
+        return self._make_symbolic(
+            dx.laplace(self._domain.space, order, self._domain.grid.spacing[0])
+        )
 
-    def _div(self, order: int) -> Operator:
-        return dx.div(self._space, order, self._grid.spacing[0])
+    def grad(self, order: int) -> SymbolicDomainOperator:
+        return self._make_symbolic(
+            dx.grad(self._domain.space, order, self._domain.grid.spacing[0])
+        )
 
-    def _array(self, weights: np.ndarray) -> Operator:
+    def div(self, order: int) -> SymbolicDomainOperator:
+        return self._make_symbolic(
+            dx.div(self._domain.space, order, self._domain.grid.spacing[0])
+        )
+
+    def array(self, weights: np.ndarray) -> SymbolicDomainOperator:
         pass

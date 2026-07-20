@@ -3,7 +3,7 @@ from typing import TypeVar
 
 from algebra.space import Space
 from .boundary import Boundary, BoundaryId
-from .boundary_tool import BoundaryTool
+from .bcs import BoundaryTool
 
 
 class Domain(ABC):
@@ -17,13 +17,9 @@ class Domain(ABC):
     def boundaries(self) -> dict[BoundaryId, Boundary]:
         pass
 
-    @abstractmethod
-    def boundary(self, boundary_id: BoundaryId) -> Boundary:
-        pass
-
     @property
     @abstractmethod
-    def boundary_tool(self) -> BoundaryTool:
+    def bounary_tool(self) -> BoundaryTool:
         pass
 
 

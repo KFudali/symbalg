@@ -12,9 +12,9 @@ class FdDiscretization(Discretization[FDDomain]):
     def __init__(self, grid: StructuredGridND):
         domain = FDDomain(grid)
         space = Space(grid.shape)
-        super().__init__(space, domain)
-        self._dx = FDDxOperators(space, grid)
-        self._dt = FDDtOperators(space, self._time)
+        super().__init__(domain)
+        self._dx = FDDxOperators(domain)
+        self._dt = FDDtOperators(domain, self._time)
         self._bcs = bcs.FDBCTool(domain)
 
     @property
