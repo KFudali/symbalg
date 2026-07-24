@@ -35,7 +35,7 @@ class FDDomain(Domain):
         return self._boundaries_by_ax[ax]
 
     @property
-    def bounary_tool(self) -> FDBCTool:
+    def bc_tool(self) -> FDBCTool:
         return self._bc_tool
 
     def _mark_boundaries(self):

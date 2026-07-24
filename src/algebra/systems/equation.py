@@ -32,8 +32,7 @@ class LinearEquation:
         return system
 
     def _normalize(self, result: np.ndarray):
-        for bc in self._bcs:
-            self._system.lhs.domain.normalize_bc(bc, result)
+        self._system.lhs.domain.bc_tool.normalize(self._bcs, result)
 
     def solve(self, solver: LinearSolver) -> Expression:
         def _solve() -> np.ndarray:

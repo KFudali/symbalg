@@ -44,10 +44,6 @@ Abstract algebra over `np.ndarray`. Users write numerical methods against symbol
   - `fieldspace/systems.py` — `SystemFactory.les(...)` returns `LinearEquation`
 - `tools/` — Dependency-free utilities: generic symbolic AST (`Symbolic`, `ValueNode`, etc.), `ValueBuffer`/`DequeValueBuffer`, `StructuredGridND`, region helpers, `AdvanceableSeries`, `LazyAction`.
 
-## Known broken imports
-
-The `fieldspace/` package imports `from algebra.symbolic import AffineOperator` and `from algebra.symbolic import SymbolicExpression`, but `algebra.symbolic` does not exist as a module. The correct paths (`algebra.operator.affine_operator.AffineOperator`, `algebra.expression.symbolic.SymbolicExpression`) work. All 325 tests pass because the test suite never imports `fieldspace/`.
-
 ## Key entry points
 
 | Class / symbol            | Location                                              |

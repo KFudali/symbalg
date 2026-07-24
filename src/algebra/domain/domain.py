@@ -19,7 +19,7 @@ class Domain(ABC):
 
     @property
     @abstractmethod
-    def bounary_tool(self) -> BoundaryTool:
+    def bc_tool(self) -> BoundaryTool:
         pass
 
 

@@ -5,7 +5,7 @@ import numpy as np
 from algebra.domain import Domain, BoundaryId, bcs
 from algebra.expression import Expression
 from algebra.operator import Operator, AffineOperator
-from algebra.systems import LinearEquation, SystemConstraint
+from algebra.systems import LinearEquation, LinearSystem, SystemConstraint
 
 from discrete.core import Discretization
 
@@ -60,4 +60,5 @@ class SystemFactory:
         if isinstance(lhs, AffineOperator):
             rhs -= lhs.expression
             lhs = lhs.operator
-        return LinearEquation(self._bc_tool, lhs, rhs, bcons, constraints=constraints)
+        system = LinearSystem(lhs, rhs.eval())
+        return LinearEquation(system, bcons, constraints=constraints)

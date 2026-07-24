@@ -1,7 +1,7 @@
 import numpy as np
 from discrete.core import Discretization
 from algebra.expression import CallableExpression
-from algebra.symbolic import SymbolicExpression
+from algebra.expression.symbolic import SymbolicExpression
 from algebra.space import FieldShape
 
 
