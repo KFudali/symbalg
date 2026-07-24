@@ -60,5 +60,4 @@ class SystemFactory:
         if isinstance(lhs, AffineOperator):
             rhs -= lhs.expression
             lhs = lhs.operator
-        system = LinearSystem(lhs, rhs.eval())
-        return LinearEquation(system, bcs, constraints=constraints)
+        return LinearEquation(self._bc_tool, lhs, rhs, bcs, constraints=constraints)
