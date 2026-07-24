@@ -60,12 +60,12 @@ u_y_grad.set_value(s.dx.grad().of(u_y))
 # x term1
 x_term_a =  u_x.value() * u_x_grad.component(0).value() + u_y.value() * u_x_grad.component(1).value()
 # x term2
-x_term_b = 0.5 * u_x * (u_x_grad.component(0)  + u_y_grad.component(1))
+x_term_b = 0.5 * u_x.value() * (u_x_grad.component(0).value()  + u_y_grad.component(1).value())
 
 # y term1
 y_term_a = u_y.value() * u_y_grad.component(0).value() + u_y.value() * u_y_grad.component(1).value()
 # y term2
-y_term_b = 0.5 * u_y * (u_x_grad.component(0)  + u_y_grad.component(1))
+y_term_b = 0.5 * u_y.value() * (u_x_grad.component(0).value()  + u_y_grad.component(1).value())
 
 #stack fields here
 

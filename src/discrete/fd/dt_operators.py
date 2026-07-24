@@ -22,7 +22,8 @@ class FDDtOperators(DtOperators):
             FieldShape.scalar(self._domain.space), lambda: np.array(self._time.dt())
         )
         stencil_affine = explicit.bfd(field, dt, order)
-        domain_operator = FDDomainOperator(self._domain, stencil_affine.operator)
+        resolved = stencil_affine.operator.resolve()
+        domain_operator = FDDomainOperator(self._domain, resolved)
         return AffineDomainOperator(domain_operator, stencil_affine.expression)
 
     def implicit(self, field: Field, order: int = 1) -> AffineDomainOperator:

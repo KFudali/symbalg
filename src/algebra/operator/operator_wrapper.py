@@ -26,6 +26,9 @@ class OperatorWrapper(Operator):
     def _scale(self, other: float) -> Self:
         return self.__class__(self._operator._scale(other))
 
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        self._operator._apply(ax, inp, out)
+
     def __neg__(self) -> Self:
         return self.__class__(self._operator.__neg__())
 

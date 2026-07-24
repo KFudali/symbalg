@@ -53,7 +53,7 @@ class SystemFactory:
         self,
         lhs: Operator,
         rhs: Expression,
-        bcons: list[bcs.BoundaryCondition],
+        bcs: list[bcs.BoundaryCondition],
         *,
         constraints: list[SystemConstraint] = []
     ) -> LinearEquation:
@@ -61,4 +61,4 @@ class SystemFactory:
             rhs -= lhs.expression
             lhs = lhs.operator
         system = LinearSystem(lhs, rhs.eval())
-        return LinearEquation(system, bcons, constraints=constraints)
+        return LinearEquation(system, bcs, constraints=constraints)

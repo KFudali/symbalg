@@ -21,7 +21,9 @@ class FDDomainOperator(DomainOperator[FDDomain]):
         return self.__class__(self._domain, self._stencil.copy())
 
     def _combine(self, other: Operator, optype: BinaryOpType) -> Self:
-        return self.__class__(self._domain, self._stencil._combine(other, optype))
+        if isinstance(other, FDDomainOperator):
+            return self.__class__(self._domain, self._stencil._combine(other._stencil, optype))
+        return NotImplemented
 
     def _scale(self, other: float) -> Self:
         return self.__class__(self._domain, self._stencil._scale(other))

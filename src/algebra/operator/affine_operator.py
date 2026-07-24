@@ -17,7 +17,7 @@ class AffineOperator(Operator, Generic[TOperator]):
     ):
         self._operator = self._wrap_operator(operator)
         self._expression = self._wrap_expression(expression)
-        super().__init__(operator.space, operator.shape_transform)
+        Operator.__init__(self, operator.space, operator.shape_transform)
 
     @classmethod
     def _wrap_operator(cls, operator: Operator) -> TOperator:
