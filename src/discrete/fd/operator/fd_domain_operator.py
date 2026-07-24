@@ -3,8 +3,10 @@ import numpy as np
 
 
 from tools.symbolic.optype import BinaryOpType
-from algebra.operator import Operator
-from algebra.domain import DomainOperator
+from algebra.operator import Operator, ArrayOperator
+from algebra.domain.bcs import BoundaryCondition
+from algebra.domain.operator import DomainOperator
+
 
 from discrete.fd.domain import FDDomain
 from discrete.fd.stencil import StencilOperator
@@ -24,8 +26,11 @@ class FDDomainOperator(DomainOperator[FDDomain]):
     def _scale(self, other: float) -> Self:
         return self.__class__(self._domain, self._stencil._scale(other))
 
+    def apply(self, inp: np.ndarray, out: np.ndarray):
+        self._stencil.apply(inp, out)
+
     def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
-        self._stencil.apply(ax, inp, out)
+        pass
 
     def as_array(self) -> ArrayOperator:
         pass

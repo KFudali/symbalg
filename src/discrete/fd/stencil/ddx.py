@@ -1,4 +1,5 @@
-from .stencil import AxStencil, Stencil
+from .stencil import Stencil
+from .ax_stencil import AxStencil
 
 
 def central(order: int, h: float) -> Stencil:
