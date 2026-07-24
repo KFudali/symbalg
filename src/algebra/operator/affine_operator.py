@@ -1,30 +1,37 @@
 from __future__ import annotations
-from typing import Callable, Any, Self
+from abc import abstractmethod
+from typing import Callable, Any, Self, Generic
 import numpy as np
-import scipy.sparse as sp
 
 from tools.symbolic import BinaryOpType, BINARY_OPS
-from algebra.operator import Operator
+from algebra.operator import Operator, TOperator
 from algebra.expression import Expression
-from .symbolic import SymbolicOperator, SymbolicExpression
+from algebra.expression.symbolic import SymbolicExpression
 
 
-class AffineOperator(Operator):
+class AffineOperator(Operator, Generic[TOperator]):
     def __init__(
         self,
         operator: Operator,
         expression: Expression,
     ):
-        if not isinstance(operator, SymbolicOperator):
-            operator = SymbolicOperator.wrap(operator)
-        if not isinstance(expression, SymbolicExpression):
-            expression = SymbolicExpression.wrap(expression)
-        self._operator = operator
-        self._expression = expression
+        self._operator = self._wrap_operator(operator)
+        self._expression = self._wrap_expression(expression)
         super().__init__(operator.space, operator.shape_transform)
 
+    @classmethod
+    @abstractmethod
+    def _wrap_operator(cls, operator: Operator) -> TOperator:
+        pass
+
+    @classmethod
+    def _wrap_expression(cls, expression) -> SymbolicExpression:
+        if not isinstance(expression, SymbolicExpression):
+            return SymbolicExpression.wrap(expression)
+        return expression
+
     @property
-    def operator(self) -> SymbolicOperator:
+    def operator(self) -> TOperator:
         return self._operator
 
     @property

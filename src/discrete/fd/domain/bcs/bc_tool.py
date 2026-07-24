@@ -5,8 +5,7 @@ from algebra.space import Space
 from algebra.domain import BoundaryId
 from algebra.domain.bcs import BoundaryTool, BoundaryCondition, BCType, BCValue
 from discrete.fd.domain import FDBoundary
-from discrete.fd.operator import FDStencilOperator
-from discrete.fd.operator.stencil import AxStencil
+from discrete.fd.stencil import AxStencil, StencilOperator
 
 from . import dirichlet, neumann
 
@@ -21,7 +20,7 @@ def _component_value(value: BCValue, comp: int) -> BCValue:
     return value
 
 
-class FDBCTool(BoundaryTool[FDStencilOperator]):
+class FDBCTool(BoundaryTool[StencilOperator]):
     APPLY: dict[BCType, BcApplyCallable] = {
         BCType.DIRICHLET: dirichlet.apply,
         BCType.NEUMANN: neumann.apply,
@@ -36,8 +35,8 @@ class FDBCTool(BoundaryTool[FDStencilOperator]):
         self._boundaries = boundaries
 
     def apply_bcs(
-        self, bcs: list[BoundaryCondition], lhs: FDStencilOperator, rhs: np.ndarray
-    ) -> FDStencilOperator:
+        self, bcs: list[BoundaryCondition], lhs: StencilOperator, rhs: np.ndarray
+    ) -> StencilOperator:
         for bc in bcs:
             boundary = self._boundaries[bc.boundary]
             stencil = lhs.stencils[boundary.ax]

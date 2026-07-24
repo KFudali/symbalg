@@ -32,3 +32,9 @@ class SymbolicDomainOperator(
 
     def copy(self) -> Self:
         return self.__class__(self.node, self.shape_transform, self._domain)
+
+    def as_array(self) -> ArrayOperator:
+        return self.resolve().as_array()
+
+    def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
+        return self.resolve().apply_bcs(bcs, rhs)

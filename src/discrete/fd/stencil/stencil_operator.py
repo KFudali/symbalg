@@ -7,10 +7,10 @@ import numpy as np
 from tools.symbolic.optype import BinaryOpType, BINARY_OPS
 from algebra.operator import Operator
 from algebra.space import Space, ShapeTransform
-from .stencil import AxStencil
+from .ax_stencil import AxStencil
 
 
-class FDStencilOperator(Operator):
+class StencilOperator(Operator):
     def __init__(
         self,
         space: Space,

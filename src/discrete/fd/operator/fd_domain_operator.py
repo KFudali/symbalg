@@ -6,12 +6,12 @@ from tools.symbolic.optype import BinaryOpType
 from algebra.operator import Operator
 from algebra.domain import DomainOperator
 
-from .domain import FDDomain
-from .operator import FDStencilOperator
+from discrete.fd.domain import FDDomain
+from discrete.fd.stencil import StencilOperator
 
 
 class FDDomainOperator(DomainOperator[FDDomain]):
-    def __init__(self, domain: FDDomain, stencil: FDStencilOperator):
+    def __init__(self, domain: FDDomain, stencil: StencilOperator):
         super().__init__(domain, stencil.shape_transform)
         self._stencil = stencil
 

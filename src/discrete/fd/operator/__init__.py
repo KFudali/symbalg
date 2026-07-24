@@ -1,4 +1,3 @@
-from . import stencil
 from . import dx
 
-from .fd_stencil_operator import FDStencilOperator
+from .fd_domain_operator import FDDomainOperator

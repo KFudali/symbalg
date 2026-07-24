@@ -1,20 +1,16 @@
 from __future__ import annotations
-from typing import Any, Self, TYPE_CHECKING
+from typing import Any, Self, TYPE_CHECKING, TypeVar
 import numpy as np
 
 from algebra.space import Space, ShapeTransform
 from algebra.exceptions import ShapeMismatchError
 
 from algebra.expression import Expression
-from algebra.expression.symbolic import SymbolicExpression
 from algebra.expression.symbolic.nodes import ExpressionNode
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 
-from .core import Operator, TOperator, ArrayOperator
-
-if TYPE_CHECKING:
-    from algebra.field import Field
+from .core import Operator, TOperator
 
 
 class SymbolicOperator(Symbolic[TOperator], Operator):
@@ -80,3 +76,6 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
             if is_scale:
                 return True
         return False
+
+
+TSymbolicOperator = TypeVar("TSymbolicOperator", bound=SymbolicOperator)

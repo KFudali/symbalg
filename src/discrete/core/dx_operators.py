@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import numpy as np
 from algebra.domain import SymbolicDomainOperator
+from algebra.space import ShapeTransform
 
 
 class DxOperators(ABC):
@@ -17,4 +18,6 @@ class DxOperators(ABC):
     def div(self, order: int = 2) -> SymbolicDomainOperator: ...
 
     @abstractmethod
-    def array(self, weights: np.ndarray) -> SymbolicDomainOperator: ...
+    def array(
+        self, weights: np.ndarray, shape_transform: ShapeTransform
+    ) -> SymbolicDomainOperator: ...

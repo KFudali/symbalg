@@ -1,15 +1,14 @@
 import numpy as np
 
-
+from algebra.domain.operator import AffineDomainOperator
 from algebra.expression import CallableExpression
 from algebra.space import FieldShape
 from algebra.field import Field
-from algebra.symbolic import AffineOperator
 
-from .domain import FDDomain
 from discrete.core import DtOperators, DiscreteTimeView
 
 from .operator.dt import explicit
+from .domain import FDDomain
 
 
 class FDDtOperators(DtOperators):
@@ -17,11 +16,11 @@ class FDDtOperators(DtOperators):
         self._domain = domain
         self._time = time
 
-    def explicit(self, field: Field, order: int = 1) -> AffineOperator:
+    def explicit(self, field: Field, order: int = 1) -> AffineDomainOperator:
         dt = CallableExpression(
             FieldShape.scalar(self._domain.space), lambda: np.array(self._time.dt())
         )
         return explicit.bfd(field, dt, order)
 
-    def implicit(self, field: Field, order: int = 1) -> AffineOperator:
+    def implicit(self, field: Field, order: int = 1) -> AffineDomainOperator:
         pass
