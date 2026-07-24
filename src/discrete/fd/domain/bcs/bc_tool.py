@@ -34,6 +34,10 @@ class FDBCTool(BoundaryTool[StencilOperator]):
         self._space = space
         self._boundaries = boundaries
 
+    @property
+    def space(self) -> Space:
+        return self._space
+
     def apply_bcs(
         self, bcs: list[BoundaryCondition], lhs: StencilOperator, rhs: np.ndarray
     ) -> StencilOperator:

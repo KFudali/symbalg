@@ -1,5 +1,5 @@
 import numpy as np
-from discrete.fd.operators.dt import explicit
+from discrete.fd.operator.dt import explicit
 from algebra.expression import CallableExpression
 from algebra.space import FieldShape, Space
 from algebra.field import Field
@@ -21,7 +21,7 @@ def test_first_order_with_const_field():
     dt = explicit.bfd(field, time_step, order=1)
     for _ in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float))
-        vals = dt.of(field).eval()
+        vals = dt.apply_to(field.value().eval())
         assert np.allclose(vals, 0.0)
 
 
@@ -34,7 +34,7 @@ def test_second_order_with_const_field():
     dt = explicit.bfd(field, time_step, order=2)
     for _ in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float))
-        vals = dt.of(field).eval()
+        vals = dt.apply_to(field.value().eval())
         assert np.allclose(vals, 0.0)
 
 
@@ -45,7 +45,7 @@ def test_first_order_with_linear_field():
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
         if t > 0:
-            vals = dt.of(field).eval()
+            vals = dt.apply_to(field.value().eval())
             assert np.allclose(vals, 1.0 / 0.01)
 
 
@@ -56,7 +56,7 @@ def test_second_order_with_linear_field():
     for t in range(10):
         values.advance(np.ones(shape=field.shape, dtype=float) * t)
         if t > 1:
-            vals = dt.of(field).eval()
+            vals = dt.apply_to(field.value().eval())
             assert np.allclose(vals, 1.0 / 0.01)
 
 
@@ -69,5 +69,5 @@ def test_second_order_with_square_field():
         time = t * dt_value
         values.advance(np.ones(shape=field.shape, dtype=float) * time**2)
         if t > 1:
-            vals = dt.of(field).eval()
+            vals = dt.apply_to(field.value().eval())
             assert np.allclose(vals, 2.0 * time)

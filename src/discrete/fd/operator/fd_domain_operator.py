@@ -36,4 +36,4 @@ class FDDomainOperator(DomainOperator[FDDomain]):
         pass
 
     def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
-        pass
+        return self._domain.bounary_tool.apply_bcs(bcs, rhs)
