@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 
-from algebra.symbolic import AffineOperator
+from algebra.operator import AffineOperator
 from algebra.expression import CallableExpression
 from algebra.space import FieldShape, Space
 from conftest import MockOperator
@@ -60,34 +60,34 @@ def test_affine_operator_double_apply(double_add_one):
 
 def test_affine_operator_with_affine(double_add_one, triple_sub_three):
     op_add = double_add_one + triple_sub_three
-    assert op_add.operator.resolve().name == "[A + B]"
+    assert op_add.operator.name == "[A + B]"
     assert np.allclose(op_add.expression.resolve(), -2.0)
 
     op_sub = double_add_one - triple_sub_three
-    assert op_sub.operator.resolve().name == "[A - B]"
+    assert op_sub.operator.name == "[A - B]"
     assert np.allclose(op_sub.expression.resolve(), 4.0)
 
     op_mul = double_add_one * triple_sub_three
-    assert op_mul.operator.resolve().name == "[A * B]"
+    assert op_mul.operator.name == "[A * B]"
     assert np.allclose(op_mul.expression.resolve(), -3.0)
 
     op_div = double_add_one / triple_sub_three
-    assert op_div.operator.resolve().name == "[A / B]"
+    assert op_div.operator.name == "[A / B]"
     assert np.allclose(op_div.expression.resolve(), (1.0 / (-3.0)))
 
     op_combined = double_add_one + triple_sub_three
     op_combined *= triple_sub_three
-    assert op_combined.operator.resolve().name == "[[A + B] * B]"
+    assert op_combined.operator.name == "[[A + B] * B]"
     assert np.allclose(op_combined.expression.resolve(), (-2.0 * (-3.0)))
 
 
 def test_affine_operator_with_floats(double_add_one):
     op_mul = double_add_one * 3.0
-    assert op_mul.operator.resolve().name == "[A * 3.0]"
+    assert op_mul.operator.name == "[A * 3.0]"
     assert np.allclose(op_mul.expression.resolve(), 3.0)
 
     op_div = double_add_one / 2.0
-    assert op_div.operator.resolve().name == "[A * 0.5]"
+    assert op_div.operator.name == "[A * 0.5]"
     assert np.allclose(op_div.expression.resolve(), 0.5)
 
 
@@ -95,17 +95,17 @@ def test_affine_operator_with_operator(double_add_one):
     op = MockOperator("B")
 
     op_add = double_add_one + op
-    assert op_add.operator.resolve().name == "[A + B]"
+    assert op_add.operator.name == "[A + B]"
     assert np.allclose(op_add.expression.resolve(), 1.0)
 
     op_sub = double_add_one - op
-    assert op_sub.operator.resolve().name == "[A - B]"
+    assert op_sub.operator.name == "[A - B]"
     assert np.allclose(op_sub.expression.resolve(), 1.0)
 
     op_mul = double_add_one * op
-    assert op_mul.operator.resolve().name == "[A * B]"
+    assert op_mul.operator.name == "[A * B]"
     assert np.allclose(op_mul.expression.resolve(), 1.0)
 
     op_div = double_add_one / op
-    assert op_div.operator.resolve().name == "[A / B]"
+    assert op_div.operator.name == "[A / B]"
     assert np.allclose(op_div.expression.resolve(), 1.0)

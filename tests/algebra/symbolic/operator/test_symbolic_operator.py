@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from algebra.expression import CallableExpression
 from algebra.exceptions import ShapeMismatchError
+from algebra.operator.symbolic import SymbolicOperator
 from algebra.space import FieldShape, Space, ShapeTransform
-from algebra.symbolic import SymbolicOperator
 from conftest import MockOperator
 
 

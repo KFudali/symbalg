@@ -3,7 +3,8 @@ import numpy as np
 import pytest
 
 from algebra.expression import ConstExpression
-from algebra.symbolic import SymbolicExpression
+from algebra.expression.symbolic import SymbolicExpression
+
 from algebra.space import Space
 
 

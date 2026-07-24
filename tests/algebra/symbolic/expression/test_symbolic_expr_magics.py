@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from algebra.expression import ConstExpression, Expression
-from algebra.symbolic import SymbolicExpression
+from algebra.expression.symbolic import SymbolicExpression
 from algebra.exceptions import ShapeMismatchError
 from algebra.space import Space
 

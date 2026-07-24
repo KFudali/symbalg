@@ -26,6 +26,9 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     def apply(self, inp: np.ndarray, out: np.ndarray):
         self.resolve().apply(inp, out)
 
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        pass
+
     def _scale(self, other: float) -> Self:
         raise ValueError("SymbolicOperator should not use _scale method")
 

@@ -3,8 +3,8 @@ import numpy as np
 
 from tools.symbolic import BINARY_OPS, BinaryOpType
 from algebra.expression import Expression, symbolic
-from algebra.operator import Operator
 from algebra.space import ShapeTransform, Space
+from .operator import Operator
 
 
 class ArrayOperator(Operator):

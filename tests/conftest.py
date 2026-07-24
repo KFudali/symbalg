@@ -24,6 +24,9 @@ class MockOperator(Operator):
         if self._apply_callable:
             self._apply_callable(inp, out)
 
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        pass
+
     def _combine(self, other: Self, optype: BinaryOpType) -> Self:
         if optype == BinaryOpType.ADD:
             return self.add(other)
@@ -39,9 +42,6 @@ class MockOperator(Operator):
 
     def as_array(self) -> sp.spmatrix:
         return sp.csr_matrix(np.zeros(self.space.shape))
-
-    def __neg__(self) -> Self:
-        return self.__class__(f"[-{self.name}]")
 
     def add(self, other: Self) -> Self:
         return self.__class__(f"[{self.name} + {other.name}]")

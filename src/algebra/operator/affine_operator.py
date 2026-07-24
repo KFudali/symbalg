@@ -4,9 +4,9 @@ from typing import Callable, Any, Self, Generic
 import numpy as np
 
 from tools.symbolic import BinaryOpType, BINARY_OPS
-from algebra.operator import Operator, TOperator
 from algebra.expression import Expression
 from algebra.expression.symbolic import SymbolicExpression
+from .core import Operator, TOperator
 
 
 class AffineOperator(Operator, Generic[TOperator]):
@@ -20,9 +20,8 @@ class AffineOperator(Operator, Generic[TOperator]):
         super().__init__(operator.space, operator.shape_transform)
 
     @classmethod
-    @abstractmethod
     def _wrap_operator(cls, operator: Operator) -> TOperator:
-        pass
+        return operator
 
     @classmethod
     def _wrap_expression(cls, expression) -> SymbolicExpression:
@@ -45,6 +44,9 @@ class AffineOperator(Operator, Generic[TOperator]):
         assert out.shape == self.expression.shape
         self.operator.apply(inp, out)
         out += self.expression.eval()
+
+    def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
+        pass
 
     def _scale(self, other: float) -> Self:
         return self.__class__(
