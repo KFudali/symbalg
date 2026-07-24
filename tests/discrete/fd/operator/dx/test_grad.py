@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from discrete.fd.operators import dx
+from discrete.fd.operator import dx
 from algebra.space import Space
 
 

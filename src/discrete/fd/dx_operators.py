@@ -1,10 +1,11 @@
 import numpy as np
 
 from algebra.domain import SymbolicDomainOperator
-from discrete.core.dx_operators import DxOperators
+from discrete.core import DxOperators
 
 from .domain import FDDomain
-from .operator import dx, stencil, FDDomainOperator
+from .operator import dx, FDDomainOperator
+from . import stencil
 
 
 class FDDxOperators(DxOperators):

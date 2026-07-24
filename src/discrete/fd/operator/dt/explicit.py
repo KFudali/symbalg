@@ -1,7 +1,9 @@
 from algebra.expression import Expression
 from algebra.field import Field
 
-from algebra.symbolic import SymbolicExpression, SymbolicOperator, AffineOperator
+from algebra.operator import AffineOperator
+from algebra.operator.symbolic import SymbolicOperator
+from algebra.expression.symbolic import SymbolicExpression
 from .. import dx
 
 
