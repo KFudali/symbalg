@@ -7,6 +7,7 @@ from algebra.field import Field
 
 from discrete.core import DtOperators, DiscreteTimeView
 
+from .operator import FDDomainOperator
 from .operator.dt import explicit
 from .domain import FDDomain
 
@@ -20,7 +21,9 @@ class FDDtOperators(DtOperators):
         dt = CallableExpression(
             FieldShape.scalar(self._domain.space), lambda: np.array(self._time.dt())
         )
-        return explicit.bfd(field, dt, order)
+        stencil_affine = explicit.bfd(field, dt, order)
+        domain_operator = FDDomainOperator(self._domain, stencil_affine.operator)
+        return AffineDomainOperator(domain_operator, stencil_affine.expression)
 
     def implicit(self, field: Field, order: int = 1) -> AffineDomainOperator:
         pass
