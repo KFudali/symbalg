@@ -2,13 +2,12 @@ from typing import Sequence, Union
 
 import numpy as np
 
-from algebra.domain import Domain, bcs
-from discrete.core import Discretization
+from algebra.domain import Domain, BoundaryId, bcs
 from algebra.expression import Expression
-
-from algebra.operator import Operator
-from algebra.symbolic import AffineOperator
+from algebra.operator import Operator, AffineOperator
 from algebra.systems import LinearEquation, SystemConstraint
+
+from discrete.core import Discretization
 
 BCValueInput = Union[float, Sequence[float], np.ndarray]
 
@@ -27,25 +26,23 @@ class BCFactory:
         self._domain = domain
 
     def dirichlet(
-        self, boundary_id: bcs.BoundaryId, value: BCValueInput
+        self, boundary_id: BoundaryId, value: BCValueInput
     ) -> bcs.BoundaryCondition:
         return bcs.BoundaryCondition(
-            bcs.BCType.DIRICHLET, _normalize_bc_value(value),
-            self._domain.boundary(boundary_id),
+            _normalize_bc_value(value), bcs.BCType.DIRICHLET, boundary_id
         )
 
     def neumann(
-        self, boundary_id: bcs.BoundaryId, value: BCValueInput
+        self, boundary_id: BoundaryId, value: BCValueInput
     ) -> bcs.BoundaryCondition:
         return bcs.BoundaryCondition(
-            bcs.BCType.NEUMANN, _normalize_bc_value(value),
-            self._domain.boundary(boundary_id),
+            _normalize_bc_value(value), bcs.BCType.NEUMANN, boundary_id
         )
 
 
 class SystemFactory:
     def __init__(self, discrete: Discretization):
-        self._bc_tool = discrete.bc_tool
+        self._bc_tool = discrete.domain.bc_tool
         self._bc_factory = BCFactory(discrete.domain)
 
     @property
@@ -56,11 +53,11 @@ class SystemFactory:
         self,
         lhs: Operator,
         rhs: Expression,
-        bcs: list[bcs.BoundaryCondition],
+        bcons: list[bcs.BoundaryCondition],
         *,
         constraints: list[SystemConstraint] = []
     ) -> LinearEquation:
         if isinstance(lhs, AffineOperator):
             rhs -= lhs.expression
             lhs = lhs.operator
-        return LinearEquation(self._bc_tool, lhs, rhs, bcs, constraints=constraints)
+        return LinearEquation(self._bc_tool, lhs, rhs, bcons, constraints=constraints)

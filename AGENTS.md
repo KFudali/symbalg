@@ -1,168 +1,117 @@
 # AGENTS.md
 
-Agent-facing guide for the `symbalg` repository. This file is the single source of
-truth for conventions, environment, and architecture. It supersedes the previous
-`context.md`.
+Agent guide for `symbalg`. Every line is hard-earned — if you're unsure, trust it over guessing.
 
 ## Environment
 
-- **Virtualenv:** `~/.virtualenvs/algfields3.12/` — activate before running anything.
-- **Tests:** `pytest` (configured by `pytest.ini`, which sets `pythonpath = src`).
-- **Linter:** `pylint`
-- **Type checker:** `ty`
-- **Formatter:** `black`
-
-Run lint, type-check, format, and tests before declaring a task complete.
+- **Virtualenv:** `~/.virtualenvs/algfields3.12/` — activate first.
+- **Tests:** `pytest` (configured by `pytest.ini`, which sets `pythonpath = src`). All 325 tests pass.
+- **Linter:** `pylint` (v4.0.5)
+- **Type checker:** `ty` (v0.0.34)
+- **Formatter:** `black` (v26.3.1)
+- Run order: `pylint src/ && black --check src/ && ty src/ && pytest`.
 
 ## Project purpose
 
-`symbalg` provides a lightweight abstraction layer for algebra on fields. The base
-numerical type is `np.ndarray`, but user code never touches arrays directly. It is
-meant for building numerical methods from symbolic abstracts — operators,
-expressions, and equations — so algorithms can be expressed independently of the
-underlying `Discretization`. Discretizations implement internals such as the space
-operators (`laplace`, `grad`, `div`) and time derivatives. Use the `Field` class for
-field creation instead of raw numpy arrays.
+Abstract algebra over `np.ndarray`. Users write numerical methods against symbolic `Operator`/`Expression`/`Field` objects. The `Discretization` supplies concrete implementations (`laplace`, `grad`, `div`, time derivatives) at `eval()`/`apply()` time. User code never touches arrays directly.
 
-## Package layout (`src/`)
-
-- **`algebra/`** — Core abstract algebra over `np.ndarray`. Defines shape-aware
-  fields, expressions, operators, and a symbolic AST built on top of them.
-  Backend-agnostic; no discretization details.
-  - `algebra/symbolic/` — `SymbolicExpression`, `SymbolicOperator`,
-    `AffineOperator`, custom AST nodes.
-- **`discrete/core/`** — Abstract bases: `Discretization`, `DxOperators`,
-  `DtOperators`, `BCTool`, `Domain`, `Boundary`, `DiscreteTime`.
-- **`discrete/fd/`** — Finite-difference implementations: `FdDiscretization`,
-  `FDOperator`, FD BCs, `FDDomain`, stencils.
-- **`fieldspace/`** — User-facing facade. `FieldSpace` wires a `Discretization` to
-  factories (`fields`, `dx`, `dt`, `systems`, `time`, `monitors`).
-  `systems/les.py` assembles a `scipy.sparse.linalg.LinearOperator` and solves via
-  CG.
-- **`tools/`** — Dependency-free utilities:
-  - `tools/symbolic/` — generic symbolic AST (`Symbolic`, `SymbolicNode`,
-    `ValueNode`, `UnaryNode`, `BinaryNode`, `BinaryOpType`, `UnaryOpType`).
-  - `tools/buffer/` — `ValueBuffer`, `DequeValueBuffer`, `ShiftProxyValueBuffer`.
-  - `tools/geometry/` — `StructuredGridND`.
-  - `tools/region/` — array region/slicing helpers.
-  - `tools/advanceable/` — time-step advancement abstractions.
-  - `tools/action.py` — `LazyAction`.
-
-## Key entry points
-
-| Class / symbol            | Location                                                 |
-|---------------------------|----------------------------------------------------------|
-| `Field`                   | `src/algebra/field.py:8`                                 |
-| `Space` / `FieldShape`    | `src/algebra/space.py:7`, `src/algebra/space.py:22`      |
-| `ShapeTransform`          | `src/algebra/space.py:15`                                |
-| `Expression` (ABC)        | `src/algebra/expression.py:7`                            |
-| `Operator` (ABC)          | `src/algebra/operator.py:11`                             |
-| `SymbolicExpression`      | `src/algebra/symbolic/symbolic_expression.py:10`         |
-| `SymbolicOperator`        | `src/algebra/symbolic/symbolic_operator.py:12`           |
-| `AffineOperator`          | `src/algebra/symbolic/affine_operator.py:12`             |
-| `Discretization` (ABC)    | `src/discrete/core/discretization.py:13`                 |
-| `DxOperators` (ABC)       | `src/discrete/core/dx.py:5`                              |
-| `DtOperators` (ABC)       | `src/discrete/core/dt.py:6`                              |
-| `FdDiscretization`        | `src/discrete/fd/fd_discretization.py:12`                |
-| `FDOperator`              | `src/discrete/fd/operators/core/fd_operator.py:10`       |
-| `BoundaryCondition`/`BCType` | `src/discrete/core/bcs/bcs.py`                        |
-| `BCTool` (ABC)            | `src/discrete/core/bcs/bc_tool.py:10`                    |
-| `FieldSpace`              | `src/fieldspace/fieldspace.py:9`                         |
-| `LES`                     | `src/fieldspace/systems/les.py:11`                       |
-| `ShapeMismatchError`      | `src/algebra/exceptions.py:1`                            |
-
-## Typical user flow
-
-Reference: `tests/scripts/script_test_diffusion.py`.
-
-1. Build a discretization: `grid = StructuredGridND(...)`; `discrete =
-   fd.FdDiscretization(grid)`.
-2. Wrap in a `FieldSpace`: `s = FieldSpace(discrete)`. Exposes `s.fields`, `s.dx`,
-   `s.dt`, `s.systems`, `s.time`, `s.monitors`.
-3. Create fields via `s.fields.scalar() / vector() / tensor()` (returns `Field`
-   backed by a `DequeValueBuffer`).
-4. Compose operators symbolically: `f_dx = s.dx.laplace()`,
-   `f_dt = s.dt.euler(F)` (returns an `AffineOperator`); then
-   `lhs = f_dt - L * f_dx`. Algebra is overloaded via `BinaryOpType` and
-   `Symbolic` AST nodes — purely symbolic, no numerics yet.
-5. Form an equation: `equation = s.systems.les(lhs, rhs.value(), bcs)` where BCs
-   come from `s.systems.bc.dirichlet(...)` / `neumann(...)`. `LES` separates the
-   affine bias from `lhs` into `rhs`.
-6. Solve / advance: inside `s.time.run(...)`,
-   `solution = equation.solve()` returns a `SymbolicExpression` whose `.eval()`
-   invokes CG (`LES._assemble` builds the `LinearOperator`; BCs are applied via
-   `BCTool`). Then `F.set_value(solution).perform()` (a `LazyAction`) writes the
-   result into the field buffer.
-
-The user never touches arrays directly; algorithms are written symbolically
-against `Operator` / `Expression` / `Field`, and the `Discretization` supplies
-the concrete operators used during `eval()` / `apply()`.
-
-## Architectural rules
+## Architecture rules
 
 - `algebra` MUST NOT import from `discrete`.
 - `discrete` may depend on `algebra` and `tools` only.
 - `fieldspace` is the only layer that wires `discrete` + `algebra` for users.
 - `tools` stays dependency-free of `algebra`, `discrete`, and `fieldspace`.
-- User-facing APIs operate on `Field`s, not raw `np.ndarray`.
-- State mutations are returned as `LazyAction`; the caller is responsible for
-  `.perform()`.
+- State mutations are returned as `LazyAction`; the caller is responsible for `.perform()`.
+
+## Package layout (`src/`)
+
+- `algebra/` — Core abstract algebra. Backend-agnostic.
+  - `algebra/space/` — `Space`, `FieldShape`, `FieldShaped`, `ShapeTransform`
+  - `algebra/field.py` — `Field` (wraps `ValueBuffer`), `AbstractField`
+  - `algebra/expression/core/expression.py` — `Expression` (ABC), `ConstExpression`, `CallableExpression`
+  - `algebra/expression/symbolic/` — `SymbolicExpression`, custom AST nodes
+  - `algebra/operator/core/operator.py` — `Operator` (ABC), `TOperator` type alias
+  - `algebra/operator/symbolic.py` — `SymbolicOperator`
+  - `algebra/operator/affine_operator.py` — `AffineOperator`
+  - `algebra/domain/` — `Domain` (ABC), `BoundaryTool` (ABC), `BoundaryCondition`, `BCType`, boundary types, `DomainOperator`
+  - `algebra/systems/` — `LinearEquation`, `LinearSystem`, `CGSolver`, `SystemConstraint`
+  - `algebra/exceptions.py` — `ShapeMismatchError`
+- `discrete/core/` — Abstract bases: `Discretization`, `DxOperators`, `DtOperators`, `DiscreteTime`
+- `discrete/fd/` — Finite-difference implementations: `FdDiscretization`, `StencilOperator`, `FDDomain`, stencils, FD BCs
+  - `discrete/fd/stencil/stencil_operator.py` — `StencilOperator` (the concrete FD operator)
+  - `discrete/fd/domain/bcs/` — `FDBCTool`, dirichlet/neumann implementations
+- `fieldspace/` — User-facing facade: `FieldSpace` wires a `Discretization` to factories (`fields`, `dx`, `dt`, `systems`, `time`, `monitors`).
+  - `fieldspace/systems.py` — `SystemFactory.les(...)` returns `LinearEquation`
+- `tools/` — Dependency-free utilities: generic symbolic AST (`Symbolic`, `ValueNode`, etc.), `ValueBuffer`/`DequeValueBuffer`, `StructuredGridND`, region helpers, `AdvanceableSeries`, `LazyAction`.
+
+## Known broken imports
+
+The `fieldspace/` package imports `from algebra.symbolic import AffineOperator` and `from algebra.symbolic import SymbolicExpression`, but `algebra.symbolic` does not exist as a module. The correct paths (`algebra.operator.affine_operator.AffineOperator`, `algebra.expression.symbolic.SymbolicExpression`) work. All 325 tests pass because the test suite never imports `fieldspace/`.
+
+## Key entry points
+
+| Class / symbol            | Location                                              |
+|---------------------------|-------------------------------------------------------|
+| `Field`                   | `algebra/field.py:32`                                 |
+| `Space`                   | `algebra/space/space.py:6`                            |
+| `FieldShape`              | `algebra/space/fieldshaped.py:6`                      |
+| `ShapeTransform`          | `algebra/space/shape_transfrom.py:5`                  |
+| `Expression` (ABC)        | `algebra/expression/core/expression.py:7`             |
+| `Operator` (ABC)          | `algebra/operator/core/operator.py:12`                |
+| `SymbolicExpression`      | `algebra/expression/symbolic/symbolic_expression.py:15` |
+| `SymbolicOperator`        | `algebra/operator/symbolic.py:16`                     |
+| `AffineOperator`          | `algebra/operator/affine_operator.py:12`              |
+| `Discretization` (ABC)    | `discrete/core/discretization.py:13`                  |
+| `DxOperators` (ABC)       | `discrete/core/dx_operators.py:7`                     |
+| `DtOperators` (ABC)       | `discrete/core/dt_operators.py:6`                     |
+| `FdDiscretization`        | `discrete/fd/fd_discretization.py:10`                 |
+| `StencilOperator`         | `discrete/fd/stencil/stencil_operator.py:13`          |
+| `BoundaryCondition`/`BCType` | `algebra/domain/bcs/bcs.py:17` / `.py:11`          |
+| `BoundaryTool` (ABC)      | `algebra/domain/bcs/boundary_tool.py:10`              |
+| `FDBCTool`                | `discrete/fd/domain/bcs/bc_tool.py:23`                |
+| `FieldSpace`              | `fieldspace/fieldspace.py:9`                          |
+| `LinearEquation`          | `algebra/systems/equation.py:14`                      |
+| `CGSolver`                | `algebra/systems/solvers.py:24`                       |
+| `ShapeMismatchError`      | `algebra/exceptions.py:1`                             |
+
+## Typical user flow
+
+Reference: `tests/scripts/script_test_diffusion.py`.
+
+1. `grid = StructuredGridND(...)`; `discrete = fd.FdDiscretization(grid)`
+2. `s = FieldSpace(discrete)` — exposes `s.fields`, `s.dx`, `s.dt`, `s.systems`, `s.time`, `s.monitors`
+3. `F = s.fields.scalar()` — returns `Field` backed by `DequeValueBuffer`
+4. Compose operators symbolically: `lap = s.dx.laplace()`, `dt_op = s.dt.explicit(F, order=2)`, `lhs = dt_op - L * lap`
+5. Form equation: `eq = s.systems.les(lhs, rhs.value(), bcs)`. BCs via `s.systems.bc.dirichlet(...)` / `neumann(...)`. `les()` strips affine bias from `lhs` into `rhs`.
+6. Solve: `solution = eq.solve(CGSolver())` returns a `SymbolicExpression`. Call `.eval()` to run CG.
+7. `F.set_value(solution).perform()` — `LazyAction` writes result into the field buffer.
+8. Time loop: `for step in s.time.run(duration=1.0, init_dt=0.01): ...`
 
 ## Conventions
 
-### Type hints
-
-All public inputs and returns are fully type-hinted. Use
-`from __future__ import annotations`, `Self`, `TypeVar`, and `Generic` where
-appropriate. Docstrings may be omitted on small methods; larger classes should
-include them.
-
-### Naming
-
-- Classes: `PascalCase`; modules: `snake_case`.
-- FD-specific classes are prefixed `FD` (e.g., `FdDiscretization`, `FDOperator`,
-  `FDDxOperators`, `FDBCTool`, `FDDomain`).
-- Abstract bases live in `core/` subpackages; concrete implementations live in
-  sibling packages (e.g., `discrete/core/` vs `discrete/fd/`).
-- Type aliases such as `TOperator`, `TBoundary`, `TDomain`, `TSymbolic` are used
-  with `Generic` for typed abstracts.
-
-### Symbolic design
-
-Operator/Expression algebra is built on `Symbolic[T]`
-(`src/tools/symbolic/symbolic.py:9`) using frozen-dataclass node trees
-(`ValueNode` / `UnaryNode` / `BinaryNode`). Resolution is lazy via `.resolve()` /
-`.eval()`. `_compatible()` hooks gate which combinations are allowed (per shape,
-space, `ShapeTransform`).
-
-### Other
-
-- Frozen dataclasses are used for value-like objects (`Space`, `FieldShape`,
-  `BoundaryCondition`, symbolic nodes).
-- The only custom exception is `ShapeMismatchError`; other validation uses
-  `assert` and `ValueError`.
-- `__init__.py` re-exports only the small public surface of each subpackage.
+- Classes: `PascalCase`; modules: `snake_case`. FD classes prefixed `FD` (e.g., `FdDiscretization`, `FDDomain`, `FDBCTool`).
+- Abstracts in `core/` subpackages; concretes in sibling packages (e.g., `discrete/core/` vs `discrete/fd/`).
+- Frozen dataclasses for value objects (`Space`, `FieldShape`, `BoundaryCondition`, symbolic nodes).
+- Only custom exception: `ShapeMismatchError`; other validation uses `assert`/`ValueError`.
+- Operator/Expression algebra built on `Symbolic[T]` using frozen-dataclass node trees (`ValueNode`/`UnaryNode`/`BinaryNode`). Lazy `.resolve()` / `.eval()`. `_compatible()` gates combinations.
 
 ## Tests
 
-Layout mirrors `src/` (`pytest.ini` sets `pythonpath = src`).
+325 tests across `tests/`. Layout mirrors `src/`.
 
-- `tests/algebra/` — unit tests for the algebra/symbolic layer.
-  - `tests/algebra/conftest.py` provides a `MockOperator` test double.
-  - `tests/algebra/symbolic/` — `test_symbolic_expression.py`,
-    `test_symbolic_operator.py`, `test_affine_operator.py`.
-- `tests/discrete/fd/` — FD-specific unit tests.
-  - `tests/discrete/fd/operators/` — `test_grad.py`, `test_div.py`,
-    `test_lap.py`.
-  - `tests/discrete/fd/stencil/` — `test_stencil.py`, `test_ax_stencil.py`.
-  - `tests/discrete/fd/test_ders.py`.
-- `tests/tools/` — `test_symbolic.py` (generic symbolic),
-  `tests/tools/region/` (`test_region.py`, `test_region_utils.py`).
-- `tests/integration/` — `test_les.py` (collected); `script_test_dirichlet.py`,
-  `script_test_neumann.py` (manual scripts, not collected).
-- `tests/scripts/` — runnable demos (`script_test_diffusion.py`,
-  `script_test_laplace.py`, `script_test_poisson.py`,
-  `script_test_navier_stokes.py`); used as end-to-end usage examples.
+- `tests/conftest.py` — `MockOperator` test double (not in `tests/algebra/`).
+- `tests/algebra/field/` — `test_field.py`
+- `tests/algebra/space/` — shape transform, shape utils
+- `tests/algebra/symbolic/expression/` — symbolic expression algebra, magics, unary
+- `tests/algebra/symbolic/operator/` — `test_symbolic_operator.py`, `test_affine_operator.py`
+- `tests/discrete/fd/stencil/` — stencil, ax_stencil, laplace
+- `tests/discrete/fd/stencil/operators/` — grad, div, ders, combine
+- `tests/discrete/fd/operator/` — `test_as_array.py`
+- `tests/discrete/fd/operator/bcs/` — `test_bc_tool.py`
+- `tests/discrete/fd/operator/dt/` — `test_dt_explicit.py`
+- `tests/tools/` — `test_symbolic.py`
+- `tests/tools/buffer/` — stacked proxy, component proxy buffer tests
+- `tests/tools/region/` — `test_region.py`, `test_region_utils.py`
+- `tests/scripts/` — runnable demos (not collected): `script_test_diffusion.py`, `script_test_laplace.py`, `script_test_poisson.py`, `script_test_navier_stokes.py`, `script_test_navier_stokes_conv.py`, `script_test_neumann_only.py`. Used as end-to-end usage examples.
 
-Pytest collects `test_*.py`; demo/integration scripts use the `script_test_*.py`
-prefix to opt out of collection.
+Pytest collects `test_*.py`; demo scripts use `script_test_*.py` prefix to opt out.
