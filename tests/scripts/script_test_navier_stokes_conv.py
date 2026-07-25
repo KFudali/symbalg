@@ -33,13 +33,11 @@ fi = s.fields.scalar(init_value=0.0)
 cg = solvers.CGSolver()
 NU = 0.01
 
-# Step 1
 step_1 = s.systems.les(
-    lhs=s.dt.explicit(u, order = 2) - (NU * s.dx.laplace()),
-    rhs= -s.dx.grad().of(p_hat),
+    lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
+    rhs=-s.dx.grad().of(p_hat),
     bcs=u_bcs,
 )
-# Step 2
 step_2 = s.systems.les(
     lhs=s.dx.laplace(),
     rhs=(3.0 / (2.0 * s.time.dt())) * s.dx.div().of(u),
@@ -47,27 +45,14 @@ step_2 = s.systems.les(
     constraints=[fi_cstr],
 )
 
+u_grad = s.fields.tensor()
+u_grad.set_value(s.dx.grad().of(u))
 
-u_x = u.component(0)
-u_y = u.component(1)
+term_1 = s.fields.vector()
+term_1.set_value(u_grad.value().dot(u.value()))
 
-u_x_grad = s.fields.vector()
-u_x_grad.set_value(s.dx.grad().of(u_x))
-
-u_y_grad = s.fields.vector()
-u_y_grad.set_value(s.dx.grad().of(u_y))
-
-# x term1
-x_term_a =  u_x.value() * u_x_grad.component(0).value() + u_y.value() * u_x_grad.component(1).value()
-# x term2
-x_term_b = 0.5 * u_x.value() * (u_x_grad.component(0).value()  + u_y_grad.component(1).value())
-
-# y term1
-y_term_a = u_y.value() * u_y_grad.component(0).value() + u_y.value() * u_y_grad.component(1).value()
-# y term2
-y_term_b = 0.5 * u_y.value() * (u_x_grad.component(0).value()  + u_y_grad.component(1).value())
-
-#stack fields here
+term_2 = s.fields.vector()
+term_2.set_value(0.5 * u.value() * u_grad.value().trace())
 
 for time in s.time.run(duration=1.0, init_dt=0.01):
     p_star.set_value(p.past(1).value()).perform
@@ -78,10 +63,8 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
     ).perform()
     u.set_value(step_1.solve(cg)).perform()
     fi.set_value(step_2.solve(cg)).perform()
-    p.set_value(
-        p_star.value() + fi.value() - (NU * s.dx.div().of(u))
-    ).perform()
-    
+    p.set_value(p_star.value() + fi.value() - (NU * s.dx.div().of(u))).perform()
+
 s.monitors.plot_field_2d(p, "p")
 s.monitors.plot_field_2d(u, "u")
 s.monitors.show()

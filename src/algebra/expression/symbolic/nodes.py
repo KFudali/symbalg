@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import numpy as np
-from algebra.expression.core import Expression
+from algebra.expression import Expression
 from algebra.space import FieldShape, Space
 from tools.symbolic import nodes
 

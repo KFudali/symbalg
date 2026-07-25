@@ -4,7 +4,7 @@ from typing import Any, Self
 import numpy as np
 
 from algebra.space import FieldShape, utils
-from algebra.expression.core import Expression, ConstExpression
+from algebra.expression import Expression, ConstExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
@@ -74,6 +74,10 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if isinstance(other, (Expression, np.ndarray)):
             other_shape = other.shape if isinstance(other, Expression) else other.shape
             if self.shape in ((), other_shape) or other_shape == ():
+                return True
+            if isinstance(other, Expression) and (
+                self.fieldshape.is_scalar() or other.fieldshape.is_scalar()
+            ):
                 return True
             raise ShapeMismatchError(
                 f"Incompatible shape is: {self.shape} and {other_shape}"
