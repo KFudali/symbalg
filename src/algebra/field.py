@@ -1,6 +1,9 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 
+import numpy as np
+import scipy.sparse as sp
+
 from tools.buffer import (
     ValueBuffer,
     ShiftProxyValueBuffer,
@@ -9,9 +12,10 @@ from tools.buffer import (
 )
 from tools.action import LazyAction
 
-from .expression import Expression, CallableExpression
+from .operator import ArrayOperator
+from .expression import Expression, CallableExpression, SparseExpression, ConstSparseExpression
 from .expression.symbolic import SymbolicExpression
-from .space import FieldShaped, FieldShape
+from .space import FieldShaped, FieldShape, ShapeTransform
 from .space import shape_utils as utils
 
 
@@ -70,3 +74,12 @@ def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
     space = fields[0].space
     fieldshape = FieldShape(space, buffer.shape[: -space.ndim])
     return Field(fieldshape, buffer)
+
+
+def to_operator(
+    field: Field, shape_transform: ShapeTransform = ShapeTransform.NONE
+) -> ArrayOperator:
+    values = field.value().eval().ravel()
+    diag = sp.diags(values, 0)
+    mat = ConstSparseExpression(diag)
+    return ArrayOperator(field.space, shape_transform, mat)
