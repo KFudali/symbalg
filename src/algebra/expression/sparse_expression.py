@@ -1,23 +1,48 @@
 from abc import ABC, abstractmethod
-import numpy as np
+from typing import Self
+
+from algebra.space import Space
 import scipy.sparse as sp
-from algebra.space import FieldShape, FieldShaped, Space
+import numpy as np
 
 
-class SparseExpression(ABC, FieldShaped):
+class SparseExpression(ABC):
+    def __init__(self, m: int, n: int):
+        self._m = m
+        self._n = n
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return (self.n, self.n)
+
+    @property
+    def m(self) -> int:
+        return self._m
+
+    @property
+    def n(self) -> int:
+        return self._n
+
+    def compatible(self, space: Space) -> bool:
+        n = np.prod(space.shape)
+        return self.m == n and self.n == n
+
+    @abstractmethod
+    def copy(self) -> Self:
+        pass
+
     @abstractmethod
     def eval(self) -> sp.spmatrix:
         pass
 
 
 class ConstSparseExpression(SparseExpression):
-    def __init__(self, space: Space, value: sp.spmatrix | np.ndarray | float):
-        if isinstance(value, sp.spmatrix):
-            super().__init__(FieldShape.from_shape(space, value.shape))
-            self._value = value
-        elif isinstance(value, np.ndarray):
-            super().__init__(FieldShape.from_shape(space, value.shape))
-            self._value = sp.csr_matrix(value)
-        else:
-            super().__init__(FieldShape.scalar(space))
-            self._value = sp.csr_matrix(np.array(value))
+    def __init__(self, mat: sp.spmatrix):
+        super().__init__(mat.shape[0], mat.shape[1])
+        self._mat = mat
+
+    def copy(self) -> Self:
+        return self.__class__(self._mat.copy())
+
+    def eval(self) -> sp.spmatrix:
+        return self._mat

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import numpy as np
-from algebra.expression import Expression
+import scipy.sparse as sp
+from algebra.expression import Expression, SparseExpression
 from algebra.space import FieldShape, Space
 from tools.symbolic import nodes
 
@@ -43,3 +44,21 @@ class TensorUnaryOpNode(nodes.SymbolicNode[Expression]):
     def resolve(self) -> np.ndarray:
         a = self.operand.resolve()
         return np.einsum(self.subscripts, a)  # type: ignore[no-untyped-call]
+
+
+@dataclass(frozen=True)
+class SparseExpressionNode(nodes.ValueNode[SparseExpression]):
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return self.value.shape
+
+    @property
+    def m(self) -> int:
+        return self.value.m
+
+    @property
+    def n(self) -> int:
+        return self.value.n
+
+    def resolve(self) -> sp.spmatrix:
+        return self.value.eval()

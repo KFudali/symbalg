@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse as sp
 
+from algebra.expression import ConstSparseExpression
 from algebra.operator import ArrayOperator
 from discrete.fd.stencil import StencilOperator, AxStencil
 
@@ -15,10 +16,10 @@ def _get_stencil(ax_stencil: AxStencil, pos: int, size: int):
 
 def as_array(operator: StencilOperator) -> ArrayOperator:
     shape = operator.space.shape
-    n_points = int(np.prod(shape))
+    n = int(np.prod(shape))
     rows, cols, data = [], [], []
 
-    for linear_idx in range(n_points):
+    for linear_idx in range(n):
         idx = np.unravel_index(linear_idx, shape)
         for ax, size in enumerate(shape):
             stencil = _get_stencil(operator.stencils[ax], idx[ax], size)
@@ -30,7 +31,6 @@ def as_array(operator: StencilOperator) -> ArrayOperator:
                     cols.append(np.ravel_multi_index(neighbor, shape))
                     data.append(weight)
 
-    matrix = sp.csr_matrix(
-        (data, (rows, cols)), shape=(n_points, n_points), dtype=float
-    )
-    return ArrayOperator(operator.space, operator.shape_transform, matrix)
+    matrix = sp.csr_matrix((data, (rows, cols)), shape=(n, n), dtype=float)
+    expr = ConstSparseExpression(matrix)
+    return ArrayOperator(operator.space, operator.shape_transform, expr)
