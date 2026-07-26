@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Callable, Self
 
 from algebra.space import Space
 import scipy.sparse as sp
@@ -46,3 +46,15 @@ class ConstSparseExpression(SparseExpression):
 
     def eval(self) -> sp.spmatrix:
         return self._mat
+
+
+class CallableSparseExpression(SparseExpression):
+    def __init__(self, m: int, n: int, getter: Callable[[], sp.spmatrix]):
+        super().__init__(m, n)
+        self._getter = getter
+
+    def copy(self) -> Self:
+        return self.__class__(self._m, self._n, self._getter)
+
+    def eval(self) -> sp.spmatrix:
+        return self._getter()

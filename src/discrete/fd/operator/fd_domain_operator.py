@@ -1,15 +1,15 @@
 from typing import Self
-import numpy as np
 
+import numpy as np
 
 from tools.symbolic.optype import BinaryOpType
 from algebra.operator import Operator, ArrayOperator
 from algebra.domain.bcs import BoundaryCondition
 from algebra.domain.operator import DomainOperator
 
-
 from discrete.fd.domain import FDDomain
 from discrete.fd.stencil import StencilOperator
+from .as_array import as_array
 
 
 class FDDomainOperator(DomainOperator[FDDomain]):
@@ -35,7 +35,7 @@ class FDDomainOperator(DomainOperator[FDDomain]):
         pass
 
     def as_array(self) -> ArrayOperator:
-        pass
+        return as_array(self._stencil)
 
     def apply_bcs(self, bcs: list[BoundaryCondition], rhs: np.ndarray) -> Self:
         return self._domain.bc_tool.apply_bcs(bcs, self._stencil, rhs)

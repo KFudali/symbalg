@@ -13,7 +13,7 @@ from tools.buffer import (
 from tools.action import LazyAction
 
 from .operator import ArrayOperator
-from .expression import Expression, CallableExpression, SparseExpression, ConstSparseExpression
+from .expression import Expression, CallableExpression, SparseExpression, CallableSparseExpression
 from .expression.symbolic import SymbolicExpression
 from .space import FieldShaped, FieldShape, ShapeTransform
 from .space import shape_utils as utils
@@ -79,7 +79,10 @@ def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
 def to_operator(
     field: Field, shape_transform: ShapeTransform = ShapeTransform.NONE
 ) -> ArrayOperator:
-    values = field.value().eval().ravel()
-    diag = sp.diags(values, 0)
-    mat = ConstSparseExpression(diag)
+    n = int(np.prod(field.space.shape))
+
+    def _diag() -> sp.spmatrix:
+        return sp.diags(field.value().eval().ravel(), 0)
+
+    mat = CallableSparseExpression(n, n, _diag)
     return ArrayOperator(field.space, shape_transform, mat)
