@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse as sp
 
 from discrete.fd.stencil import AxStencil, Stencil
 from discrete.fd.domain import FDBoundary
@@ -53,3 +54,22 @@ def _stencil(side: int, stencil: AxStencil) -> AxStencil:
 
 def post_solve(boundary: FDBoundary, value: float, field: np.ndarray):
     pass
+
+
+def apply_array(
+    mat: sp.spmatrix,
+    boundary: FDBoundary,
+    value: float,
+    rhs: np.ndarray,
+) -> sp.spmatrix:
+    """Apply a Neumann BC to a sparse matrix + rhs.
+
+    Not implemented: the ghost-node substitution used by the stencil form
+    requires access to the original interior stencil coefficients, which are
+    not recoverable from the sparse-matrix representation alone.
+    """
+    raise NotImplementedError(
+        "Neumann BC on ArrayOperator is not implemented; the ghost-node "
+        "weight is not recoverable from the sparse matrix. Apply Neumann "
+        "BCs on the StencilOperator before converting to array form."
+    )
