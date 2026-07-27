@@ -3,6 +3,7 @@ import scipy.sparse as sp
 
 from algebra.expression import CallableSparseExpression
 from algebra.operator import ArrayOperator
+from algebra.space import SparseShape
 from discrete.fd.stencil import StencilOperator, AxStencil
 
 
@@ -33,5 +34,5 @@ def as_array(operator: StencilOperator) -> ArrayOperator:
                         data.append(weight)
         return sp.csr_matrix((data, (rows, cols)), shape=(n, n), dtype=float)
 
-    expr = CallableSparseExpression(operator.space, _build)
+    expr = CallableSparseExpression(SparseShape(operator.space, ()), _build)
     return ArrayOperator(operator.space, operator.shape_transform, expr)

@@ -1,17 +1,27 @@
 from __future__ import annotations
-from algebra.space import Space, SparseShape
-from algebra.expression.symbolic.symbolic_expression import SymbolicExpression
 
 from typing import Any, Self
 
 import numpy as np
 import scipy.sparse as sp
 
+from algebra.space import Space, SparseShape
 from algebra.expression import SparseExpression, ConstSparseExpression
 from algebra.exceptions import ShapeMismatchError
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from .nodes import SparseExpressionNode
+
+
+def _shape_of(value: Any) -> tuple[int, ...] | None:
+    if isinstance(value, (sp.sparray, np.ndarray)):
+        return value.shape
+    if isinstance(value, (tuple, list)):
+        inner = _shape_of(value[0])
+        if inner is None:
+            return None
+        return (len(value), *inner)
+    return None
 
 
 class SymbolicSparseExpression(Symbolic[SparseExpression], SparseExpression):
@@ -33,11 +43,11 @@ class SymbolicSparseExpression(Symbolic[SparseExpression], SparseExpression):
             return other.node
         if isinstance(other, nodes.SymbolicNode):
             return other
-        if isinstance(other, sp.spmatrix):
+        if isinstance(other, (sp.sparray, tuple, list)):
             return SparseExpressionNode(ConstSparseExpression(self.space, other))
         return self._make_value(other)
 
-    def eval(self) -> sp.spmatrix:
+    def eval(self) -> sp.sparray:
         return self.resolve()
 
     def copy(self) -> Self:
@@ -63,11 +73,18 @@ class SymbolicSparseExpression(Symbolic[SparseExpression], SparseExpression):
     ) -> bool:
         if isinstance(other, (int, float)):
             return True
-        if isinstance(other, (sp.spmatrix, np.ndarray)):
+        if isinstance(other, (sp.sparray, np.ndarray)):
             if other.shape in ((), self.shape):
                 return True
             raise ShapeMismatchError(
                 f"Incompatible shape: {other.shape} and {self.shape}"
+            )
+        if isinstance(other, (tuple, list)):
+            other_shape = _shape_of(other)
+            if other_shape == self.shape:
+                return True
+            raise ShapeMismatchError(
+                f"Incompatible shape: {other_shape} and {self.shape}"
             )
         if isinstance(other, SparseExpression):
             if other.shape == self.shape:

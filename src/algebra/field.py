@@ -20,7 +20,7 @@ from .expression import (
     CallableSparseExpression,
 )
 from .expression.symbolic import SymbolicExpression
-from .space import FieldShaped, FieldShape, ShapeTransform
+from .space import FieldShaped, FieldShape, SparseShape, ShapeTransform
 from .space import shape_utils as utils
 
 
@@ -84,10 +84,8 @@ def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
 def to_operator(
     field: Field, shape_transform: ShapeTransform = ShapeTransform.NONE
 ) -> ArrayOperator:
-    n = int(np.prod(field.space.shape))
-
-    def _diag() -> sp.spmatrix:
+    def _diag() -> sp.sparray:
         return sp.diags(field.value().eval().ravel(), 0)
 
-    mat = CallableSparseExpression(field.space, _diag)
+    mat = CallableSparseExpression(SparseShape(field.space, ()), _diag)
     return ArrayOperator(field.space, shape_transform, mat)

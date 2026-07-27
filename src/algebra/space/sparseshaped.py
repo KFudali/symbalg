@@ -1,6 +1,5 @@
-import numpy as np
 from dataclasses import dataclass
-
+import numpy as np
 from .space import Space
 
 
@@ -18,14 +17,15 @@ class SparseShape:
 
     @classmethod
     def from_shape(cls, space: Space, shape: tuple[int, ...]) -> "SparseShape":
-        assert len(shape) >= space.ndim
-        n = int(np.prod(space.shape))
-        assert shape[-1] == shape[-2] == n
         return SparseShape(space, shape[:-2])
 
     @property
+    def n(self) -> int:
+        return int(np.prod(self.space.shape))
+
+    @property
     def shape(self) -> tuple[int, ...]:
-        n = int(np.prod(self.space.shape))
+        n = self.n
         return (*self.components, n, n)
 
 

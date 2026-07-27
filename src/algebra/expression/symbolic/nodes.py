@@ -56,5 +56,5 @@ class SparseExpressionNode(nodes.ValueNode[SparseExpression]):
     def sparseshape(self) -> SparseShape:
         return self.value.sparseshape
 
-    def resolve(self) -> sp.spmatrix:
+    def resolve(self) -> sp.sparray:
         return self.value.eval()
