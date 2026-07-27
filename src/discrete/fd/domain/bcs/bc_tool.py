@@ -61,7 +61,9 @@ class FDBCTool(BoundaryTool[StencilOperator]):
                 bc.value,
                 rhs,
             )
-        return ArrayOperator(lhs.space, lhs.shape_transform, ConstSparseExpression(mat))
+        return ArrayOperator(
+            lhs.space, lhs.shape_transform, ConstSparseExpression(lhs.space, mat)
+        )
 
     def apply_bcs(
         self, bcs: list[BoundaryCondition], lhs: StencilOperator, rhs: np.ndarray

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 import scipy.sparse as sp
 from algebra.expression import Expression, SparseExpression
-from algebra.space import FieldShape, Space
+from algebra.space import FieldShape, SparseShape, Space
 from tools.symbolic import nodes
 
 
@@ -53,12 +53,8 @@ class SparseExpressionNode(nodes.ValueNode[SparseExpression]):
         return self.value.shape
 
     @property
-    def m(self) -> int:
-        return self.value.m
-
-    @property
-    def n(self) -> int:
-        return self.value.n
+    def sparseshape(self) -> SparseShape:
+        return self.value.sparseshape
 
     def resolve(self) -> sp.spmatrix:
         return self.value.eval()

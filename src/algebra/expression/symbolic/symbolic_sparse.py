@@ -1,5 +1,5 @@
 from __future__ import annotations
-from algebra.space.space import Space
+from algebra.space import Space, SparseShape
 from algebra.expression.symbolic.symbolic_expression import SymbolicExpression
 
 from typing import Any, Self
@@ -15,18 +15,14 @@ from .nodes import SparseExpressionNode
 
 
 class SymbolicSparseExpression(Symbolic[SparseExpression], SparseExpression):
-    def __init__(self, node: nodes.SymbolicNode[SparseExpression], m: int, n: int):
+    def __init__(self, node: nodes.SymbolicNode[SparseExpression], shape: SparseShape):
         Symbolic.__init__(self, node)
-        SparseExpression.__init__(self, m, n)
-
-    @property
-    def shape(self) -> tuple[int, int]:
-        return (self._m, self._n)
+        SparseExpression.__init__(self, shape)
 
     @classmethod
     def wrap(cls, value: SparseExpression) -> Self:
         node = cls._make_value(value)
-        return cls(node, value.m, value.n)
+        return cls(node, value.sparseshape)
 
     @classmethod
     def _make_value(cls, other: SparseExpression) -> SparseExpressionNode:
@@ -38,20 +34,20 @@ class SymbolicSparseExpression(Symbolic[SparseExpression], SparseExpression):
         if isinstance(other, nodes.SymbolicNode):
             return other
         if isinstance(other, sp.spmatrix):
-            return SparseExpressionNode(ConstSparseExpression(other))
+            return SparseExpressionNode(ConstSparseExpression(self.space, other))
         return self._make_value(other)
 
     def eval(self) -> sp.spmatrix:
         return self.resolve()
 
     def copy(self) -> Self:
-        return self.__class__(self.node, self._m, self._n)
+        return self.__class__(self.node, self.sparseshape)
 
     def compatible(self, space: Space) -> bool:
         return self.resolve().compatible(space)
 
     def _new(self, node: nodes.SymbolicNode[SparseExpression]) -> Self:
-        return self.__class__(node, self._m, self._n)
+        return self.__class__(node, self.sparseshape)
 
     def _combine_binary(
         self, other: Any, optype: BinaryOpType, reverse: bool = False

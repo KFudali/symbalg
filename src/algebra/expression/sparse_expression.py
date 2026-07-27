@@ -1,31 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Self
 
-from algebra.space import Space
+from algebra.space import Space, SparseShape, SparseShaped
 import scipy.sparse as sp
 import numpy as np
 
 
-class SparseExpression(ABC):
-    def __init__(self, m: int, n: int):
-        self._m = m
-        self._n = n
-
-    @property
-    def shape(self) -> tuple[int, ...]:
-        return (self.n, self.n)
-
-    @property
-    def m(self) -> int:
-        return self._m
-
-    @property
-    def n(self) -> int:
-        return self._n
+class SparseExpression(ABC, SparseShaped):
+    def __init__(self, shape: SparseShape):
+        super().__init__(shape)
 
     def compatible(self, space: Space) -> bool:
-        n = np.prod(space.shape)
-        return self.m == n and self.n == n
+        n = int(np.prod(space.shape))
+        return self.shape[-1] == n and self.shape[-2] == n
 
     @abstractmethod
     def copy(self) -> Self:
@@ -37,24 +24,28 @@ class SparseExpression(ABC):
 
 
 class ConstSparseExpression(SparseExpression):
-    def __init__(self, mat: sp.spmatrix):
-        super().__init__(mat.shape[0], mat.shape[1])
+    def __init__(self, space: Space, mat: sp.spmatrix):
+        super().__init__(SparseShape(space, ()))
         self._mat = mat
 
+    def compatible(self, space: Space) -> bool:
+        n = int(np.prod(space.shape))
+        return self._mat.shape == (n, n)
+
     def copy(self) -> Self:
-        return self.__class__(self._mat.copy())
+        return self.__class__(self.space, self._mat.copy())
 
     def eval(self) -> sp.spmatrix:
         return self._mat
 
 
 class CallableSparseExpression(SparseExpression):
-    def __init__(self, m: int, n: int, getter: Callable[[], sp.spmatrix]):
-        super().__init__(m, n)
+    def __init__(self, space: Space, getter: Callable[[], sp.spmatrix]):
+        super().__init__(SparseShape(space, ()))
         self._getter = getter
 
     def copy(self) -> Self:
-        return self.__class__(self._m, self._n, self._getter)
+        return self.__class__(self.space, self._getter)
 
     def eval(self) -> sp.spmatrix:
         return self._getter()

@@ -12,7 +12,7 @@ N = int(np.prod(space.shape))
 
 def test_array_operator_multiplies_pointwise():
     weights = np.random.uniform(0, 10, N)
-    weights_expr = ConstSparseExpression(sp.diags(weights, 0))
+    weights_expr = ConstSparseExpression(space, sp.diags(weights, 0))
     operator = ArrayOperator(space, ShapeTransform.NONE, weights_expr)
 
     field = np.random.uniform(0, 10, space.shape)
@@ -24,14 +24,14 @@ def test_array_operator_multiplies_pointwise():
 
 def test_array_operator_raises_on_wrong_matrix_shape():
     twos = sp.diags(2.0 * np.ones(2 * N), 0)
-    weights = ConstSparseExpression(twos)
+    weights = ConstSparseExpression(space, twos)
     with pytest.raises(ShapeMismatchError):
         ArrayOperator(space, ShapeTransform.NONE, weights)
 
 
 def test_array_operator_increase_rank():
     twos = sp.diags(2.0 * np.ones(N), 0)
-    weights = ConstSparseExpression(twos)
+    weights = ConstSparseExpression(space, twos)
     operator = ArrayOperator(space, ShapeTransform.INCREASE_RANK, weights)
     field = np.ones(space.shape)
     result = operator.apply_to(field)
@@ -42,7 +42,7 @@ def test_array_operator_increase_rank():
 
 def test_array_operator_reduce_rank():
     twos = sp.diags(2.0 * np.ones(N), 0)
-    weights = ConstSparseExpression(twos)
+    weights = ConstSparseExpression(space, twos)
     operator = ArrayOperator(space, ShapeTransform.REDUCE_RANK, weights)
     field = np.ones((space.ndim, *space.shape))
     result = operator.apply_to(field)

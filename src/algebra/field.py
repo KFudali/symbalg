@@ -13,7 +13,12 @@ from tools.buffer import (
 from tools.action import LazyAction
 
 from .operator import ArrayOperator
-from .expression import Expression, CallableExpression, SparseExpression, CallableSparseExpression
+from .expression import (
+    Expression,
+    CallableExpression,
+    SparseExpression,
+    CallableSparseExpression,
+)
 from .expression.symbolic import SymbolicExpression
 from .space import FieldShaped, FieldShape, ShapeTransform
 from .space import shape_utils as utils
@@ -84,5 +89,5 @@ def to_operator(
     def _diag() -> sp.spmatrix:
         return sp.diags(field.value().eval().ravel(), 0)
 
-    mat = CallableSparseExpression(n, n, _diag)
+    mat = CallableSparseExpression(field.space, _diag)
     return ArrayOperator(field.space, shape_transform, mat)

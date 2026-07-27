@@ -33,5 +33,5 @@ def as_array(operator: StencilOperator) -> ArrayOperator:
                         data.append(weight)
         return sp.csr_matrix((data, (rows, cols)), shape=(n, n), dtype=float)
 
-    expr = CallableSparseExpression(n, n, _build)
+    expr = CallableSparseExpression(operator.space, _build)
     return ArrayOperator(operator.space, operator.shape_transform, expr)
