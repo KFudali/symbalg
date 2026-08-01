@@ -4,7 +4,7 @@ from typing import Self, Generic
 import numpy as np
 from algebra.expression import CallableExpression, symbolic
 from algebra.operator import Operator, ArrayOperator
-from algebra.space import ShapeTransform, FieldShape
+from algebra.space import ShapeTransform, Shape
 from algebra.field import Field
 
 from ..bcs import BoundaryCondition
@@ -30,8 +30,8 @@ class DomainOperator(Operator, ABC, Generic[TDomain]):
         def apply_to_field():
             return self.apply_to(field.value().eval())
 
-        out_shape = self.shape_transform.transform(self.space, field.shape)
+        out_shape = self.shape_transform.transform(self.space, field.shape.fieldshape())
         result = CallableExpression(
-            FieldShape.from_shape(self.space, out_shape), apply_to_field
+            Shape.from_array(self.space, out_shape), apply_to_field
         )
         return symbolic.SymbolicExpression.wrap(result)

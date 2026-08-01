@@ -2,7 +2,7 @@ import numpy as np
 
 from algebra.domain.operator import AffineDomainOperator
 from algebra.expression import CallableExpression
-from algebra.space import FieldShape
+from algebra.space import Shape
 from algebra.field import Field
 
 from discrete.core import DtOperators, DiscreteTimeView
@@ -19,7 +19,7 @@ class FDDtOperators(DtOperators):
 
     def explicit(self, field: Field, order: int = 1) -> AffineDomainOperator:
         dt = CallableExpression(
-            FieldShape.scalar(self._domain.space), lambda: np.array(self._time.dt())
+            Shape.scalar(self._domain.space), lambda: np.array(self._time.dt())
         )
         stencil_affine = explicit.bfd(field, dt, order)
         resolved = stencil_affine.operator.resolve()
