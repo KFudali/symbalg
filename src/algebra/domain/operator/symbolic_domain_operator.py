@@ -1,12 +1,12 @@
 from __future__ import annotations
 from typing import Self
-
+import numpy as np
 from tools.symbolic import nodes
 from algebra.space import ShapeTransform
-
+from algebra.domain import TDomain
+from algebra.domain.bcs import BoundaryCondition
+from algebra.operator import ArrayOperator
 from algebra.operator.symbolic import SymbolicOperator
-
-from algebra.domain.domain import TDomain
 from .domain_operator import DomainOperator
 
 
