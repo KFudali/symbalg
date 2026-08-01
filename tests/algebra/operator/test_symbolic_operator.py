@@ -3,7 +3,7 @@ import pytest
 from algebra.expression import CallableExpression
 from algebra.exceptions import ShapeMismatchError
 from algebra.operator.symbolic import SymbolicOperator
-from algebra.space import FieldShape, Space, ShapeTransform
+from algebra.space import Shape, Space, ShapeTransform
 from conftest import MockOperator
 
 
@@ -35,7 +35,7 @@ def test_symbolic_operator_with_floats():
 def test_symbolic_operator_with_scalar_expression():
     op_a = MockOperator("A")
     symbolic = SymbolicOperator[MockOperator].wrap(op_a)
-    exp = CallableExpression(FieldShape.scalar(op_a.space), lambda: np.array(10.0))
+    exp = CallableExpression(Shape.scalar(op_a.space), lambda: np.array(10.0))
 
     result = (symbolic * exp).resolve()
     assert result.name == "[A * 10.0]"
@@ -64,8 +64,6 @@ def test_symbolic_operator_shape_mismatch_raises():
     with pytest.raises(ShapeMismatchError):
         symbolic + op_other_st
 
-    non_scalar_expr = CallableExpression(
-        FieldShape(op_a.space, (1,)), lambda: np.ones(10)
-    )
+    non_scalar_expr = CallableExpression(Shape(op_a.space, (1,)), lambda: np.ones(10))
     with pytest.raises(ShapeMismatchError):
         symbolic * non_scalar_expr

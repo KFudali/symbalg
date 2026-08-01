@@ -1,7 +1,5 @@
-from .expression import Expression, ConstExpression, CallableExpression
-from .sparse_expression import (
-    SparseExpression,
-    ConstSparseExpression,
-    CallableSparseExpression,
-)
+from .expression import Expression, CallableExpression
+from .expression import FieldExpression, SparseExpression
+
+from .expression import ConstFieldExpression, ConstSparseExpression
 from . import symbolic

@@ -24,9 +24,8 @@ def test_array_operator_multiplies_pointwise():
 
 def test_array_operator_raises_on_wrong_matrix_shape():
     twos = sp.diags(2.0 * np.ones(2 * N), 0)
-    weights = ConstSparseExpression(space, twos)
     with pytest.raises(ShapeMismatchError):
-        ArrayOperator(space, ShapeTransform.NONE, weights)
+        ConstSparseExpression(space, twos)
 
 
 def test_array_operator_increase_rank():

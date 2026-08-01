@@ -2,19 +2,19 @@ import pytest
 import numpy as np
 
 from algebra.space import utils
-from algebra.space import Space, FieldShape
+from algebra.space import Space, Shape
 
 
 def test_pick_component_single_int():
     space = Space((10, 10))
-    fieldshape = FieldShape(space, (3,))
+    fieldshape = Shape(space, (3,))
     result = utils.pick_component(fieldshape, 1)
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == space.shape
 
-    fieldshape = FieldShape(space, (3, 3))
+    fieldshape = Shape(space, (3, 3))
     result = utils.pick_component(fieldshape, 1)
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == (3, *space.shape)
 
     with pytest.raises(ValueError):
@@ -23,14 +23,14 @@ def test_pick_component_single_int():
 
 def test_pick_component_int_tuple():
     space = Space((10, 10))
-    fieldshape = FieldShape(space, (3, 3))
+    fieldshape = Shape(space, (3, 3))
     result = utils.pick_component(fieldshape, (1, 1))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == space.shape
 
-    fieldshape = FieldShape(space, (3, 3, 3))
+    fieldshape = Shape(space, (3, 3, 3))
     result = utils.pick_component(fieldshape, (0, 1, 2))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == space.shape
 
     with pytest.raises(ValueError):
@@ -39,14 +39,14 @@ def test_pick_component_int_tuple():
 
 def test_pick_component_slice_tuple():
     space = Space((10, 10))
-    fieldshape = FieldShape(space, (3,))
+    fieldshape = Shape(space, (3,))
     result = utils.pick_component(fieldshape, (slice(0, 2),))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == (2, *space.shape)
 
-    fieldshape = FieldShape(space, (3, 3))
+    fieldshape = Shape(space, (3, 3))
     result = utils.pick_component(fieldshape, (slice(1, 3), slice(0, 2)))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == (2, 2, *space.shape)
 
     with pytest.raises(ValueError):
@@ -55,12 +55,12 @@ def test_pick_component_slice_tuple():
 
 def test_pick_component_mixed_tuple():
     space = Space((10, 10))
-    fieldshape = FieldShape(space, (3, 3))
+    fieldshape = Shape(space, (3, 3))
     result = utils.pick_component(fieldshape, (1, slice(0, 2)))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == (2, *space.shape)
 
-    fieldshape = FieldShape(space, (3, 3, 3))
+    fieldshape = Shape(space, (3, 3, 3))
     result = utils.pick_component(fieldshape, (slice(1, 3), 1, 2))
-    arr = np.zeros(shape=fieldshape.shape, dtype=int)
+    arr = np.zeros(shape=fieldshape.fieldshape(), dtype=int)
     assert arr[result].shape == (2, *space.shape)

@@ -4,7 +4,7 @@ import numpy as np
 
 from algebra.operator import AffineOperator
 from algebra.expression import CallableExpression
-from algebra.space import FieldShape, Space
+from algebra.space import Shape, Space
 from conftest import MockOperator
 
 ones_space = Space((10, 10))
@@ -22,7 +22,7 @@ def double_add_one():
     def return_ones():
         return np.ones(shape=ones_space.shape, dtype=float)
 
-    ones = CallableExpression(FieldShape(ones_space, ()), return_ones)
+    ones = CallableExpression(Shape(ones_space, ()), return_ones)
     operator = AffineOperator(double_op, ones)
     return operator
 
@@ -39,7 +39,7 @@ def triple_sub_three():
     def return_threes():
         return -3.0 * np.ones(shape=ones_space.shape, dtype=float)
 
-    threes = CallableExpression(FieldShape(ones_space, ()), return_threes)
+    threes = CallableExpression(Shape(ones_space, ()), return_threes)
     operator = AffineOperator(tiple_op, threes)
     return operator
 

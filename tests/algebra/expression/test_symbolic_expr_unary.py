@@ -2,7 +2,7 @@ from algebra.exceptions import ShapeMismatchError
 import numpy as np
 import pytest
 
-from algebra.expression import ConstExpression
+from algebra.expression import ConstFieldExpression
 from algebra.expression.symbolic import SymbolicExpression
 
 from algebra.space import Space
@@ -14,7 +14,7 @@ def expr(
     value: float = 0.0,
 ) -> SymbolicExpression:
     return SymbolicExpression.wrap(
-        ConstExpression(
+        ConstFieldExpression(
             space,
             np.ones((*comps, *space.shape)) * value,
         )

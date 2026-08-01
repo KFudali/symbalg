@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import Any
-import numpy as np
-
-from tools.symbolic.optype import BinaryOpType, MatBinOpType
+from tools.symbolic.optype import MatBinOpType
 from algebra.exceptions import ShapeMismatchError
-from .fieldshaped import FieldShape, FieldShaped
+from .shapes import Shape
 
 
 def pick_component(
-    source: FieldShape, comp: int | tuple[int | slice, ...]
+    source: Shape, comp: int | tuple[int | slice, ...]
 ) -> tuple[int | slice, ...]:
     if isinstance(comp, int):
         comps = source.components[0]
@@ -34,7 +31,7 @@ def pick_component(
     )
 
 
-def project_shape(left: FieldShape, right: FieldShape, optype: MatBinOpType) -> FieldShape:
+def project_shape(left: Shape, right: Shape, optype: MatBinOpType) -> Shape:
     """Returns resulting shape of optype operation betweend fieldshapes right, left"""
     if left.space != right.space:
         raise ShapeMismatchError(
@@ -50,8 +47,8 @@ def project_shape(left: FieldShape, right: FieldShape, optype: MatBinOpType) -> 
                 f"Incompatible shapes for dot: {left_comps} and {right_comps}"
             )
         if not left_comps or not right_comps:
-            return FieldShape(left.space, left_comps or right_comps)
-        return FieldShape(left.space, left_comps[:-1] + right_comps[1:])
+            return Shape(left.space, left_comps or right_comps)
+        return Shape(left.space, left_comps[:-1] + right_comps[1:])
 
     if optype == MatBinOpType.INNER:
         if left_comps and right_comps and left_comps != right_comps:
@@ -59,15 +56,15 @@ def project_shape(left: FieldShape, right: FieldShape, optype: MatBinOpType) -> 
                 f"Incompatible shapes for inner: {left_comps} and {right_comps}"
             )
         if not left_comps or not right_comps:
-            return FieldShape(left.space, left_comps or right_comps)
-        return FieldShape(left.space, ())
+            return Shape(left.space, left_comps or right_comps)
+        return Shape(left.space, ())
 
     if optype == MatBinOpType.OUTER:
-        return FieldShape(left.space, left_comps + right_comps)
+        return Shape(left.space, left_comps + right_comps)
     return NotImplemented
 
 
-def project_einsum(left: FieldShape, right: FieldShape, optype: MatBinOpType) -> str:
+def project_einsum(left: Shape, right: Shape, optype: MatBinOpType) -> str:
     """Returns str subscripts that need to be passed to np.einsum to perform optype
     operation between left and right fieldshapes"""
     project_shape(left, right, optype)
@@ -98,5 +95,4 @@ def project_einsum(left: FieldShape, right: FieldShape, optype: MatBinOpType) ->
         b_labels = letters[n : n + m]
         result_labels = a_labels + b_labels
         return f"{a_labels}...,{b_labels}...->{result_labels}..."
-
     return "...,...->..."

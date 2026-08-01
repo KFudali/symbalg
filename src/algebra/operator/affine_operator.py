@@ -1,5 +1,4 @@
 from __future__ import annotations
-from abc import abstractmethod
 from typing import Callable, Any, Self, Generic
 import numpy as np
 
@@ -41,7 +40,7 @@ class AffineOperator(Operator, Generic[TOperator]):
         return self.__class__(self.operator, self.expression)
 
     def apply(self, inp: np.ndarray, out: np.ndarray):
-        assert out.shape == self.expression.shape
+        assert out.shape == self.expression.shape.fieldshape()
         self.operator.apply(inp, out)
         out += self.expression.eval()
 

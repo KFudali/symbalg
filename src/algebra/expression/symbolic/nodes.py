@@ -1,26 +1,21 @@
 from dataclasses import dataclass
 import numpy as np
-import scipy.sparse as sp
-from algebra.expression import Expression, SparseExpression
-from algebra.space import FieldShape, SparseShape, Space
+from algebra.expression.expression import Expression, Array
+from algebra.space import Space, Shape
 from tools.symbolic import nodes
 
 
 @dataclass(frozen=True)
 class ExpressionNode(nodes.ValueNode[Expression]):
     @property
-    def fieldshape(self) -> FieldShape:
-        return self.value.fieldshape
-
-    @property
-    def shape(self) -> tuple[int, ...]:
+    def shape(self) -> Shape:
         return self.value.shape
 
     @property
     def space(self) -> Space:
         return self.value.space
 
-    def resolve(self) -> np.ndarray:
+    def resolve(self) -> Array:
         return self.value.eval()
 
 
@@ -30,10 +25,10 @@ class TensorOpNode(nodes.SymbolicNode[Expression]):
     right: nodes.SymbolicNode[Expression]
     subscripts: str
 
-    def resolve(self) -> np.ndarray:
+    def resolve(self) -> Array:
         l = self.left.resolve()
         r = self.right.resolve()
-        return np.einsum(self.subscripts, l, r)  # type: ignore[no-untyped-call]
+        return np.einsum(self.subscripts, l, r)  # ignode[arg-error]
 
 
 @dataclass(frozen=True)
@@ -41,20 +36,6 @@ class TensorUnaryOpNode(nodes.SymbolicNode[Expression]):
     operand: nodes.SymbolicNode[Expression]
     subscripts: str
 
-    def resolve(self) -> np.ndarray:
+    def resolve(self) -> Array:
         a = self.operand.resolve()
         return np.einsum(self.subscripts, a)  # type: ignore[no-untyped-call]
-
-
-@dataclass(frozen=True)
-class SparseExpressionNode(nodes.ValueNode[SparseExpression]):
-    @property
-    def shape(self) -> tuple[int, ...]:
-        return self.value.shape
-
-    @property
-    def sparseshape(self) -> SparseShape:
-        return self.value.sparseshape
-
-    def resolve(self) -> sp.sparray:
-        return self.value.eval()

@@ -3,7 +3,7 @@ import pytest
 import numpy as np
 
 from algebra.space import utils
-from algebra.space import Space, FieldShape
+from algebra.space import Space, Shape
 from tools.symbolic import MatBinOpType
 
 SPACE_SHAPES = [(10,), (10, 10), (10, 10, 10)]
@@ -13,8 +13,8 @@ class TestDot:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_dot_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, ())
+        left = Shape(space, ())
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == ()
         assert result.space is left.space
@@ -22,48 +22,48 @@ class TestDot:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_dot_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, (3,))
+        left = Shape(space, ())
+        right = Shape(space, (3,))
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_dot_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, ())
+        left = Shape(space, (3,))
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_dot_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, (3,))
+        left = Shape(space, (3,))
+        right = Shape(space, (3,))
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == ()
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_matrix_dot_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3, 4))
-        right = FieldShape(space, (4,))
+        left = Shape(space, (3, 4))
+        right = Shape(space, (4,))
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_dot_matrix(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, (3, 4))
+        left = Shape(space, (3,))
+        right = Shape(space, (3, 4))
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (4,)
 
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_matrix_dot_matrix(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3, 4))
-        right = FieldShape(space, (4, 5))
+        left = Shape(space, (3, 4))
+        right = Shape(space, (4, 5))
         result = utils.project_shape(left, right, MatBinOpType.DOT)
         assert result.components == (3, 5)
 
@@ -78,8 +78,8 @@ class TestDot:
     )
     def test_invalid_shapes(self, space_shape, left_comps, right_comps):
         space = Space(space_shape)
-        left = FieldShape(space, left_comps)
-        right = FieldShape(space, right_comps)
+        left = Shape(space, left_comps)
+        right = Shape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
             utils.project_shape(left, right, MatBinOpType.DOT)
 
@@ -88,8 +88,8 @@ class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_inner_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, ())
+        left = Shape(space, ())
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
@@ -97,8 +97,8 @@ class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_inner_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, (3,))
+        left = Shape(space, ())
+        right = Shape(space, (3,))
         result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == (3,)
         assert result.space is left.space
@@ -106,8 +106,8 @@ class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_inner_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, ())
+        left = Shape(space, (3,))
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == (3,)
         assert result.space is left.space
@@ -115,8 +115,8 @@ class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_inner_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, (3,))
+        left = Shape(space, (3,))
+        right = Shape(space, (3,))
         result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
@@ -124,8 +124,8 @@ class TestInner:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_matrix_inner_matrix(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3, 4))
-        right = FieldShape(space, (3, 4))
+        left = Shape(space, (3, 4))
+        right = Shape(space, (3, 4))
         result = utils.project_shape(left, right, MatBinOpType.INNER)
         assert result.components == ()
         assert result.space is left.space
@@ -141,8 +141,8 @@ class TestInner:
     )
     def test_invalid_shapes(self, space_shape, left_comps, right_comps):
         space = Space(space_shape)
-        left = FieldShape(space, left_comps)
-        right = FieldShape(space, right_comps)
+        left = Shape(space, left_comps)
+        right = Shape(space, right_comps)
         with pytest.raises(ShapeMismatchError):
             utils.project_shape(left, right, MatBinOpType.INNER)
 
@@ -151,8 +151,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_outer_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, ())
+        left = Shape(space, ())
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == ()
         assert result.space is left.space
@@ -160,8 +160,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_scalar_outer_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, ())
-        right = FieldShape(space, (3,))
+        left = Shape(space, ())
+        right = Shape(space, (3,))
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3,)
         assert result.space is left.space
@@ -169,8 +169,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_outer_scalar(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, ())
+        left = Shape(space, (3,))
+        right = Shape(space, ())
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3,)
         assert result.space is left.space
@@ -178,8 +178,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_outer_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, (4,))
+        left = Shape(space, (3,))
+        right = Shape(space, (4,))
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4)
         assert result.space is left.space
@@ -187,8 +187,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_matrix_outer_vector(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3, 4))
-        right = FieldShape(space, (5,))
+        left = Shape(space, (3, 4))
+        right = Shape(space, (5,))
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4, 5)
         assert result.space is left.space
@@ -196,8 +196,8 @@ class TestOuter:
     @pytest.mark.parametrize("space_shape", SPACE_SHAPES)
     def test_vector_outer_matrix(self, space_shape):
         space = Space(space_shape)
-        left = FieldShape(space, (3,))
-        right = FieldShape(space, (4, 5))
+        left = Shape(space, (3,))
+        right = Shape(space, (4, 5))
         result = utils.project_shape(left, right, MatBinOpType.OUTER)
         assert result.components == (3, 4, 5)
         assert result.space is left.space

@@ -2,10 +2,17 @@ from __future__ import annotations
 
 from typing import Any, Self
 import numpy as np
-
-from algebra.space import FieldShape, utils
-from algebra.expression import Expression, ConstExpression
+from sparse import SparseArray
+from algebra.expression.expression import (
+    Expression,
+    Array,
+    ConstFieldExpression,
+    ConstSparseExpression,
+)
 from algebra.exceptions import ShapeMismatchError
+
+from algebra.space import shapes, utils
+
 
 from tools.symbolic import Symbolic, BinaryOpType, nodes
 from tools.symbolic.optype import MatBinOpType, MatUnOpType
@@ -13,14 +20,14 @@ from .nodes import ExpressionNode, TensorOpNode, TensorUnaryOpNode
 
 
 class SymbolicExpression(Symbolic[Expression], Expression):
-    def __init__(self, node: nodes.SymbolicNode[Expression], shape: FieldShape):
+    def __init__(self, node: nodes.SymbolicNode[Expression], shape: shapes.Shape):
         Symbolic.__init__(self, node)
         Expression.__init__(self, shape)
 
     @classmethod
     def wrap(cls, value: Expression) -> Self:
         node = cls._make_value(value)
-        return cls(node, value.fieldshape)
+        return cls(node, value.shape)
 
     @classmethod
     def _make_value(cls, other: Expression) -> ExpressionNode:
@@ -32,26 +39,26 @@ class SymbolicExpression(Symbolic[Expression], Expression):
         if isinstance(other, nodes.SymbolicNode):
             return other
         if isinstance(other, (np.ndarray, float)):
-            return ExpressionNode(ConstExpression(self.space, other))
+            return ExpressionNode(ConstFieldExpression(self.space, other))
+        if isinstance(other, SparseArray):
+            return ExpressionNode(ConstSparseExpression(self.space, other))
         return self._make_value(other)
 
-    def eval(self) -> np.ndarray:
+    def eval(self) -> Array:
         return self.resolve()
 
     def copy(self) -> Self:
-        return self.__class__(self.node, self.fieldshape)
+        return self.__class__(self.node, self.shape)
 
     def _new(self, node: nodes.SymbolicNode[Expression]) -> Self:
-        return self.__class__(node, self.fieldshape)
+        return self.__class__(node, self.shape)
 
     def _combine_mat(self, other: Any, optype: MatBinOpType) -> Self:
         if not self._compatible_mat(other, optype):
             return NotImplemented
         other_node = self._ensure_node(other)
-        new_shape = utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
-        subscripts = utils.project_einsum(
-            self.fieldshape, other_node.fieldshape, optype
-        )
+        new_shape = utils.project_shape(self.shape, other_node.shape, optype)
+        subscripts = utils.project_einsum(self.shape, other_node.shape, optype)
         node = TensorOpNode(self.node, other_node, subscripts)
         return self.__class__(node, new_shape)
 
@@ -62,8 +69,8 @@ class SymbolicExpression(Symbolic[Expression], Expression):
             return NotImplemented
         other_node = self._ensure_node(other)
         node = nodes.BinaryNode(optype, self.node, other_node)
-        if self.fieldshape.is_scalar() and isinstance(other, Expression):
-            return self.__class__(node, other.fieldshape)
+        if self.shape.is_scalar() and isinstance(other, Expression):
+            return self.__class__(node, other.shape)
         return self._new(node)
 
     def _compatible(
@@ -71,26 +78,31 @@ class SymbolicExpression(Symbolic[Expression], Expression):
     ) -> bool:
         if isinstance(other, float):
             return True
-        if isinstance(other, (Expression, np.ndarray)):
-            other_shape = other.shape if isinstance(other, Expression) else other.shape
-            if self.shape in ((), other_shape) or other_shape == ():
+        if isinstance(other, Expression):
+            if self.shape.is_scalar() or other.shape.is_scalar():
                 return True
-            if isinstance(other, Expression) and (
-                self.fieldshape.is_scalar() or other.fieldshape.is_scalar()
-            ):
+            if self.shape == other.shape:
                 return True
             raise ShapeMismatchError(
-                f"Incompatible shape is: {self.shape} and {other_shape}"
+                f"Incompatible shape is: {self.shape} and {other.shape}"
             )
+        if isinstance(other, (np.ndarray, SparseArray)):
+            if self.shape.is_scalar() or other.shape == ():
+                return True
+            if self.shape.fieldshape() != other.shape:
+                raise ShapeMismatchError(
+                    f"Incompatible shape is: {self.shape} and {other.shape}"
+                )
+            return True
         return False
 
     def _compatible_mat(self, other: Any, optype: MatBinOpType) -> bool:
         if isinstance(other, float):
             return True
-        if isinstance(other, (Expression, np.ndarray)):
+        if isinstance(other, (Expression, Array)):
             try:
                 other_node = self._ensure_node(other)
-                utils.project_shape(self.fieldshape, other_node.fieldshape, optype)
+                utils.project_shape(self.shape, other_node.shape, optype)
                 return True
             except ShapeMismatchError:
                 return False
@@ -98,7 +110,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
 
     def _unary_mat(self, optype: MatUnOpType) -> Self:
         if optype == MatUnOpType.TRACE:
-            comps = self.comps
+            comps = self.components
             if len(comps) != 2:
                 raise ShapeMismatchError(
                     f"Cannot trace a tensor with components {comps}"
@@ -108,7 +120,7 @@ class SymbolicExpression(Symbolic[Expression], Expression):
                     f"Cannot trace a non-square tensor with components {comps}"
                 )
             subscripts = "aa...->..."
-            new_shape = FieldShape(self.space, ())
+            new_shape = shapes.Shape(self.space, ())
             node = TensorUnaryOpNode(self.node, subscripts)
             return self.__class__(node, new_shape)
         return NotImplemented

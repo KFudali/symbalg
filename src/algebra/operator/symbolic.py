@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Self, TYPE_CHECKING, TypeVar
+from typing import Any, Self, TypeVar
 import numpy as np
 
 from algebra.space import Space, ShapeTransform
@@ -46,7 +46,7 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
     @classmethod
     def _make_value(cls, other: Any) -> nodes.ValueNode:
         if isinstance(other, Expression):
-            if other.fieldshape.is_scalar():
+            if other.shape.is_scalar():
                 return ExpressionNode(other)
         return super()._make_value(other)
 
@@ -72,7 +72,7 @@ class SymbolicOperator(Symbolic[TOperator], Operator):
             return False
         is_scale = optype in (BinaryOpType.DIV, BinaryOpType.MUL)
         if isinstance(other, Expression):
-            if other.shape == () and is_scale:
+            if other.shape.is_scalar() and is_scale:
                 return True
             raise ShapeMismatchError(f"Incompatible expression shape: {other.shape}")
         if isinstance(other, float):

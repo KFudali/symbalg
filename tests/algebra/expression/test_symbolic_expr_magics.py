@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from algebra.expression import ConstExpression, Expression
+from algebra.expression import ConstFieldExpression, Expression
 from algebra.expression.symbolic import SymbolicExpression
 from algebra.exceptions import ShapeMismatchError
 from algebra.space import Space
@@ -11,13 +11,13 @@ SHAPE = (10,)
 @pytest.fixture
 def ones() -> SymbolicExpression:
     space = Space(SHAPE)
-    return SymbolicExpression.wrap(ConstExpression(space, np.ones(SHAPE)))
+    return SymbolicExpression.wrap(ConstFieldExpression(space, np.ones(SHAPE)))
 
 
 @pytest.fixture
 def fives() -> SymbolicExpression:
     space = Space(SHAPE)
-    return SymbolicExpression.wrap(ConstExpression(space, np.ones(SHAPE) * 5.0))
+    return SymbolicExpression.wrap(ConstFieldExpression(space, np.ones(SHAPE) * 5.0))
 
 
 def assert_eval(expression: Expression, value: float):
@@ -76,7 +76,7 @@ def test_symbolic_expression_with_arrays(
 def test_symbolic_expression_with_scalar_expression(
     ones: SymbolicExpression, fives: SymbolicExpression
 ):
-    scalar = ConstExpression(ones.space, 2.0)
+    scalar = ConstFieldExpression(ones.space, 2.0)
 
     add = ones + scalar
     assert_eval(add, 3.0)
@@ -117,7 +117,7 @@ def test_symbolic_expression_with_expression(
 
 def test_symbolic_expression_shape_mismatch_raises(ones: SymbolicExpression):
     ones = SymbolicExpression.wrap(ones)
-    other = ConstExpression(ones.space, np.ones(shape=(2, *SHAPE)))
+    other = ConstFieldExpression(ones.space, np.ones(shape=(2, *SHAPE)))
 
     with pytest.raises(ShapeMismatchError):
         ones + other
@@ -137,28 +137,28 @@ def test_symbolic_expression_combination_broadcasts_shape(ones: SymbolicExpressi
     must yield a SymbolicExpression whose ``shape`` matches the array
     operand, regardless of which side initiates the operation.
     """
-    scalar = SymbolicExpression.wrap(ConstExpression(ones.space, 3.0))
+    scalar = SymbolicExpression.wrap(ConstFieldExpression(ones.space, 3.0))
 
-    assert scalar.shape == ()
-    assert ones.shape == SHAPE
+    assert scalar.shape.fieldshape() == ()
+    assert ones.shape.fieldshape() == SHAPE
 
     # scalar * array
     combined = scalar * ones
-    assert combined.shape == SHAPE
+    assert combined.shape.fieldshape() == SHAPE
     assert combined.eval().shape == SHAPE
 
     # array * scalar (rmul / mul from the array side)
     combined = ones * scalar
-    assert combined.shape == SHAPE
+    assert combined.shape.fieldshape() == SHAPE
     assert combined.eval().shape == SHAPE
 
     # float * array (via __rmul__)
     combined = 2.0 * ones
-    assert combined.shape == SHAPE
+    assert combined.shape.fieldshape() == SHAPE
 
     # scalar + array
     combined = scalar + ones
-    assert combined.shape == SHAPE
+    assert combined.shape.fieldshape() == SHAPE
     assert combined.eval().shape == SHAPE
 
 

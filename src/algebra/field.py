@@ -1,9 +1,7 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-
-import numpy as np
 import scipy.sparse as sp
-
+from sparse import SparseArray, COO
 from tools.buffer import (
     ValueBuffer,
     ShiftProxyValueBuffer,
@@ -15,22 +13,21 @@ from tools.action import LazyAction
 from .operator import ArrayOperator
 from .expression import (
     Expression,
+    FieldExpression,
     CallableExpression,
-    SparseExpression,
-    CallableSparseExpression,
 )
 from .expression.symbolic import SymbolicExpression
-from .space import FieldShaped, FieldShape, SparseShape, ShapeTransform
+from .space import SpaceShaped, Shape, ShapeTransform
 from .space import shape_utils as utils
 
 
-class AbstractField(FieldShaped, ABC):
+class AbstractField(SpaceShaped, ABC):
     @abstractmethod
     def past(self, step: int) -> "AbstractField":
         pass
 
     @abstractmethod
-    def value(self) -> SymbolicExpression:
+    def value(self) -> FieldExpression:
         pass
 
     @abstractmethod
@@ -39,8 +36,8 @@ class AbstractField(FieldShaped, ABC):
 
 
 class Field(AbstractField):
-    def __init__(self, shape: FieldShape, value_buffer: ValueBuffer):
-        assert shape.shape == value_buffer.shape
+    def __init__(self, shape: Shape, value_buffer: ValueBuffer):
+        assert shape.fieldshape() == value_buffer.shape
         super().__init__(shape)
         self._value_buffer = value_buffer
 
@@ -49,11 +46,11 @@ class Field(AbstractField):
         return self._value_buffer
 
     def past(self, step: int) -> "Field":
-        return Field(self.fieldshape, ShiftProxyValueBuffer(self._value_buffer, step))
+        return Field(self.shape, ShiftProxyValueBuffer(self._value_buffer, step))
 
-    def value(self) -> SymbolicExpression:
+    def value(self) -> FieldExpression:
         return SymbolicExpression.wrap(
-            CallableExpression(self.fieldshape, self._value_buffer.get)
+            CallableExpression(self.shape, self._value_buffer.get)
         )
 
     def set_value(self, value: Expression) -> LazyAction:
@@ -65,9 +62,9 @@ class Field(AbstractField):
         return LazyAction(_set_value)
 
     def component(self, comp_query: int | tuple[slice | int, ...]) -> "Field":
-        query = utils.pick_component(self.fieldshape, comp_query)
+        query = utils.pick_component(self.shape, comp_query)
         buffer = ComponentProxyValueBuffer(self._value_buffer, query)
-        result_shape = FieldShape(self.space, buffer.shape[: -self.space.ndim])
+        result_shape = Shape(self.space, buffer.shape[: -self.space.ndim])
         return Field(result_shape, buffer)
 
 
@@ -77,15 +74,15 @@ def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
     except Exception as e:
         raise ValueError(f"Cannot stack fields over ax: {ax}") from e
     space = fields[0].space
-    fieldshape = FieldShape(space, buffer.shape[: -space.ndim])
-    return Field(fieldshape, buffer)
+    shape = Shape(space, buffer.shape[: -space.ndim])
+    return Field(shape, buffer)
 
 
 def to_operator(
     field: Field, shape_transform: ShapeTransform = ShapeTransform.NONE
 ) -> ArrayOperator:
-    def _diag() -> sp.sparray:
-        return sp.diags(field.value().eval().ravel(), 0)
+    def _diag() -> SparseArray:
+        return COO(sp.diags(field.value().eval().ravel(), 0))
 
-    mat = CallableSparseExpression(SparseShape(field.space, ()), _diag)
+    mat = CallableExpression(Shape(field.space, ()), _diag)
     return ArrayOperator(field.space, shape_transform, mat)
