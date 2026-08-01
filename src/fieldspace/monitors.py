@@ -14,7 +14,7 @@ class MonitorFactory:
         ), f"plot_field_2d requires a 2D space, got ndim={field.space.ndim}"
         x, y = self._discrete.points()
         u = field.value().eval()
-        components = field.fieldshape.components
+        components = field.components
 
         if len(components) == 0:
             figures_count = 1

@@ -2,7 +2,7 @@ import numpy as np
 from discrete.core import Discretization
 from algebra.expression import CallableExpression
 from algebra.expression.symbolic import SymbolicExpression
-from algebra.space import FieldShape
+from algebra.space import Shape
 
 
 class TimeSeries:
@@ -27,7 +27,7 @@ class TimeSeries:
     def dt(self) -> SymbolicExpression:
         return SymbolicExpression.wrap(
             CallableExpression(
-                FieldShape.scalar(self._space),
+                Shape.scalar(self._space),
                 lambda: np.array(self._discrete_time.dt()),
             )
         )

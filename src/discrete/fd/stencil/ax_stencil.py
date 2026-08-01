@@ -59,11 +59,12 @@ class AxStencil:
         field_interior = region.interior(field.ndim, tuple(offsets))
         self.interior.eval_to(ax, field[field_interior], out[out_interior])
 
-    def eval_to(self, ax: int, field: np.ndarray, out: np.ndarray):
+    def eval_to(self, ax: int, field: np.ndarray, out: np.ndarray) -> bool:
         assert field.shape == out.shape, "Can only eval_to fields that match shapes"
         self._eval_to_boundary(ax, -1, field, out)
         self._eval_to_boundary(ax, 1, field, out)
         self._eval_to_interior(ax, field, out)
+        return True
 
     def norm_offset(
         first: tuple[Stencil, ...],
