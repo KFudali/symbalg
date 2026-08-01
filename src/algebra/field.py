@@ -1,6 +1,8 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+import numpy as np
 import scipy.sparse as sp
+import sparse
 from sparse import SparseArray, COO
 from tools.buffer import (
     ValueBuffer,
@@ -81,8 +83,16 @@ def stack(fields: tuple[Field, ...], ax: int = 0) -> Field:
 def to_operator(
     field: Field, shape_transform: ShapeTransform = ShapeTransform.NONE
 ) -> ArrayOperator:
-    def _diag() -> SparseArray:
-        return COO(sp.diags(field.value().eval().ravel(), 0))
+    components = field.shape.components
+    n = field.shape.n
 
-    mat = CallableExpression(Shape(field.space, ()), _diag)
+    def _diag() -> SparseArray:
+        value = field.value().eval()
+        if components == ():
+            return COO(sp.diags(value.ravel(), 0))
+        flat = value.reshape(int(np.prod(components)), n)
+        diags = [COO(sp.diags(flat[c], 0)) for c in range(flat.shape[0])]
+        return sparse.stack(diags, axis=0).reshape((*components, n, n))
+
+    mat = CallableExpression(Shape(field.space, components), _diag)
     return ArrayOperator(field.space, shape_transform, mat)

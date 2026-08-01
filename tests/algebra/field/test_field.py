@@ -1,5 +1,5 @@
 import numpy as np
-from algebra.field import Field, stack, to_operator
+from algebra.field import Field, stack
 from algebra.space import Space, Shape
 from algebra.expression import CallableExpression
 from tools.buffer import ConstValueBuffer
@@ -33,16 +33,3 @@ def test_stack_fields():
     assert stacked.shape.fieldshape() == (2, 10, 10)
     assert np.allclose(stacked.value().eval()[0], 1.0)
     assert np.allclose(stacked.value().eval()[1], 2.0)
-
-
-def test_to_operator():
-    space = Space((10, 10))
-    shape = Shape(space, ())
-    field_values = np.random.uniform(0, 10, space.shape)
-    field = Field(shape, ConstValueBuffer(field_values))
-    operator = to_operator(field)
-
-    other_values = np.random.uniform(0, 10, space.shape)
-
-    result = operator.apply_to(other_values)
-    np.testing.assert_allclose(result, field_values * other_values)

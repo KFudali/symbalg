@@ -30,6 +30,21 @@ class ArrayOperator(Operator):
     def copy(self) -> Self:
         return self.__class__(self.space, self._shape_transform, self._mat.copy())
 
+    def apply(self, inp: np.ndarray, out: np.ndarray):
+        components = self._mat.shape.components
+        if self._shape_transform is ShapeTransform.NONE and components != ():
+            self._apply_component_blocks(components, inp, out)
+            return
+        super().apply(inp, out)
+
+    def _apply_component_blocks(
+        self, components: tuple[int, ...], inp: np.ndarray, out: np.ndarray
+    ):
+        mat = self._mat.eval()
+        for idx in np.ndindex(*components):
+            block = mat[idx]
+            out[idx][:] += (block @ inp[idx].ravel()).reshape(self.space.shape)
+
     def _apply(self, ax: int, inp: np.ndarray, out: np.ndarray):
         if ax > 0 and self._shape_transform is ShapeTransform.NONE:
             return
