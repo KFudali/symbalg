@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.sparse as sp
+from sparse import COO
 
 from tools import region
 
@@ -46,36 +46,37 @@ def post_solve(boundary: FDBoundary, value: float, field: np.ndarray):
 
 
 def apply_array(
-    mat: sp.spmatrix,
+    mat: COO,
     boundary: FDBoundary,
     value: float,
     rhs: np.ndarray,
-) -> sp.spmatrix:
+) -> COO:
     """Apply a Dirichlet BC directly to a sparse matrix + rhs.
 
     Mirrors the stencil-form ``apply``: moves the known boundary contribution
     to the rhs, then replaces the boundary rows with an identity row and sets
-    ``rhs`` at the boundary indices to ``value``.
+    ``rhs`` at the boundary indices to ``value``. Works on ``sparse.COO``
+    matrices (the array-form operators may stack per-component blocks).
     """
     shape = rhs.shape
     b_indices = _boundary_linear_indices(shape, boundary)
     rhs_flat = rhs.reshape(-1)
 
-    csr = sp.csr_matrix(mat)
-
     # Move known boundary column contributions to rhs.
-    boundary_cols = csr[:, b_indices]
-    rhs_flat -= np.asarray(boundary_cols.sum(axis=1)).ravel() * value
+    boundary_cols = mat[:, b_indices]
+    rhs_flat -= np.asarray(boundary_cols.sum(axis=1).todense()).ravel() * value
 
     # Zero rows and columns at boundary indices, set identity on diagonal.
-    lil = sp.lil_matrix(csr)
-    lil[b_indices, :] = 0.0
-    lil[:, b_indices] = 0.0
-    for i in b_indices:
-        lil[i, i] = 1.0
+    rows, cols = mat.coords
+    data = mat.data
+    keep = ~np.isin(rows, b_indices) & ~np.isin(cols, b_indices)
+    new_rows = np.concatenate([rows[keep], b_indices])
+    new_cols = np.concatenate([cols[keep], b_indices])
+    new_data = np.concatenate([data[keep], np.ones(len(b_indices), dtype=float)])
+    new_mat = COO(np.stack([new_rows, new_cols]), new_data, shape=mat.shape)
 
     rhs_flat[b_indices] = value
-    return lil.tocsr()
+    return new_mat
 
 
 def _boundary_linear_indices(

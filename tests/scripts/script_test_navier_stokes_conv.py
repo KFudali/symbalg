@@ -37,8 +37,9 @@ u_grad_trace = s.fields.scalar()
 u_grad_update = u_grad.set_value(s.dx.grad().of(u.past(1)))
 u_grad_trace_update = u_grad_trace.set_value(u_grad.value().trace())
 term_1_op = ArrayOperator(
-    u.space, ShapeTransform.NONE, 
-    s.dx.grad().as_array().mat.dot(to_operator(u.past(1).value()).mat)
+    u.space,
+    ShapeTransform.NONE,
+    s.dx.grad().as_array().mat.dot(to_operator(u.past(1)).mat),
 )
 term_2_op = to_operator(u_grad_trace)
 
@@ -63,13 +64,15 @@ step_2 = s.systems.les(
 
 
 for time in s.time.run(duration=1.0, init_dt=0.01):
-    p_star.set_value(p.past(1).value()).perform
+    p_star.set_value(p.past(1).value()).perform()
     p_hat.set_value(
         p_star.value()
         + ((4.0 / 3.0) * fi.past(1).value())
         - ((1.0 / 3.0) * fi.past(2).value())
     ).perform()
     u.set_value(step_1.solve(cg)).perform()
+    u_grad_update.perform()
+    u_grad_trace_update.perform()
     fi.set_value(step_2.solve(cg)).perform()
     p.set_value(p_star.value() + fi.value() - (NU * s.dx.div().of(u))).perform()
 

@@ -1,5 +1,5 @@
 import numpy as np
-import scipy.sparse as sp
+from sparse import COO
 
 from discrete.fd.stencil import AxStencil, Stencil
 from discrete.fd.domain import FDBoundary
@@ -57,11 +57,11 @@ def post_solve(boundary: FDBoundary, value: float, field: np.ndarray):
 
 
 def apply_array(
-    mat: sp.spmatrix,
+    mat: COO,
     boundary: FDBoundary,
     value: float,
     rhs: np.ndarray,
-) -> sp.spmatrix:
+) -> COO:
     """Apply a Neumann BC to a sparse matrix + rhs.
 
     Not implemented: the ghost-node substitution used by the stencil form

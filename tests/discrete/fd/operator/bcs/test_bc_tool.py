@@ -1,10 +1,15 @@
 import numpy as np
+import sparse
 
 from algebra.domain import bcs
+from algebra.expression import ConstSparseExpression
+from algebra.operator import ArrayOperator
+from algebra.space import ShapeTransform
 from algebra.systems.systems import LinearSystem
 from discrete.fd.domain.fd_domain import FDDomain
 from discrete.fd.domain.bcs import FDBCTool
 from discrete.fd.operator import dx
+from discrete.fd.operator.as_array import as_array
 from tools.geometry import StructuredGridND
 
 
@@ -125,3 +130,54 @@ def test_apply_neumann_vector_rhs():
 
     # Interior should remain zero.
     assert np.all(new_system.rhs[:, 5, :] == 0.0)
+
+
+def test_apply_bcs_array_dirichlet_scalar():
+    """Dirichlet on an array-form (pydata COO) scalar lhs: boundary rows
+    become identity and rhs is set to the value at the boundary indices.
+    """
+    domain, bc_tool, _ = _make_setup((10, 10))
+    lhs = as_array(dx.laplace(domain.space, order=2, h=0.1))
+    left_id, _ = domain.ax_boundaries(ax=0)
+    bc = bcs.BoundaryCondition(3.0, bcs.BCType.DIRICHLET, left_id)
+    rhs = np.zeros((10, 10), dtype=float)
+
+    modified = bc_tool.apply_bcs_array([bc], lhs, rhs)
+
+    mat = modified.mat.eval()
+    assert mat.shape == (100, 100)
+    boundary_idx = np.arange(10)
+    for i in boundary_idx:
+        assert np.isclose(mat[i, i], 1.0)
+        off_diag = np.where(np.arange(100) != i)[0]
+        assert np.all(np.asarray(mat[i][off_diag].todense()).ravel() == 0.0)
+    assert np.array_equal(rhs[0, :], np.full(10, 3.0))
+
+
+def test_apply_bcs_array_dirichlet_vector_components():
+    """Dirichlet on a multi-component (stacked COO) lhs: each component block
+    receives the same surgery and the stacked shape is preserved.
+    """
+    domain, bc_tool, _ = _make_setup((10, 10))
+    scalar = as_array(dx.laplace(domain.space, order=2, h=0.1)).mat.eval()
+    stacked = sparse.stack([scalar, 2.0 * scalar], axis=0)
+    vec_op = ArrayOperator(
+        domain.space,
+        ShapeTransform.NONE,
+        ConstSparseExpression(domain.space, stacked),
+    )
+    left_id, _ = domain.ax_boundaries(ax=0)
+    bc = bcs.BoundaryCondition(np.array([1.0, 2.0]), bcs.BCType.DIRICHLET, left_id)
+    rhs = np.zeros((2, 10, 10), dtype=float)
+
+    modified = bc_tool.apply_bcs_array([bc], vec_op, rhs)
+
+    mat = modified.mat.eval()
+    assert mat.shape == (2, 100, 100)
+    boundary_idx = np.arange(10)
+    for comp in range(2):
+        for i in boundary_idx:
+            assert np.isclose(mat[comp][i, i], 1.0)
+            off_diag = np.where(np.arange(100) != i)[0]
+            assert np.all(np.asarray(mat[comp][i][off_diag].todense()).ravel() == 0.0)
+        assert np.array_equal(rhs[comp, 0, :], np.full(10, float(comp + 1)))

@@ -1,6 +1,7 @@
 from typing import Callable
 import numpy as np
-import scipy.sparse as sp
+import sparse
+from sparse import COO
 
 from algebra.space import Space
 from algebra.expression import ConstSparseExpression
@@ -13,9 +14,7 @@ from discrete.fd.stencil import AxStencil, StencilOperator
 from . import dirichlet, neumann
 
 BcApplyCallable = Callable[[AxStencil, FDBoundary, float, np.ndarray], AxStencil]
-BcApplyArrayCallable = Callable[
-    [sp.spmatrix, FDBoundary, float, np.ndarray], sp.spmatrix
-]
+BcApplyArrayCallable = Callable[[COO, FDBoundary, float, np.ndarray], COO]
 BcPostSolveCallable = Callable[[FDBoundary, float, np.ndarray], None]
 
 
@@ -52,6 +51,7 @@ class FDBCTool(BoundaryTool[StencilOperator]):
         self, bcs: list[BoundaryCondition], lhs: ArrayOperator, rhs: np.ndarray
     ) -> ArrayOperator:
         mat = lhs.mat.eval()
+        assert isinstance(mat, COO)
         for bc in bcs:
             boundary = self._boundaries[bc.boundary]
             mat = self._apply_rankwise_array(
@@ -111,19 +111,29 @@ class FDBCTool(BoundaryTool[StencilOperator]):
     def _apply_rankwise_array(
         self,
         fn: BcApplyArrayCallable,
-        mat: sp.spmatrix,
+        mat: COO,
         boundary: FDBoundary,
         value: BCValue,
         rhs: np.ndarray,
-    ) -> sp.spmatrix:
+    ) -> COO:
         if rhs.ndim == self.space.ndim:
             return fn(mat, boundary, float(value), rhs)
-        modified = mat
+        n_component_axes = mat.ndim - self.space.ndim
+        results = []
         for comp in range(rhs.shape[0]):
-            modified = self._apply_rankwise_array(
-                fn, modified, boundary, _component_value(value, comp), rhs[comp]
+            comp_mat = mat[comp] if n_component_axes > 0 else mat
+            results.append(
+                self._apply_rankwise_array(
+                    fn,
+                    comp_mat,
+                    boundary,
+                    _component_value(value, comp),
+                    rhs[comp],
+                )
             )
-        return modified
+        if n_component_axes > 0:
+            return sparse.stack(results, axis=0).reshape(mat.shape)
+        return results[0]
 
     def _post_solve_rankwise(
         self,
