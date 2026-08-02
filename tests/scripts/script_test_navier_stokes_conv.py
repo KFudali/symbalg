@@ -2,6 +2,8 @@ from fieldspace import FieldSpace
 from algebra.systems import solvers, constraints
 from tools.geometry import StructuredGridND
 from discrete import fd
+from algebra.field import to_operator, ArrayOperator
+from algebra.space import ShapeTransform
 
 N = 20
 grid = StructuredGridND((N, N), (0.05, 0.05))
@@ -29,13 +31,27 @@ p = s.fields.scalar(init_value=0.0)
 p_hat = s.fields.scalar(init_value=0.0)
 p_star = s.fields.scalar(init_value=0.0)
 fi = s.fields.scalar(init_value=0.0)
+u_grad = s.fields.tensor()
+u_grad_trace = s.fields.scalar()
+
+u_grad_update = u_grad.set_value(s.dx.grad().of(u.past(1)))
+u_grad_trace_update = u_grad_trace.set_value(u_grad.value().trace())
+term_1_op = ArrayOperator(
+    u.space, ShapeTransform.NONE, 
+    s.dx.grad().as_array().mat.dot(to_operator(u.past(1).value()).mat)
+)
+term_2_op = to_operator(u_grad_trace)
 
 cg = solvers.CGSolver()
 NU = 0.01
 
+dt = s.dt.explicit(u, order=2)
+dt_lhs = dt.operator.as_array()
+dt_rhs = dt.expression
+
 step_1 = s.systems.les(
-    lhs=s.dt.explicit(u, order=2) - (NU * s.dx.laplace()),
-    rhs=-s.dx.grad().of(p_hat),
+    lhs=dt_lhs - (NU * s.dx.laplace()).as_array() + term_1_op + term_2_op,
+    rhs=-s.dx.grad().of(p_hat) - dt_rhs,
     bcs=u_bcs,
 )
 step_2 = s.systems.les(
@@ -45,14 +61,6 @@ step_2 = s.systems.les(
     constraints=[fi_cstr],
 )
 
-u_grad = s.fields.tensor()
-u_grad.set_value(s.dx.grad().of(u))
-
-term_1 = s.fields.vector()
-term_1.set_value(u_grad.value().dot(u.value()))
-
-term_2 = s.fields.vector()
-term_2.set_value(0.5 * u.value() * u_grad.value().trace())
 
 for time in s.time.run(duration=1.0, init_dt=0.01):
     p_star.set_value(p.past(1).value()).perform

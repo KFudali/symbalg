@@ -4,6 +4,7 @@ import numpy as np
 from algebra.space import Shape
 from algebra.expression import FieldExpression, CallableExpression
 from algebra.domain.bcs import BoundaryCondition, BoundaryTool
+from algebra.operator import ArrayOperator
 from algebra.domain import DomainOperator
 
 from .solvers import LinearSolver
@@ -29,7 +30,10 @@ class LinearEquation:
 
     def _assemble(self) -> LinearSystem:
         rhs = self._rhs_expr.eval()
-        lhs = self._lhs.apply_bcs(self._bcs, rhs)
+        if isinstance(self._lhs, ArrayOperator):
+            lhs = self._bc_tool.apply_bcs_array(self._bcs, self._lhs, rhs)
+        else:
+            lhs = self._lhs.apply_bcs(self._bcs, rhs)
         system = LinearSystem(lhs, rhs)
         for constraint in self._constraints:
             system = constraint.apply(system)
