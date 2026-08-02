@@ -2,8 +2,12 @@ from fieldspace import FieldSpace
 from algebra.systems import solvers, constraints
 from tools.geometry import StructuredGridND
 from discrete import fd
+import scipy.sparse as sps
+import sparse
+
 from algebra.field import to_operator, ArrayOperator
-from algebra.space import ShapeTransform
+from algebra.space import ShapeTransform, Shape
+from algebra.expression import CallableExpression
 
 N = 20
 grid = StructuredGridND((N, N), (0.05, 0.05))
@@ -31,17 +35,35 @@ p = s.fields.scalar(init_value=0.0)
 p_hat = s.fields.scalar(init_value=0.0)
 p_star = s.fields.scalar(init_value=0.0)
 fi = s.fields.scalar(init_value=0.0)
-u_grad = s.fields.tensor()
-u_grad_trace = s.fields.scalar()
+# Semi-implicit convection in skew-symmetric form: (u*.grad)u + 1/2 (div u*) u
+# with the advecting velocity u* = u.past(1). Both terms are kept lazy so u*
+# is re-read from the buffer on every solve.
+grad_mat = s.dx.grad().as_array().mat  # constant symbolic (ndim, n, n) = D_a
+div_op = s.dx.div()
 
-u_grad_update = u_grad.set_value(s.dx.grad().of(u.past(1)))
-u_grad_trace_update = u_grad_trace.set_value(u_grad.value().trace())
+
+def _conv_mat():
+    # (u*.grad) as a genuine sparse matrix: M = sum_a diag(u*_a) @ D_a
+    grad_a = grad_mat.eval()  # sparse (ndim, n, n)
+    vel_a = to_operator(u.past(1)).mat.eval()  # sparse (ndim, n, n) = diag(u*_a)
+    mat = vel_a[0] @ grad_a[0]
+    for a in range(1, u.space.ndim):
+        mat = mat + vel_a[a] @ grad_a[a]
+    return mat  # sparse (n, n)
+
+
+def _reaction_mat():
+    # 1/2 (div u*) as a diagonal multiplication matrix
+    div_star = div_op.of(u.past(1)).eval().ravel()
+    return sparse.COO(sps.diags(0.5 * div_star, 0))
+
+
 term_1_op = ArrayOperator(
-    u.space,
-    ShapeTransform.NONE,
-    s.dx.grad().as_array().mat.dot(to_operator(u.past(1)).mat),
+    u.space, ShapeTransform.NONE, CallableExpression(Shape(u.space, ()), _conv_mat)
 )
-term_2_op = to_operator(u_grad_trace)
+term_2_op = ArrayOperator(
+    u.space, ShapeTransform.NONE, CallableExpression(Shape(u.space, ()), _reaction_mat)
+)
 
 cg = solvers.CGSolver()
 NU = 0.01
@@ -71,8 +93,6 @@ for time in s.time.run(duration=1.0, init_dt=0.01):
         - ((1.0 / 3.0) * fi.past(2).value())
     ).perform()
     u.set_value(step_1.solve(cg)).perform()
-    u_grad_update.perform()
-    u_grad_trace_update.perform()
     fi.set_value(step_2.solve(cg)).perform()
     p.set_value(p_star.value() + fi.value() - (NU * s.dx.div().of(u))).perform()
 
